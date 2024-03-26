@@ -1,0 +1,54 @@
+{
+  "name": "326-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "license": "AGPL-version-3.0",
+  "private": false,
+  "engines": {
+    "node": ">= 14.0.0",
+    "npm": ">= 6.0.0"
+  },
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stevenruidigao/326-project"
+  },
+  "author": {
+    "name": "[TODO TEAM NAME]",
+    "url": "https://github.com/stevenruidigao/326-project"
+  },
+  "contributors": [
+    {
+      "name": "David Sevilla Martin",
+      "email": "dsevillamart@umass.edu",
+      "github": "dsevillamartin"
+    },
+    {
+      "name": "David Zhan",
+      "email": "dzhan@umass.edu",
+      "github": "zhandavidz"
+    },
+    {
+      "name": "Steven Gao",
+      "email": "srgao@umass.edu",
+      "github": "stevenruidigao"
+    },
+    {
+      "name": "Wenhao Yang",
+      "email": "wenhaoyang@umass.edu",
+      "github": "mrwenhaoy"
+    }
+  ],
+  "scripts": {
+    "milestone-01": "http-server src/docs/milestone-01 -p 3000 -c-1 -o -s",
+    "validate-html": "html-validate src/**/*.html",
+    "prettier": "prettier src --write"
+  },
+  "devDependencies": {
+    "html-validate": "^8.18.0",
+    "http-server": "^14.1.1",
+    "prettier": "^3.2.5"
+  }
+}
