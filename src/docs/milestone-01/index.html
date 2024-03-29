@@ -3,34 +3,234 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document Title</title>
+    <title>TutorSwap</title>
     <!-- CSS Stylesheets -->
     <link rel="stylesheet" href="styles.css" />
     <!-- JavaScript Files -->
     <script type="module" src="script.js" defer></script>
   </head>
   <body>
-    <header>
-      <!-- Navigation bar, logo, etc. -->
+    <header id="vision">
+      <h1>TutorSwap: Make Learning Happen</h1>
     </header>
 
-    <nav>
-      <!-- Links to different sections/pages -->
+    <nav id="navbar">
+      <a href="#team">Team</a>
+      <a href="#overview">Overview</a>
+      <a href="#application-parts">Application Parts</a>
+      <a href="#data-requirements">Data Requirements</a>
+      <a href="#wire-frames">Wireframes</a>
+      <a href="#real-world">Real World</a>
+      <a href="#integrative-experience">Integrative Experience</a>
     </nav>
 
-    <main>
-      <!-- Main content of the document -->
-      <article>
-        <!-- Primary content like a blog post or article -->
-      </article>
+    <section id="team">
+      <h2>Our Team</h2>
 
-      <section>
-        <!-- Related content or subsections -->
+      <div class="grid">
+        <div class="grid-item">
+          <img class="pic" src="images/steveng.jpg" alt="Image of Steven Gao" />
+          <span class="name">Steven Gao</span>
+          <span class="role">Data</span>
+          <span class="bio"
+            >Past use of MongoDB and PostgreSQL lets Steven design and manage
+            the application's data expertly.</span
+          >
+        </div>
+        <div class="grid-item">
+          <img class="pic" src="images/davidz.jpg" alt="Image of David Zhan" />
+          <span class="name">David Zhan</span>
+          <span class="role">Front-End</span>
+          <span class="bio"
+            >David Z. builds respectable and innovative user interfaces with a
+            focus on accessibility thanks to is prior knowledge.</span
+          >
+        </div>
+        <div class="grid-item">
+          <img
+            class="pic"
+            src="images/davids.jpg"
+            alt="Image of David Sevilla Martin"
+          />
+          <span class="name">David Sevilla Martin</span>
+          <span class="role">Back-End</span>
+          <span class="bio"
+            >Having worked with NodeJS and PHP, David S. has the necessary tools
+            to build a functioning back-end</span
+          >
+        </div>
+        <div class="grid-item">
+          <img class="pic" src="images/wenhaoy" alt="Image of Wenhao Yang" />
+          <span class="name">Wenhao Yang</span>
+          <span class="role">Documentation</span>
+          <span class="bio"
+            >Wenhao's participation in multiple hackathons makes him an expert
+            at documenting his team's work.</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>
+          Our vision focuses on improving the learning experience of students
+          across the world. Students possess a multitude of knowledge that can
+          be exchanged, resulting in improved learning for everybody. Our web
+          app aims to connect these varying pieces of knowledge. Specifically,
+          we tailor to students who can help others with their classes in
+          exchange for the same in return. Tutoring is often a one-way exchange
+          of information in which only the tutee benefits. However, we want all
+          parties involved to partake in learning and leave the session with
+          knowledge that they deem useful and/or interesting. If you’re a
+          student that needs help with CS 326 (just an example!), you can find a
+          tutor that is willing to help but is looking to learn more about
+          another area that you are familiar with. In that case, you’d both be a
+          match and could tutor each other on the other’s desired subject.
+          There’s no need for monetary exchange; the only exchange necessary is
+          that of the mind.
+        </p>
+        <!-- With the id "overview," this section should provide a 150-200 word explanation of the web application your team aims to design and develop. Use an <h2> tag for the section title. Focus on the project's vision, emphasizing the real-world problem it intends to solve and its target audience, rather than delving into interface details. -->
       </section>
 
-      <aside>
-        <!-- Side content like ads, links to other posts, or author info -->
-      </aside>
+      <section id="application-parts">
+        <h2>Application Parts</h2>
+        <p>
+          Authentication is a primary component of our application. Since we
+          want users (users are both tutors and tutees) to showcase what they
+          can teach others and connect with them, they need a profile that
+          contains that information such that other tutors can find them. Thus,
+          a login is needed.
+          <br />
+          Profiles themselves are a critical component. For a user to be able to
+          find someone who can teach them what they need to know, and to whom
+          they can teach something in return, this information has to be
+          available. Thus, profiles will contain a user’s “strengths” and
+          “weaknesses” - or what they can teach others, and what they need to be
+          taught/tutored on. To showcase the legitimacy of these users, there’ll
+          be an XP system with ratings and comments that allows for others to
+          provide feedback on their experience with said user.
+          <br />
+          Since the aim is to connect with someone so that both can expand their
+          horizons, there also needs to be a method to communicate. Thus, a chat
+          system that allows for inter-user communication is key. In addition to
+          this chat, we’ll have a way to make requests – this will likely be how
+          a chat gets opened between users. Then, they can communicate and
+          establish what they can both gain from the swap.
+        </p>
+        <!-- Identified by the id “application-parts,” describe at least three critical components of your application in separate paragraphs under this section, totaling 200-300 words. Title this section with an <h2> tag and ensure each application part discussed represents a primary functionality of your web application. Here is an example of a one component of an application: -->
+      </section>
+
+      <section id="data-requirements">
+        <h2>Data Requirements</h2>
+        <p></p>
+        <!-- Under the id “data-requirements,” structure this section to include an introduction, four main paragraphs detailing the top types of data your application will handle, and a conclusion, making up 300 words in total. Title the section with an <h2> tag. Focus on high-level data needs rather than specific database designs or records. Here is an example of one data requirement: -->
+      </section>
+
+      <section id="wire-frames">
+        <h2>Wireframes</h2>
+        <p></p>
+        <!-- Utilize the id “wire-frames” for this section, where you'll include four wireframes representing key views/screens of your application, along with a brief paragraph for each explaining its purpose and design rationale. You must be able to create an image from these wireframes in PNG, JPG, or GIF format to be included in the document using the <img> tag alongside each paragraph. This section should be 200 words in length, excluding HTML tags. Here is an example of one wireframe and its description: -->
+        <!-- Profile page, Home page-->
+      </section>
+
+      <section id="real-world">
+        <h2>Real World Connection</h2>
+        <p></p>
+        <!-- With the id “real-world,” this section, spanning 200 words, should elucidate how your application addresses a tangible real-world issue, supported by an introduction and conclusion. Use real-world examples as inspiration for this narrative, detailing the problem your project aims to resolve. Here are some examples to give you an idea of what we are looking for: -->
+      </section>
+
+      <section id="integrative-experience">
+        <h2>Integrative Experience</h2>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+          nec hendrerit magna, in elementum nulla. Integer iaculis porta libero
+          quis gravida. Praesent cursus semper sem, sed tincidunt tellus viverra
+          id. Morbi feugiat quam at tellus aliquam, in elementum erat tincidunt.
+          Fusce hendrerit elit sed lectus ullamcorper, et tristique ante
+          fringilla. Fusce molestie non nunc vel semper. Nullam lobortis mollis
+          mi sit amet auctor. Praesent at tellus ut quam finibus eleifend. Sed
+          vel diam quam. Donec eget tempor nisl, sit amet gravida lectus. Nullam
+          quis enim fermentum, sagittis leo in, vehicula dui. Ut in lorem
+          fringilla, interdum risus a, efficitur mi. Maecenas quam lorem,
+          pretium eget justo fermentum, cursus sollicitudin turpis. Duis vel
+          tempor nisl. Aliquam egestas justo vel aliquet porta. Ut velit sapien,
+          scelerisque at massa a, sodales posuere tellus. Suspendisse a nunc in
+          est varius tempus ut sed neque. Mauris ac vestibulum turpis, in congue
+          dolor. Vivamus lobortis rutrum augue, nec congue nisi gravida vel.
+          Donec eleifend accumsan sagittis. Phasellus et sapien a ligula feugiat
+          gravida. Sed finibus, est eget commodo imperdiet, purus tellus gravida
+          ipsum, in ornare odio velit eu diam. Interdum et malesuada fames ac
+          ante ipsum primis in faucibus. Cras a turpis vel odio condimentum
+          bibendum ac eu enim. Suspendisse efficitur auctor ante, at auctor
+          massa lacinia eu. Curabitur pellentesque vel lacus sit amet commodo.
+          Fusce iaculis fringilla imperdiet. Mauris vel congue enim. Sed eget
+          tempus ex, id placerat lectus. Aenean ullamcorper viverra turpis id
+          auctor. Sed eros libero, varius ut lacus sit amet, tempor aliquam
+          magna. Vestibulum tempor non mauris nec lacinia. Sed vitae risus at
+          ante hendrerit cursus. In faucibus tempus eleifend. Fusce vel faucibus
+          risus. Fusce vitae ipsum in turpis efficitur lacinia at eu arcu.
+          Aliquam in elit vestibulum, condimentum dui at, porta nisi. Donec
+          sodales nisl eget nunc eleifend, quis interdum mauris commodo.
+          Curabitur eget semper orci. Sed eu mauris sit amet eros hendrerit
+          mollis eu non mauris. Curabitur in velit ut ipsum fermentum volutpat.
+          In diam mi, sodales vitae dapibus vitae, sollicitudin non dolor. Proin
+          ac vestibulum arcu. Proin massa ex, fringilla consequat elementum sit
+          amet, ultrices eget ligula. Vivamus nisi urna, dapibus a lacus vitae,
+          molestie dignissim nisl. Morbi tempor, mauris non luctus euismod, nisl
+          mi elementum mauris, eget ultrices ante elit malesuada nisl. Phasellus
+          volutpat elit at quam suscipit, eu cursus ipsum bibendum. Nam eu lacus
+          id leo feugiat egestas. In iaculis turpis sit amet rhoncus semper.
+          Nulla justo nisl, semper in tortor at, euismod egestas est. Fusce
+          rutrum imperdiet dui in luctus. Curabitur risus ex, tincidunt in
+          lacinia in, porttitor sit amet tortor. Vestibulum id tortor in ante
+          tincidunt vestibulum quis cursus tellus. Nunc at condimentum diam.
+          Cras id nunc quis tortor feugiat molestie. Vivamus eu lectus vel enim
+          condimentum pharetra. Nam mauris arcu, sodales sed blandit eget,
+          congue eu nibh. Cras vitae nibh eu tellus eleifend fermentum vitae a
+          dui. Sed mi orci, iaculis non ex consectetur, scelerisque aliquam mi.
+          Sed eleifend non turpis et consectetur. Integer finibus sapien ut ex
+          congue, auctor egestas elit maximus. Class aptent taciti sociosqu ad
+          litora torquent per conubia nostra, per inceptos himenaeos. Nullam
+          nunc urna, pharetra et varius at, tristique sit amet nisl. Duis vel
+          dictum tortor. Vestibulum eu felis eros. Sed laoreet laoreet iaculis.
+          Donec in nisi sodales, condimentum felis eget, convallis metus. Morbi
+          vel eros ut tortor tempor accumsan aliquam ac erat. Aenean varius
+          metus eget mauris interdum rutrum. Nam posuere iaculis lacinia. Proin
+          at velit id elit egestas rhoncus convallis nec leo. Nam posuere
+          molestie purus quis consectetur. Suspendisse volutpat maximus dolor,
+          sit amet laoreet diam ultrices efficitur. Donec sed orci non neque
+          ornare feugiat. Morbi cursus lorem vel arcu tincidunt tempus. Quisque
+          interdum eros in lacus ornare, eleifend posuere dui vulputate.
+          Suspendisse ac pulvinar eros. Ut tempus elit id tempus feugiat.
+          Vestibulum tortor nulla, aliquam vitae semper euismod, interdum vitae
+          sem. Aenean dignissim dolor sed metus gravida, ac ultricies leo
+          interdum. Suspendisse et mauris lectus. Integer lobortis pulvinar
+          neque ut molestie. Praesent rhoncus interdum lectus et iaculis. Mauris
+          id arcu quis justo hendrerit tristique. In et varius ipsum. Maecenas
+          eget dapibus magna, at pretium arcu. Morbi interdum libero nec metus
+          dapibus cursus. Nam cursus fermentum justo, sed mollis quam elementum
+          non. Donec rutrum vehicula tempus. Aliquam elementum rutrum lectus.
+          Aliquam porttitor malesuada justo quis placerat. Class aptent taciti
+          sociosqu ad litora torquent per conubia nostra, per inceptos
+          himenaeos. Cras volutpat molestie purus pretium mattis. Sed eleifend
+          ipsum a lorem mollis pellentesque. Suspendisse potenti. Nunc congue
+          erat sed dolor semper accumsan id nec ligula. Phasellus blandit urna
+          id dui venenatis, at mollis est finibus. Nullam et sapien finibus,
+          iaculis erat quis, mollis arcu. Quisque ut nunc non lorem accumsan
+          placerat. Praesent sollicitudin nec turpis eu sagittis. Nulla nec arcu
+          ut neque vulputate posuere nec quis ex. Integer euismod arcu non
+          malesuada cursus. Vivamus aliquet congue metus id ornare. Fusce rutrum
+          nec dui vel volutpat. Cras odio ligula, fringilla eget diam vitae,
+          sollicitudin molestie justo. Phasellus rutrum fermentum nulla, ut
+          placerat metus aliquam non. Aenean quis nibh vel tellus dictum
+          gravida. Aliquam lacinia nisl at sollicitudin facilisis. Nulla blandit
+          scelerisque malesuada. Duis a bibendum enim. Sed ac justo convallis,
+          egestas purus et, tincidunt mauris.
+        </p>
+        <!-- Marked by the id “integrative-experience,” in 200 words, detail how this project ties into the integrative experience requirements of your coursework and personal experiences. Discuss how your project is a culmination of your university education and personal growth, touching upon specific courses, semesters, and life experiences that contribute to the development of this project. -->
+      </section>
     </main>
 
     <footer>

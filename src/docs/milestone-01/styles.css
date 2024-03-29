@@ -1,0 +1,117 @@
+body {
+  position: relative;
+  font-family: sans-serif;
+  background-color: rgb(94, 198, 242);
+  margin: 0;
+}
+
+#vision {
+  text-align: center;
+}
+
+#navbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  background-color: white;
+  /* padding: 0.75em; */
+  font-size: 1.25em;
+  background-color: rgb(94, 198, 242);
+  border-bottom: 0.5px solid black;
+
+  a {
+    /* margin: 5px 5px; */
+    padding: 0.5em;
+    text-decoration: none;
+
+    &,
+    &:visited {
+      color: blue;
+    }
+
+    &:hover {
+      color: cyan;
+    }
+  }
+}
+
+section,
+main section {
+  scroll-margin-top: 55px;
+  margin: 0 30px;
+}
+
+main section {
+  line-height: 1.4em;
+
+  h2 {
+    height: 20px;
+
+    .word-count {
+      font-weight: normal;
+      font-size: 0.75rem;
+      margin-left: 10px;
+      vertical-align: text-bottom;
+    }
+  }
+
+  br {
+    margin-bottom: 10px;
+  }
+}
+
+#team {
+  text-align: center;
+
+  h2 {
+    text-align: left;
+  }
+
+  .pic {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+
+    transition: transform 0s;
+    transform: rotate(0deg);
+
+    &:hover {
+      transition: transform 0.8s;
+      transform: rotate(360deg);
+    }
+  }
+
+  .name {
+    font-weight: bolder;
+    font-size: 1.1rem;
+  }
+
+  .name,
+  .role,
+  .bio {
+    display: block;
+    margin: 10px 0;
+  }
+
+  .role {
+    &:before {
+      content: "Role: ";
+      display: inline;
+      font-weight: 600;
+    }
+  }
+
+  .bio {
+    max-width: 80%;
+    margin-left: 10%;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}

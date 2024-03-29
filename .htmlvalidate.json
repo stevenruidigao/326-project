@@ -5,6 +5,6 @@
     
     "rules": {
         "close-order": "error",
-        "void": ["warn", {"style": "omit"}]
+        "void-style": ["warn", {"style": "omit"}]
     }
 }
