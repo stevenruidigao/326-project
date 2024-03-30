@@ -44,7 +44,8 @@
   "scripts": {
     "milestone-01": "http-server src/docs/milestone-01 -p 3000 -c-1 -s",
     "validate-html": "html-validate src/**/*.html",
-    "prettier": "prettier src --write --html-whitespace-sensitivity ignore"
+    "prettier": "prettier src --write --html-whitespace-sensitivity ignore",
+    "submit": "git archive HEAD -o submission.zip"
   },
   "devDependencies": {
     "html-validate": "^8.18.0",
