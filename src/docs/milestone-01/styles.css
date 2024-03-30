@@ -66,6 +66,7 @@ main section {
       font-size: 0.75rem;
       margin-left: 10px;
       vertical-align: text-bottom;
+      pointer-events: none;
     }
   }
 
