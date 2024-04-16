@@ -200,7 +200,7 @@ const getSessionUser = async () => {
 
   // user id does not exist.
   // TODO handle error somehow?
-  return await users.get(sessionData.userId);
+  return await users.get(data.userId);
 };
 
 export const session = { get: getSession, getUser: getSessionUser };
