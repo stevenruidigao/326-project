@@ -175,7 +175,7 @@ export const users = {
 // session depends a bit on implementation
 const getSession = async () => {
   try {
-    return local.session.get("data");
+    return await local.session.get("data");
   } catch (err) {
     // session is expired/nonexistent -> user is guest!
     return null;
