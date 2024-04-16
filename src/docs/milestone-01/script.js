@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const content = section.querySelector(".content");
 
     if (!content) continue;
-    
+
     h2.addEventListener("mouseover", () => {
       const counter = document.createElement("span");
       const length = content.innerText
@@ -20,15 +20,19 @@ document.addEventListener("DOMContentLoaded", () => {
       counter.innerText = `${length} words`;
       h2.append(counter);
 
-      h2.addEventListener("mouseout", () => {
-        counter.remove();
-      }, { once: true });
+      h2.addEventListener(
+        "mouseout",
+        () => {
+          counter.remove();
+        },
+        { once: true },
+      );
     });
   }
-  
+
   // smooth scroll
   const links = document.querySelectorAll("#navbar a");
-  
+
   for (const link of links) {
     link.addEventListener("click", (e) => {
       e.preventDefault();
