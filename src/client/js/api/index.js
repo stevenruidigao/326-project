@@ -1,18 +1,6 @@
 import * as mock from "./mock/index.js";
 import * as local from "./local.js";
 
-const MOCK_MS = 200;
-const mockFunc =
-  (cb) =>
-  (...args) =>
-    new Promise(async (resolve) => {
-      const output = await cb(...args); // do not timeout actual execution to find errors faster
-      setTimeout(() => resolve(output), MOCK_MS);
-    });
-
-const filterWithValue = (arr, args, value) =>
-  arr.filter((item) => args.some((arg) => item[arg] === value));
-
 /*
     NOTE: .find() doesn't return total_rows equivalent (since we're querying data)
     so we don't know when pagination ends until we reach a page with no rows.
@@ -95,7 +83,7 @@ const updateAppointment = async (id, data) => {
   // keep unchanged data in doc
   // replace changed data
   // prevent replacing id & rev
-  return await mock.appointments.put({
+  return mock.appointments.put({
     ...doc,
     ...data,
     _id: id,
@@ -165,7 +153,7 @@ const updateUser = async (id, data) => {
   // keep unchanged data in doc
   // replace changed data
   // prevent replacing id & rev
-  return await mock.users.put({
+  return mock.users.put({
     ...doc,
     ...data,
     _id: id,
@@ -187,7 +175,7 @@ export const users = {
 // session depends a bit on implementation
 const getSession = async () => {
   try {
-    return await local.session.get("data");
+    return local.session.get("data");
   } catch (err) {
     // session is expired/nonexistent -> user is guest!
     return null;
@@ -200,7 +188,7 @@ const getSessionUser = async () => {
 
   // user id does not exist.
   // TODO handle error somehow?
-  return await users.get(data.userId);
+  return users.get(data.userId);
 };
 
 export const session = { get: getSession, getUser: getSessionUser };
