@@ -7,6 +7,29 @@ body {
     margin: 10px;
 }
 
+.message {
+    display: flex;
+    height: 80px;
+    gap: 10px;
+    border: lightgrey solid 1px;
+    padding: 5px;
+}
+
+.message img, .message image {
+    width: auto;
+    height: 100%;
+    overflow: hidden;
+    object-fit: contain;
+}
+
+.message div {
+    width: 100%;
+}
+
+.message div h2, .message div p {
+    margin: 10px 0;
+}
+
 #navigation-bar {
     display: flex;
     flex-wrap: wrap;
