@@ -35,7 +35,7 @@ export const load = async (routeName, args = {}) => {
 export const convertPathToRoute = (path) => {
   const splitPath = path.split("/");
 
-  for (const routeName in routes) {
+  for (const routeName of Object.keys(routes)) {
     const route = routes[routeName];
     const routePath = route.path;
 
@@ -49,7 +49,8 @@ export const convertPathToRoute = (path) => {
 
     if (splitPath.length !== splitRoutePath.length) continue;
 
-    for (const i in splitRoutePath) {
+    // check if current route matches path & obtain args from it
+    for (let i = 0; i < splitRoutePath.length; i++) {
       const part = splitRoutePath[i];
 
       if (part === splitPath[i]) continue;
@@ -81,7 +82,8 @@ export const goToRoute = (name, args = {}) => {
   const route = routes[name];
   let path = route.path;
 
-  for (const key in args) path = path.replace(`:${key}`, args[key]);
+  for (const key of Object.keys(args))
+    path = path.replace(`:${key}`, args[key]);
 
   const data = { route: name, data: args };
 
@@ -101,20 +103,26 @@ export const getPath = () => {
   return href.slice(index + host.length).replace(PATH_PREFIX_REGEX, "");
 };
 
-export default function init() {
-  window.addEventListener("popstate", (ev) => {
-    const path = getPath();
-    const info = ev?.state || convertPathToRoute(path);
-
-    console.log("[popstate] path =", path, "- navigating to", info);
-
-    load(info?.route, info?.data);
-  });
-
+/**
+ * Load a page based on the current path.
+ * Optionally, provide route information to use instead (avoids code repetition)
+ * @param {object} def
+ */
+export const loadPath = (def) => {
   const path = getPath();
-  const info = convertPathToRoute(path);
+  const info = def || convertPathToRoute(path);
 
-  console.log("[routes] path =", path, "- initializing to", info);
+  console.log("[routes] path =", path, "=>", info);
 
   load(info?.route, info?.data);
-}
+};
+
+export default () => {
+  window.addEventListener("popstate", (ev) => {
+    // Navigate to new/old page
+    loadPath(ev?.state);
+  });
+
+  // Initialize page
+  loadPath();
+};
