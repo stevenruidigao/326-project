@@ -1,4 +1,4 @@
-import { app } from "../helper.js";
+import {app} from "../helper.js";
 
 export default (args) => {
   app.innerHTML = "";

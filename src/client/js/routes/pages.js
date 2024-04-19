@@ -4,7 +4,8 @@ const memo = (cb) => {
   return async (...args) => {
     const key = args.join(",");
 
-    if (saved.has(key)) return saved.get(key);
+    if (saved.has(key))
+      return saved.get(key);
 
     const out = await cb(...args);
 
@@ -30,26 +31,26 @@ export const fetchDOM = async (name) => {
 };
 
 export const registerCustomComponents = (name, xml) => {
-  const templates = [...xml.querySelectorAll("template")];
+  const templates = [...xml.querySelectorAll("template") ];
 
   for (const template of templates) {
     const key = `${name}-${template.id}`;
 
-    if (customElements.get(key)) continue;
+    if (customElements.get(key))
+      continue;
 
     console.debug(`[pages] registering custom element <${key}>`);
 
     customElements.define(
-      key,
-      class extends HTMLElement {
-        constructor() {
-          super();
+        key, class extends HTMLElement {
+          constructor() {
+            super();
 
-          const shadowRoot = this.attachShadow({ mode: "open" });
+            const shadowRoot = this.attachShadow({mode : "open"});
 
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      },
+            shadowRoot.appendChild(template.content.cloneNode(true));
+          }
+        },
     );
   }
 };
