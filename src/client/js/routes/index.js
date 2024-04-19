@@ -1,4 +1,4 @@
-export const PATH_PREFIX = "/#";
+export const PATH_PREFIX = "";
 export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 
 export const routes = {

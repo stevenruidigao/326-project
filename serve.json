@@ -1,0 +1,6 @@
+{
+    "public": "src/client",
+    "rewrites": [
+        { "source": "**", "destination": "/index.html" }
+    ]
+}
