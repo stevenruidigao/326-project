@@ -1,0 +1,18 @@
+<template id="message">
+    <style>
+        .name {
+            font-weight: bold;
+        }
+    </style>
+    <div class="user">
+        <p>Message from <slot name="name" class="name">???</slot></p>
+        <p>
+            They have these skills:
+            <pre class="content">
+                <slot name="skills">Unknown content</slot>
+            </pre>
+        </p>
+    </div>
+</template>
+
+

@@ -1,8 +1,10 @@
+import * as pages from "./pages.js";
+
 export const PATH_PREFIX = "/#";
 export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 
 export const routes = {
-  home: { path: "/", file: "home" },
+  home: { path: "/", file: "home", hasHTML: true },
   dashboard: { path: "/dashboard", file: "dashboard" },
   messages: { path: "/messages", file: "messages" },
   conversation: { path: "/messages/:id", file: "messages" },
@@ -20,9 +22,16 @@ export const load = async (routeName, args = {}) => {
 
   const route = routes[routeName];
 
-  const { default: init } = await import(`./pages/${route.file}.js`);
+  const [{ default: init }, document] = await Promise.all(
+    [
+      import(`./pages/${route.file}.js`),
+      route.hasHTML && pages.fetchDOM(route.file),
+    ].filter(Boolean),
+  );
 
-  await init(args);
+  if (document) pages.registerCustomComponents(route.file, document);
+
+  await init(args, document);
 
   loadingEl.classList.add("is-hidden");
 };
