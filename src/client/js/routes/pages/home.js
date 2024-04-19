@@ -1,6 +1,10 @@
 import * as api from "../../api/index.js";
 
-export default async () => {
+export default async (args) => {
+  app.innerHTML = "";
+
+  console.log("** home loaded with args", args);
+
   const users = Array.from(await api.users.all());
 
   for (const user of users) {
@@ -16,6 +20,6 @@ export default async () => {
     el.appendChild(nameEl);
     el.appendChild(skillsEl);
 
-    document.body.appendChild(el);
+    app.appendChild(el);
   }
 };

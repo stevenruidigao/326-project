@@ -36,13 +36,27 @@ export const load = async (routeName, args = {}) => {
   loadingEl.classList.add("is-hidden");
 };
 
+export const convertRouteToPath = (name, args = {}) => {
+  const route = routes[name];
+
+  if (!route) return null;
+
+  let path = route.path;
+
+  for (const key of Object.keys(args))
+    path = path.replace(`:${key}`, args[key]);
+
+  return path;
+};
+
 /**
  *
  * @param {string} path
  * @returns {{ name: string, data: any }}
  */
 export const convertPathToRoute = (path) => {
-  const splitPath = path.split("/");
+  // fix to allow empty path is same as /
+  const splitPath = path ? path.split("/") : ["", ""];
 
   for (const routeName of Object.keys(routes)) {
     const route = routes[routeName];
@@ -89,10 +103,7 @@ export const goToRoute = (name, args = {}) => {
   if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
 
   const route = routes[name];
-  let path = route.path;
-
-  for (const key of Object.keys(args))
-    path = path.replace(`:${key}`, args[key]);
+  let path = convertRouteToPath(name, args);
 
   const data = { route: name, data: args };
 
@@ -134,4 +145,40 @@ export default () => {
 
   // Initialize page
   loadPath();
+
+  customElements.define(
+    "app-route",
+    class extends HTMLElement {
+      constructor() {
+        super();
+
+        const a = document.createElement("a");
+        const route = this.getAttribute("name");
+        const args = {};
+
+        for (const attr of this.attributes) {
+          if (attr.name.startsWith(":")) args[attr.name.slice(1)] = attr.value;
+        }
+
+        a.addEventListener("click", (ev) => {
+          ev.preventDefault();
+
+          goToRoute(route, args);
+
+          return false;
+        });
+
+        const html = this.innerHTML;
+
+        this.innerHTML = "";
+        a.innerHTML = html;
+
+        a.setAttribute("href", convertRouteToPath(route, args));
+
+        // const shadowRoot = this.attachShadow({ mode: "open" });
+
+        this.appendChild(a);
+      }
+    },
+  );
 };
