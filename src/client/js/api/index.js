@@ -14,7 +14,9 @@ const withPagination = (pageSize) => async (page, cb) => {
 
   if (res.warning) console.warn(`[PouchDB] ${res.warning}`);
 
-  const data = { ...(res.rows || res.docs) };
+  const rows = res.rows?.map((r) => r.doc || r);
+
+  const data = [...(rows || res.docs)];
   const totalPages = Math.ceil(res.total_rows / pageSize);
 
   // Not present for .find() results. See note above function

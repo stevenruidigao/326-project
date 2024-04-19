@@ -1,0 +1,19 @@
+<template id="message">
+    <style>
+        .name {
+            font-weight: bold;
+        }
+    </style>
+    <link class="user">
+        <p>Message from <slot name="name" class="name">???</slot></p>
+
+        <app-route name="profile">profile</app-route>
+
+        <p>
+            They have these skills:
+            <pre class="content">
+                <slot name="skills">Unknown content</slot>
+            </pre>
+        </p>
+    </div>
+</template>
