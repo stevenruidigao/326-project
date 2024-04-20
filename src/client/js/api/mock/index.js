@@ -20,5 +20,7 @@ const initialize = async (db, key) => {
   }
 };
 
-initialize(users, "MOCK_USERS");
-initialize(appointments, "MOCK_APPOINTMENTS");
+export default Promise.all([
+  initialize(users, "MOCK_USERS"),
+  initialize(appointments, "MOCK_APPOINTMENTS"),
+]);

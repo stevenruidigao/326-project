@@ -1,3 +1,4 @@
+import mock from "../api/mock/index.js";
 import * as pages from "./pages.js";
 
 export const PATH_PREFIX = "/#";
@@ -15,6 +16,13 @@ export const routes = {
 
 const loadingEl = document.getElementById("loading");
 
+/**
+ * Load a page's JS file & its HTML file (if it exists).
+ * Handles calling that page's init function & registering `<template>` in the HTML file.
+ * Defaults route to 404 if the name does not exist in `ROUTES`.
+ * @param {string} routeName route name
+ * @param {object} args route args
+ */
 export const load = async (routeName, args = {}) => {
   if (!(routeName in routes)) routeName = 404;
 
@@ -36,6 +44,12 @@ export const load = async (routeName, args = {}) => {
   loadingEl.classList.add("is-hidden");
 };
 
+/**
+ * Convert route & arguments to path (without PATH_PREFIX!)
+ * @param {string} name route name in `ROUTES`
+ * @param {object} args arguments to replace dynamic parts of path with
+ * @returns string
+ */
 export const convertRouteToPath = (name, args = {}) => {
   const route = routes[name];
 
@@ -50,9 +64,10 @@ export const convertRouteToPath = (name, args = {}) => {
 };
 
 /**
- *
+ * Convert a path (eg. `/profile/5`) to route data.
+ * Also obtains arguments from path -- eg. `data = { id: "5" }`
  * @param {string} path
- * @returns {{ name: string, data: any }}
+ * @returns {{ name: string, data: object }}
  */
 export const convertPathToRoute = (path) => {
   // fix to allow empty path is same as /
@@ -137,6 +152,12 @@ export const loadPath = (def) => {
   load(info?.route, info?.data);
 };
 
+/**
+ * Registers `<app-route>` custom element for linking
+ * and handler for changing state (backwards/forwards in history).
+ *
+ * MOCK ONLY: Waits for mock data before loading first page!
+ */
 export default () => {
   window.addEventListener("popstate", (ev) => {
     // Navigate to new/old page
@@ -144,41 +165,81 @@ export default () => {
   });
 
   // Initialize page
-  loadPath();
+  // --> wait for mock data
+  mock.then(() => loadPath());
 
+  /**
+   * Define custom element <app-route> for local SPA links
+   * Use as `<app-route name="profile" :id="5" target="_blank">go to profile of user ID 5!</app-route>`
+   */
   customElements.define(
     "app-route",
-    class extends HTMLElement {
+    class extends HTMLAnchorElement {
+      static observedAttributes = ["name", "target"];
+
+      #route;
+      #args;
+
       constructor() {
         super();
 
-        const a = document.createElement("a");
-        const route = this.getAttribute("name");
-        const args = {};
+        this._a = document.createElement("a");
+      }
 
-        for (const attr of this.attributes) {
-          if (attr.name.startsWith(":")) args[attr.name.slice(1)] = attr.value;
-        }
+      connectedCallback() {
+        this._a.addEventListener("click", (ev) => {
+          if (
+            ev.ctrlKey ||
+            ev.metaKey ||
+            this.getAttribute("target") === "_blank"
+          )
+            return;
 
-        a.addEventListener("click", (ev) => {
           ev.preventDefault();
 
-          goToRoute(route, args);
+          goToRoute(this.#route, this.#args);
 
           return false;
         });
 
-        const html = this.innerHTML;
+        for (const child of [...this.childNodes]) {
+          this._a.append(child);
+        }
 
-        this.innerHTML = "";
-        a.innerHTML = html;
+        this.appendChild(this._a);
+      }
 
-        a.setAttribute("href", convertRouteToPath(route, args));
+      // Recompute 'href' link (for new tab clicks) when parameters change
+      attributeChangedCallback() {
+        this._updateAttrs();
+      }
 
-        // const shadowRoot = this.attachShadow({ mode: "open" });
+      _updateAttrs() {
+        const route = this.getAttribute("name");
+        const args = {};
 
-        this.appendChild(a);
+        const observed = this.constructor.observedAttributes;
+
+        for (const attr of this.attributes) {
+          const { name, value } = attr;
+
+          if (name.startsWith(":")) {
+            args[name.slice(1)] = value;
+
+            // add to observed attributes
+            if (!observed.includes(name)) observed.push(name);
+          }
+        }
+
+        this.#route = route;
+        this.#args = args;
+
+        const path = convertRouteToPath(route, args);
+
+        this._a.setAttribute("href", path ? PATH_PREFIX + path : "");
+        this._a.setAttribute("target", this.getAttribute("target") || "");
       }
     },
+    { extends: "a" },
   );
 };
