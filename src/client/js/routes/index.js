@@ -52,7 +52,7 @@ export const getPreviousFile = () => previous?.file;
 export const load = async (routeName, args = {}) => {
   if (!(routeName in routes)) routeName = 404;
 
-  loadingEl.classList.remove("is-hidden");
+  loadingEl.classList.add("is-active");
 
   const route = routes[routeName];
 
@@ -76,7 +76,7 @@ export const load = async (routeName, args = {}) => {
 
   await init(args, document);
 
-  loadingEl.classList.add("is-hidden");
+  loadingEl.classList.remove("is-active");
 };
 
 /**
