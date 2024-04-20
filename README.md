@@ -10,4 +10,4 @@ This repository contains code for both Milestone 1 and Milestone 2 in src/. The 
 
 To set up this project to run locally, run `npm install` in the project root.
 
-Run `npm run milestone-01` or `npm run milestone-02` to start the server for milestone-01 and milestone-02, respectively.
+Run `npm run milestone-01` or `npm run milestone-02` to start the server for Milestone 1 and Milestone 2, respectively.
