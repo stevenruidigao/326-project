@@ -2,24 +2,74 @@
 <html lang="en">
     <head>
         <title>TutorSwap</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="preload" href="/js/index.js" as="script" crossorigin>
+        <link rel="preload" href="/js/libs/pouchdb.min.js" as="script" crossorigin>
+        <link rel="preload" href="/js/libs/pouchdb.find.min.js" as="script" crossorigin>
+
+        <link rel="preload" href="/styles/app.css" as="style" type="text/css" crossorigin>
+        <link rel="preload" href="/styles/libs/bulma.min.css" as="style" type="text/css" crossorigin>
+
         <script src="/js/index.js" type="module"></script>
-        <link rel="stylesheet" href="/styles/app.css">
+
+        <link rel="stylesheet" href="/styles/libs/bulma.min.css" crossorigin>
+        <link rel="stylesheet" href="/styles/app.css" crossorigin>
     </head>
-    <body>
+    <body class="has-navbar-fixed-top" >
         <div id="loading">
-            Loading...
+            <div class="loader-wrapper">
+                <div class="loader is-loading"></div>
+            </div>
         </div>
 
-        <nav id="navigation-bar">
-            <app-route name="home">Home</app-route>
-            <app-route name="dashboard">Dashboard</app-route>
-            <app-route name="browse">Browse</app-route>
-            <app-route name="messages">Messages</app-route>
-            <app-route name="profile">Profile</app-route>
+        <nav class="navbar is-fixed-top has-shadow" aria-label="main navigation" id="navigation-bar">
+            <div class="navbar-brand">
+                <app-route class="navbar-item" name="home">
+                    <img src="/images/logo.png" alt="logo">
+                </app-route>
+
+            <button type="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navigation-bar-menu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div id="navigation-bar-menu" class="navbar-menu">
+                <div class="navbar-start">
+                    <app-route class="navbar-item" name="dashboard">Dashboard</app-route>
+                    <app-route class="navbar-item" name="browse">Browse</app-route>
+                    <app-route class="navbar-item" name="messages">Messages</app-route>
+                    <app-route class="navbar-item" name="profile">Profile</app-route>
+                </div>
+            </div>
         </nav>
 
-        <div id="app">
+        <div id="app" class="container is-fluid">
             <!-- SPA dynamic content -->
+            <div class="skeleton-lines">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
         </div>
+
+        <footer class="footer">
+            <div class="content has-text-centered">
+              <p>
+                <strong>TutorSwap</strong>.
+                Find the source code on
+
+                <a href="https://github.com/stevenruidigao/326-project/" target="_blank" rel="nofollow noreferrer">
+                    GitHub
+                </a>.
+              </p>
+            </div>
+          </footer>
     </body>
 </html>

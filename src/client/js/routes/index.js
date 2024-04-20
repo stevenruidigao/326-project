@@ -174,7 +174,7 @@ export default () => {
    */
   customElements.define(
     "app-route",
-    class extends HTMLAnchorElement {
+    class extends HTMLElement {
       static observedAttributes = ["name", "target"];
 
       #route;
@@ -240,6 +240,5 @@ export default () => {
         this._a.setAttribute("target", this.getAttribute("target") || "");
       }
     },
-    { extends: "a" },
   );
 };
