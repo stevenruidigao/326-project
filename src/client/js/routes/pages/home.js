@@ -1,5 +1,9 @@
 import * as api from "../../api/index.js";
 
+export const onunload = async (prev, next) => {
+  console.log(`[home] unloading ${prev.file} for ${next.file}!`);
+};
+
 export default async (args) => {
   app.innerHTML = "";
 

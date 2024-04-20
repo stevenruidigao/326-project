@@ -16,6 +16,32 @@ export const routes = {
 
 const loadingEl = document.getElementById("loading");
 
+let current = null;
+let previous = null;
+
+/**
+ * Get the current loaded page
+ * @returns {?{module: { default: function, onunload?: function }, file: string, name: string, args: object }}
+ */
+export const getCurrent = () => current;
+
+/**
+ * Get the previously loaded page
+ * @returns {?{module: { default: function, onunload?: function }, file: string, name: string, args: object }}
+ */
+export const getPrevious = () => previous;
+
+/**
+ * @returns {string|undefined}
+ */
+export const getCurrentFile = () => current?.file;
+
+/**
+ *
+ * @returns {string|undefined}
+ */
+export const getPreviousFile = () => previous?.file;
+
 /**
  * Load a page's JS file & its HTML file (if it exists).
  * Handles calling that page's init function & registering `<template>` in the HTML file.
@@ -30,14 +56,23 @@ export const load = async (routeName, args = {}) => {
 
   const route = routes[routeName];
 
-  const [{ default: init }, document] = await Promise.all(
+  const [routeJS, document] = await Promise.all(
     [
       import(`./pages/${route.file}.js`),
       route.hasHTML && pages.fetchDOM(route.file),
     ].filter(Boolean),
   );
 
+  const init = routeJS.default;
+
   if (document) pages.registerCustomComponents(route.file, document);
+
+  // in case page needs to do things before being unloaded, to "reset" something
+  const next = { module: routeJS, file: route.file, name: routeName, args };
+
+  current?.module?.onunload?.(current, next);
+  previous = current;
+  current = next;
 
   await init(args, document);
 
