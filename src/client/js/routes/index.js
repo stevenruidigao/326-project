@@ -31,16 +31,25 @@ export const getCurrent = () => current;
  */
 export const getPrevious = () => previous;
 
-/**
- * @returns {string|undefined}
- */
-export const getCurrentFile = () => current?.file;
+export const beforeRouteChange = {
+  cb: [],
 
-/**
- *
- * @returns {string|undefined}
- */
-export const getPreviousFile = () => previous?.file;
+  /**
+   * @param {(route: string, args: string) => any} cb function to run when the route changes
+   * @returns {number}
+   */
+  add(cb) {
+    return this.cb.push(cb) - 1;
+  },
+
+  /**
+   * Remove a listener on before route changes
+   * @param {number} index return value of `onBeforeRouteChange()`
+   */
+  remove(index) {
+    return delete this.cb[index];
+  },
+};
 
 /**
  * Load a page's JS file & its HTML file (if it exists).
@@ -152,8 +161,13 @@ export const convertPathToRoute = (path) => {
 export const goToRoute = (name, args = {}) => {
   if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
 
-  const route = routes[name];
-  let path = convertRouteToPath(name, args);
+  // call route change callbacks before unloading current page
+  const stopChange = beforeRouteChange.cb.map((cb) => cb(name, args));
+
+  if (stopChange.includes(true)) return;
+
+  // change page location & load page afterwards
+  const path = convertRouteToPath(name, args);
 
   const data = { route: name, data: args };
 
