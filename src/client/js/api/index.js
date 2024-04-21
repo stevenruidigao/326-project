@@ -173,24 +173,46 @@ export const users = {
 };
 
 // ===== SESSION =====
+export const createSession = async (userId) => {
+  const doc = await mock.session.post({ userId });
 
-// session depends a bit on implementation
-const getSession = async () => {
-  try {
-    return await local.session.get("data");
-  } catch (err) {
-    // session is expired/nonexistent -> user is guest!
-    return null;
+  console.log("createSession", doc);
+
+  await local.set("token", doc.id);
+};
+
+export const getSession = async () => {
+  const id = await local.get("token");
+
+  if (id) {
+    try {
+      return await mock.session.get(id);
+    } catch (err) {}
   }
+
+  return null;
 };
+
 const getSessionUser = async () => {
-  const data = await getSession();
+  const session = await getSession();
 
-  if (!data?.userId) return null;
+  if (!session?.userId) return null;
 
-  // user id does not exist.
-  // TODO handle error somehow?
-  return users.get(data.userId);
+  // TODO handle error somehow if user id does not exist?
+  return users.get(session.userId);
 };
 
-export const session = { get: getSession, getUser: getSessionUser };
+export const deleteSession = async () => {
+  const session = await getSession();
+
+  if (session) await mock.session.remove(session);
+
+  await local.set("token", null);
+};
+
+export const session = {
+  create: createSession,
+  get: getSession,
+  getUser: getSessionUser,
+  delete: deleteSession,
+};

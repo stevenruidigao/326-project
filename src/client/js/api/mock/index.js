@@ -4,6 +4,7 @@ if (typeof PouchDB === "undefined") {
 
 export const users = new PouchDB("users");
 export const appointments = new PouchDB("appointments");
+export const session = new PouchDB("mock");
 
 const initialize = async (db, key) => {
   const info = await db.info();
