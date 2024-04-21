@@ -31,23 +31,40 @@ export const getCurrent = () => current;
  */
 export const getPrevious = () => previous;
 
-export const beforeRouteChange = {
-  cb: [],
+export const callbacks = {
+  beforeRouteChange: [],
+  afterPageLoad: [],
 
   /**
-   * @param {(route: string, args: string) => any} cb function to run when the route changes
+   * @param {(route: string, args: string) => boolean} cb function to run before the route changes. 'true' cancels route change
    * @returns {number}
    */
-  add(cb) {
-    return this.cb.push(cb) - 1;
+  addBefore(cb) {
+    return this.beforeRouteChange.push(cb) - 1;
   },
 
   /**
    * Remove a listener on before route changes
-   * @param {number} index return value of `onBeforeRouteChange()`
+   * @param {number} index return value of `removeBefore()`
    */
-  remove(index) {
-    return delete this.cb[index];
+  removeBefore(index) {
+    return delete this.beforeRouteChange[index];
+  },
+
+  /**
+   * @param {(route: string, args: string) => any} cb function to run after route changes
+   * @returns {number}
+   */
+  addAfter(cb) {
+    return this.afterPageLoad.push(cb) - 1;
+  },
+
+  /**
+   * Remove a listener on after route changes
+   * @param {number} index return value of `addAfter()`
+   */
+  removeAfter(index) {
+    return delete this.afterPageLoad[index];
   },
 };
 
@@ -84,6 +101,8 @@ export const load = async (routeName, args = {}) => {
   current = next;
 
   await init(args, document);
+
+  callbacks.afterPageLoad.forEach((cb) => cb(routeName, args));
 
   loadingEl.classList.remove("is-active");
 };
@@ -162,7 +181,7 @@ export const goToRoute = (name, args = {}) => {
   if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
 
   // call route change callbacks before unloading current page
-  const stopChange = beforeRouteChange.cb.map((cb) => cb(name, args));
+  const stopChange = callbacks.beforeRouteChange.map((cb) => cb(name, args));
 
   if (stopChange.includes(true)) return;
 
@@ -173,7 +192,7 @@ export const goToRoute = (name, args = {}) => {
 
   history.pushState(data, "", PATH_PREFIX + path);
 
-  return load(name);
+  return load(name, args);
 };
 
 /**
@@ -196,7 +215,7 @@ export const loadPath = (def) => {
   const path = getPath();
   const info = def || convertPathToRoute(path);
 
-  console.log("[routes] path =", path, "=>", info);
+  console.log("[routes] loadPath() path =", path, "=>", info);
 
   load(info?.route, info?.data);
 };
@@ -224,10 +243,12 @@ export default () => {
   customElements.define(
     "app-route",
     class extends HTMLElement {
-      static observedAttributes = ["name", "target"];
+      static observedAttributes = ["name", "target", "when-active"];
 
       #route;
       #args;
+
+      #onRouteChange;
 
       constructor() {
         super();
@@ -256,6 +277,14 @@ export default () => {
         }
 
         this.appendChild(this._a);
+
+        this.#onRouteChange = callbacks.addAfter(() =>
+          this._updateActiveState(),
+        );
+      }
+
+      disconnectedCallback() {
+        callbacks.removeAfter(this.#onRouteChange);
       }
 
       // Recompute 'href' link (for new tab clicks) when parameters change
@@ -287,6 +316,25 @@ export default () => {
 
         this._a.setAttribute("href", path ? PATH_PREFIX + path : "");
         this._a.setAttribute("target", this.getAttribute("target") || "");
+
+        this._updateActiveState();
+      }
+
+      _updateActiveState() {
+        // calculate whether the route name & arguments match
+        const isSameRoute = getCurrent()?.name === this.#route;
+        const currentArgsEntries = Object.entries(getCurrent()?.args || {});
+        const isSameArgs =
+          currentArgsEntries.length === Object.keys(this.#args).length &&
+          currentArgsEntries.every(([key, val]) => this.#args[key] === val);
+
+        const whenActive = this.getAttribute("when-active")?.split(" ");
+
+        if (!whenActive?.length) return;
+
+        for (const className of whenActive) {
+          this.classList.toggle(className, isSameRoute && isSameArgs);
+        }
       }
     },
   );
