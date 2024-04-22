@@ -14,6 +14,7 @@ export default (args, doc) => {
   
   const login = doc.querySelector("#login").cloneNode(true);
   
+  // TODO: Make button functional!!!
 
   /*submit.addEventListener("click", () => {
     console.log("login button clicked");
