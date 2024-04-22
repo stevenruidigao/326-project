@@ -1,3 +1,4 @@
+import "./libs/custom-elements.min.js"; // required for Safari (desktop & mobile)
 import "./libs/pouchdb.min.js";
 import "./libs/pouchdb.find.min.js";
 

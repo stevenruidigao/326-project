@@ -225,8 +225,100 @@ export const loadPath = (def) => {
   load(info?.route, info?.data);
 };
 
+export class HTMLAppRouteElement extends HTMLAnchorElement {
+  static observedAttributes = ["name", "when-active"];
+
+  #args = {};
+  #onRouteChange;
+
+  connectedCallback() {
+    this.addEventListener("click", (ev) => {
+      if (ev.ctrlKey || ev.metaKey || this.target === "_blank") return;
+
+      ev.preventDefault();
+
+      goToRoute(this.route, this.#args);
+
+      return false;
+    });
+
+    this._updateAttrs();
+
+    this.#onRouteChange = callbacks.addAfter(() => this._updateActiveState());
+  }
+
+  disconnectedCallback() {
+    callbacks.removeAfter(this.#onRouteChange);
+  }
+
+  // Recompute 'href' link (for new tab clicks) when parameters change
+  attributeChangedCallback() {
+    this._updateAttrs();
+  }
+
+  _updateAttrs() {
+    const args = {};
+
+    const observed = this.constructor.observedAttributes;
+
+    for (const attr of this.attributes) {
+      const { name, value } = attr;
+
+      if (name.startsWith(":")) {
+        args[name.slice(1)] = value;
+
+        // add to observed attributes
+        if (!observed.includes(name)) observed.push(name);
+      }
+    }
+
+    this.#args = args;
+
+    const path = convertRouteToPath(this.route, this.#args);
+
+    this.href = path ? PATH_PREFIX + path : "";
+
+    this._updateActiveState();
+  }
+
+  _updateActiveState() {
+    // calculate whether the route name & arguments match
+    const isSameRoute = getCurrent()?.name === this.route;
+    const currentArgsEntries = Object.entries(getCurrent()?.args || {});
+    const isSameArgs =
+      currentArgsEntries.length === Object.keys(this.#args).length &&
+      currentArgsEntries.every(([key, val]) => this.#args[key] === val);
+
+    const whenActive = this.getAttribute("when-active")?.split(" ");
+
+    if (!whenActive?.length) return;
+
+    for (const className of whenActive) {
+      this.classList.toggle(className, isSameRoute && isSameArgs);
+    }
+  }
+
+  get route() {
+    return this.getAttribute("route");
+  }
+
+  set route(route) {
+    this.setAttribute("route", route);
+    this._updateAttrs();
+  }
+
+  get args() {
+    return { ...this.#args };
+  }
+
+  setArg(key, value) {
+    this.setAttribute(`:${key}`, value);
+    this._updateAttrs();
+  }
+}
+
 /**
- * Registers `<app-route>` custom element for linking
+ * Registers `<a is="app-route">` custom element for linking
  * and handler for changing state (backwards/forwards in history).
  *
  * MOCK ONLY: Waits for mock data before loading first page!
@@ -243,119 +335,7 @@ export default () => {
 
   /**
    * Define custom element <app-route> for local SPA links
-   * Use as `<app-route name="profile" :id="5" target="_blank">go to profile of user ID 5!</app-route>`
+   * Use as `<a is="app-route" route="profile" :id="5" target="_blank">go to profile of user ID 5!</a>`
    */
-  customElements.define(
-    "app-route",
-    class extends HTMLElement {
-      static observedAttributes = ["name", "target", "when-active"];
-
-      #args = {};
-
-      #onRouteChange;
-
-      constructor() {
-        super();
-
-        this._a = document.createElement("a");
-      }
-
-      connectedCallback() {
-        this._a.addEventListener("click", (ev) => {
-          if (
-            ev.ctrlKey ||
-            ev.metaKey ||
-            this.getAttribute("target") === "_blank"
-          )
-            return;
-
-          ev.preventDefault();
-
-          goToRoute(this.name, this.#args);
-
-          return false;
-        });
-
-        for (const child of [...this.childNodes]) {
-          this._a.append(child);
-        }
-
-        this.appendChild(this._a);
-
-        this.#onRouteChange = callbacks.addAfter(() =>
-          this._updateActiveState(),
-        );
-      }
-
-      disconnectedCallback() {
-        callbacks.removeAfter(this.#onRouteChange);
-      }
-
-      // Recompute 'href' link (for new tab clicks) when parameters change
-      attributeChangedCallback() {
-        this._updateAttrs();
-      }
-
-      _updateAttrs() {
-        const args = {};
-
-        const observed = this.constructor.observedAttributes;
-
-        for (const attr of this.attributes) {
-          const { name, value } = attr;
-
-          if (name.startsWith(":")) {
-            args[name.slice(1)] = value;
-
-            // add to observed attributes
-            if (!observed.includes(name)) observed.push(name);
-          }
-        }
-
-        this.#args = args;
-
-        const path = convertRouteToPath(this.name, this.#args);
-
-        this._a.setAttribute("href", path ? PATH_PREFIX + path : "");
-        this._a.setAttribute("target", this.getAttribute("target") || "");
-
-        this._updateActiveState();
-      }
-
-      _updateActiveState() {
-        // calculate whether the route name & arguments match
-        const isSameRoute = getCurrent()?.name === this.name;
-        const currentArgsEntries = Object.entries(getCurrent()?.args || {});
-        const isSameArgs =
-          currentArgsEntries.length === Object.keys(this.#args).length &&
-          currentArgsEntries.every(([key, val]) => this.#args[key] === val);
-
-        const whenActive = this.getAttribute("when-active")?.split(" ");
-
-        if (!whenActive?.length) return;
-
-        for (const className of whenActive) {
-          this.classList.toggle(className, isSameRoute && isSameArgs);
-        }
-      }
-
-      get name() {
-        return this.getAttribute("name");
-      }
-
-      set name(name) {
-        this.setAttribute("name", name);
-        this._updateAttrs();
-      }
-
-      get args() {
-        return { ...this.#args };
-      }
-
-      setArg(key, value) {
-        this.setAttribute(`:${key}`, value);
-        this._updateAttrs();
-      }
-    },
-  );
+  customElements.define("app-route", HTMLAppRouteElement, { extends: "a" });
 };

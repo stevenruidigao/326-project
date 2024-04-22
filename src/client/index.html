@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="modulepreload" href="/js/index.js" as="script" type="application/javascript" crossorigin>
+        <link rel="modulepreload" href="/js/libs/custom-elements.min.js" as="script" type="application/javascript" crossorigin>
         <link rel="modulepreload" href="/js/libs/pouchdb.min.js" as="script" type="application/javascript" crossorigin>
         <link rel="modulepreload" href="/js/libs/pouchdb.find.min.js" as="script" type="application/javascript" crossorigin>
 
@@ -26,9 +27,9 @@
 
         <nav class="navbar is-fixed-top has-shadow" aria-label="main navigation" id="navigation-bar">
             <div class="navbar-brand">
-                <app-route class="navbar-item" name="home">
+                <a is="app-route" class="navbar-item" route="home">
                     <img src="/images/logo.png" alt="logo">
-                </app-route>
+                </a>
 
             <button type="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navigation-bar-menu">
                 <span aria-hidden="true"></span>
@@ -40,10 +41,10 @@
 
             <div id="navigation-bar-menu" class="navbar-menu">
                 <div class="navbar-start">
-                    <app-route class="navbar-item" when-active="is-active is-tab" name="dashboard">Dashboard</app-route>
-                    <app-route class="navbar-item" when-active="is-active is-tab" name="browse">Browse</app-route>
-                    <app-route class="navbar-item" when-active="is-active is-tab" name="messages">Messages</app-route>
-                    <app-route class="navbar-item" when-active="is-active is-tab" name="profile">Profile</app-route>
+                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="dashboard">Dashboard</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="browse">Browse</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="messages">Messages</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="profile">Profile</a>
                 </div>
 
                 <div class="navbar-end">
@@ -54,12 +55,12 @@
                         </div>
                     </div>
                     <div class="navbar-item has-dropdown is-hoverable is-hidden" id="navbar-user-actions">
-                        <app-route name="profile" class="navbar-link">
+                        <a is="app-route" route="profile" class="navbar-link">
                             <span>???</span>
-                        </app-route>
+                        </a>
 
                         <div class="navbar-dropdown">
-                            <app-route name="logout" class="navbar-item">Log out</app-route>
+                            <a is="app-route" route="logout" class="navbar-item">Log out</a>
                         </div>
                     </div>
                 </div>
