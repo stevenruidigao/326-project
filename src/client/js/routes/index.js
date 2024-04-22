@@ -1,5 +1,6 @@
 import mock from "../api/mock/index.js";
 import * as layout from "../layout.js";
+
 import * as pages from "./pages.js";
 
 export const PATH_PREFIX = "/#";
@@ -56,7 +57,8 @@ export const callbacks = {
   afterPageLoad: [],
 
   /**
-   * @param {(route: string, args: string) => boolean} cb function to run before the route changes. 'true' cancels route change
+   * @param {(route: string, args: string) => boolean} cb function to run before
+   *     the route changes. 'true' cancels route change
    * @returns {number}
    */
   addBefore(cb) {
@@ -72,7 +74,8 @@ export const callbacks = {
   },
 
   /**
-   * @param {(route: string, args: string) => any} cb function to run after route changes
+   * @param {(route: string, args: string) => any} cb function to run after
+   *     route changes
    * @returns {number}
    */
   addAfter(cb) {
@@ -90,8 +93,8 @@ export const callbacks = {
 
 /**
  * Load a page's JS file & its HTML file (if it exists).
- * Handles calling that page's init function & registering `<template>` in the HTML file.
- * Defaults route to 404 if the name does not exist in `ROUTES`.
+ * Handles calling that page's init function & registering `<template>` in the
+ * HTML file. Defaults route to 404 if the name does not exist in `ROUTES`.
  * @param {string} routeName route name
  * @param {object?} args route args
  * @param {URLSearchParams?} search search params (?key=val&key2=val2)
@@ -215,7 +218,8 @@ export const convertPathToRoute = (origPath) => {
 };
 
 /**
- * @param {String} name the name of the route to navigate to, must exist in routes
+ * @param {String} name the name of the route to navigate to, must exist in
+ *     routes
  * @param {Object} args arguments to pass to route
  * @param {URLSearchParams} search
  * @example goToRoute(user, { id: 5 });
@@ -343,7 +347,8 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
       currentArgsEntries.length === Object.keys(this.#args).length &&
       currentArgsEntries.every(([key, val]) => this.#args[key] === val);
 
-    // we only care if the search params are the same or not if any were specified in the <a> itself!
+    // we only care if the search params are the same or not if any were
+    // specified in the <a> itself!
     const currentSearch = getCurrent()?.search;
     currentSearch?.sort();
     this.#search?.sort();
@@ -409,7 +414,8 @@ export default () => {
 
   /**
    * Define custom element <app-route> for local SPA links
-   * Use as `<a is="app-route" route="profile" :id="5" target="_blank">go to profile of user ID 5!</a>`
+   * Use as `<a is="app-route" route="profile" :id="5" target="_blank">go to
+   * profile of user ID 5!</a>`
    */
   customElements.define("app-route", HTMLAppRouteElement, { extends: "a" });
 };

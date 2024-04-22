@@ -1,10 +1,11 @@
-import * as mock from "./mock/index.js";
 import * as local from "./local.js";
+import * as mock from "./mock/index.js";
 
 /*
-    NOTE: .find() doesn't return total_rows equivalent (since we're querying data)
-    so we don't know when pagination ends until we reach a page with no rows.
-    Those queries will have to likely implement a "show more" button/infinite scrolling on the frontend
+    NOTE: .find() doesn't return total_rows equivalent (since we're querying
+   data) so we don't know when pagination ends until we reach a page with no
+   rows. Those queries will have to likely implement a "show more"
+   button/infinite scrolling on the frontend
 */
 const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
@@ -71,7 +72,8 @@ const withLearnerAppointments = (userId, page = 1) =>
   );
 
 // modify
-// -> default attrs probably? but those would happen in backend anyways (validation & stuff)
+// -> default attrs probably? but those would happen in backend anyways
+// (validation & stuff)
 const createAppointment = (data) =>
   mock.appointments.post({
     ...data,
