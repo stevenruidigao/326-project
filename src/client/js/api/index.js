@@ -173,6 +173,16 @@ export const users = {
 };
 
 // ===== SESSION =====
+
+// session user data to prevent multiple fetches
+let currentUser = undefined;
+
+export const setSessionCurrent = (u) => (currentUser = u);
+export const getSessionCurrent = async () => {
+  if (currentUser !== undefined) return currentUser;
+  return setSessionCurrent(await getSessionUser());
+};
+
 export const createSession = async (userId) => {
   const doc = await mock.session.post({ userId });
 
@@ -208,6 +218,8 @@ export const deleteSession = async () => {
   if (session) await mock.session.remove(session);
 
   await local.set("token", null);
+
+  setSessionCurrent(null);
 };
 
 export const session = {
@@ -215,4 +227,6 @@ export const session = {
   get: getSession,
   getUser: getSessionUser,
   delete: deleteSession,
+
+  current: getSessionCurrent,
 };

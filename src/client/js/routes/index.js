@@ -1,4 +1,5 @@
 import mock from "../api/mock/index.js";
+import * as layout from "../layout.js";
 import * as pages from "./pages.js";
 
 export const PATH_PREFIX = "/#";
@@ -11,6 +12,9 @@ export const routes = {
   conversation: { path: "/messages/:id", file: "messages" },
   profile: { path: "/profile", file: "profile" },
   user: { path: "/profile/:id", file: "profile" },
+
+  logout: { path: "/auth/logout", file: "logout" },
+
   404: { file: "404" },
 };
 
@@ -82,12 +86,11 @@ export const load = async (routeName, args = {}) => {
 
   const route = routes[routeName];
 
-  const [routeJS, document] = await Promise.all(
-    [
-      import(`./pages/${route.file}.js`),
-      route.hasHTML && pages.fetchDOM(route.file),
-    ].filter(Boolean),
-  );
+  const [routeJS, document] = await Promise.all([
+    import(`./pages/${route.file}.js`),
+    route.hasHTML && pages.fetchDOM(route.file),
+    layout.onAppLoad(), // the logic inside only runs once!
+  ]);
 
   const init = routeJS.default;
 
@@ -105,6 +108,8 @@ export const load = async (routeName, args = {}) => {
   callbacks.afterPageLoad.forEach((cb) => cb(routeName, args));
 
   loadingEl.classList.remove("is-active");
+
+  await routeJS?.onload?.(routeName, args);
 };
 
 /**
