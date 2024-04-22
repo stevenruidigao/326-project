@@ -72,9 +72,11 @@ export default (args, doc) => {
       errors.push(`The ${key} is required.`);
     }
 
-    if (errors.length) return showErrors(errors);
+    const next = errors.length
+      ? Promise.resolve(showErrors(errors))
+      : register(Object.fromEntries(data.entries()));
 
-    register(Object.fromEntries(data.entries()))
+    next
       .then(() => setupNavbar())
       .finally(() => submitButton.classList.remove("is-loading"));
   });
