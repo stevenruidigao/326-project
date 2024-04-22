@@ -49,3 +49,6 @@ export const MOCK_APPOINTMENTS = [
     v.isCancelled = false;
     return v;
 });
+
+
+export const MOCK_MESSAGES = [];

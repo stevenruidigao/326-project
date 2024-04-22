@@ -5,6 +5,7 @@ if (typeof PouchDB === "undefined") {
 export const users = new PouchDB("users");
 export const appointments = new PouchDB("appointments");
 export const session = new PouchDB("mock");
+export const messages = new PouchDB("messages");
 
 const initialize = async (db, key) => {
   const info = await db.info();
@@ -21,7 +22,10 @@ const initialize = async (db, key) => {
   }
 };
 
+// used to allow other files to know the status of mock api
+// allows them to wait for mock api to initialize first
 export default Promise.all([
   initialize(users, "MOCK_USERS"),
   initialize(appointments, "MOCK_APPOINTMENTS"),
+  initialize(messages, "MOCK_MESSAGES"),
 ]);
