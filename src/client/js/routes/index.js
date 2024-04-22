@@ -250,8 +250,7 @@ export default () => {
     class extends HTMLElement {
       static observedAttributes = ["name", "target", "when-active"];
 
-      #route;
-      #args;
+      #args = {};
 
       #onRouteChange;
 
@@ -272,7 +271,7 @@ export default () => {
 
           ev.preventDefault();
 
-          goToRoute(this.#route, this.#args);
+          goToRoute(this.name, this.#args);
 
           return false;
         });
@@ -298,7 +297,6 @@ export default () => {
       }
 
       _updateAttrs() {
-        const route = this.getAttribute("name");
         const args = {};
 
         const observed = this.constructor.observedAttributes;
@@ -314,10 +312,9 @@ export default () => {
           }
         }
 
-        this.#route = route;
         this.#args = args;
 
-        const path = convertRouteToPath(route, args);
+        const path = convertRouteToPath(this.name, this.#args);
 
         this._a.setAttribute("href", path ? PATH_PREFIX + path : "");
         this._a.setAttribute("target", this.getAttribute("target") || "");
@@ -327,7 +324,7 @@ export default () => {
 
       _updateActiveState() {
         // calculate whether the route name & arguments match
-        const isSameRoute = getCurrent()?.name === this.#route;
+        const isSameRoute = getCurrent()?.name === this.name;
         const currentArgsEntries = Object.entries(getCurrent()?.args || {});
         const isSameArgs =
           currentArgsEntries.length === Object.keys(this.#args).length &&
@@ -340,6 +337,24 @@ export default () => {
         for (const className of whenActive) {
           this.classList.toggle(className, isSameRoute && isSameArgs);
         }
+      }
+
+      get name() {
+        return this.getAttribute("name");
+      }
+
+      set name(name) {
+        this.setAttribute("name", name);
+        this._updateAttrs();
+      }
+
+      get args() {
+        return { ...this.#args };
+      }
+
+      setArg(key, value) {
+        this.setAttribute(`:${key}`, value);
+        this._updateAttrs();
       }
     },
   );
