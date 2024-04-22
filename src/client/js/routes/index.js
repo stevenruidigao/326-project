@@ -8,6 +8,7 @@ export const routes = {
   home: { path: "/", file: "home", hasHTML: true },
   dashboard: { path: "/dashboard", file: "dashboard" },
   messages: { path: "/messages", file: "messages" },
+  browse: { path: "/browse", file: "browse", hasHTML: true },
   conversation: { path: "/messages/:id", file: "messages" },
   profile: { path: "/profile", file: "profile" },
   user: { path: "/profile/:id", file: "profile" },
@@ -246,7 +247,7 @@ export default () => {
       static observedAttributes = ["name", "target", "when-active"];
 
       #route;
-      #args;
+      #args = {};
 
       #onRouteChange;
 
