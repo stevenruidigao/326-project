@@ -14,6 +14,7 @@ export const routes = {
   user: { path: "/profile/:id", file: "profile" },
 
   logout: { path: "/auth/logout", file: "logout" },
+  signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
 
   404: { file: "404" },
 };

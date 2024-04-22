@@ -1,0 +1,41 @@
+<div id="signup-form" class="container my-5">
+    <h1 class="title">Sign Up</h1>
+
+    <form>
+        <div class="field">
+            <label for="input-name" class="label">Name</label>
+            <div class="control">
+                <input type="text" class="input" required name="name" id="input-name" autocomplete="name" autofocus>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="input-username" class="label">Username</label>
+            <div class="control">
+                <input type="text" class="input" required name="username" id="input-username" autocomplete="username">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="input-email" class="label">Email</label>
+            <div class="control">
+                <input type="email" class="input" required name="email" id="input-email" autocomplete="email" placeholder="email@domain.com">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="input-password" class="label">Password</label>
+            <div class="control">
+                <input type="password" class="input" required name="password" id="input-password" autocomplete="new-password" placeholder="***">
+            </div>
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+              <button type="submit" class="button is-link">Submit</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="notification is-danger is-hidden" id="signup-form-errors"></div>
+</div>

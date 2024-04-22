@@ -114,10 +114,38 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  hadle password in backend
 
-const registerUser = ({ name, username, email, password }) =>
-  mock.users.post({ name, username, email });
+const registerUser = async ({ name, username, email, password }) => {
+  const [emailOut, usernameOut] = await Promise.all([
+    mock.users.find({
+      selector: {
+        email: { $eq: email },
+      },
+      limit: 1,
+    }),
+
+    mock.users.find({
+      selector: {
+        username: { $eq: username },
+      },
+      limit: 1,
+    }),
+  ]);
+
+  if (emailOut.docs.length) throw new Error("User already exists with email");
+  else if (usernameOut.docs.length)
+    throw new Error("User already exists with username");
+
+  return mock.users.post({ name, username, email });
+};
 
 const getUser = (id) => mock.users.get(id);
+
+const getUserByEmailOrUsername = (email) =>
+  mock.users.find({
+    selector: {
+      email: { $eq: email },
+    },
+  });
 
 const allUsers = (page = 1) =>
   userPagination(page, (opts) =>
@@ -189,6 +217,8 @@ export const createSession = async (userId) => {
   console.log("createSession", doc);
 
   await local.set("token", doc.id);
+
+  setSessionCurrent(undefined);
 };
 
 export const getSession = async () => {
@@ -208,8 +238,8 @@ const getSessionUser = async () => {
 
   if (!session?.userId) return null;
 
-  // TODO handle error somehow if user id does not exist?
-  return users.get(session.userId);
+  // TODO handle error better somehow if user id does not exist?
+  return users.get(session.userId).catch(() => null);
 };
 
 export const deleteSession = async () => {
