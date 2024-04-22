@@ -140,13 +140,6 @@ const registerUser = async ({ name, username, email, password }) => {
 
 const getUser = (id) => mock.users.get(id);
 
-const getUserByEmailOrUsername = (email) =>
-  mock.users.find({
-    selector: {
-      email: { $eq: email },
-    },
-  });
-
 const allUsers = (page = 1) =>
   userPagination(page, (opts) =>
     mock.users.allDocs({
