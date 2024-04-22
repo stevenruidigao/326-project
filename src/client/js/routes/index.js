@@ -7,17 +7,17 @@ export const PATH_PREFIX = "/#";
 export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 
 export const routes = {
-  home : {path : "/", file : "home", hasHTML : true},
-  dashboard : {path : "/dashboard", file : "dashboard"},
-  messages : {path : "/messages", file : "messages"},
-  conversation : {path : "/messages/:id", file : "messages"},
-  profile : {path : "/profile", file : "profile"},
-  user : {path : "/profile/:id", file : "profile"},
+  home: { path: "/", file: "home", hasHTML: true },
+  dashboard: { path: "/dashboard", file: "dashboard" },
+  messages: { path: "/messages", file: "messages" },
+  conversation: { path: "/messages/:id", file: "messages" },
+  profile: { path: "/profile", file: "profile" },
+  user: { path: "/profile/:id", file: "profile" },
 
-  logout : {path : "/auth/logout", file : "logout"},
-  signup : {path : "/auth/signup", file : "auth/signup", hasHTML : true},
+  logout: { path: "/auth/logout", file: "logout" },
+  signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
 
-  404 : {file : "404"},
+  404: { file: "404" },
 };
 
 const loadingEl = document.getElementById("loading");
@@ -53,34 +53,42 @@ export const getCurrent = () => current;
 export const getPrevious = () => previous;
 
 export const callbacks = {
-  beforeRouteChange : [],
-  afterPageLoad : [],
+  beforeRouteChange: [],
+  afterPageLoad: [],
 
   /**
    * @param {(route: string, args: string) => boolean} cb function to run before
    *     the route changes. 'true' cancels route change
    * @returns {number}
    */
-  addBefore(cb) { return this.beforeRouteChange.push(cb) - 1;},
+  addBefore(cb) {
+    return this.beforeRouteChange.push(cb) - 1;
+  },
 
   /**
    * Remove a listener on before route changes
    * @param {number} index return value of `removeBefore()`
    */
-  removeBefore(index) { return delete this.beforeRouteChange[index];},
+  removeBefore(index) {
+    return delete this.beforeRouteChange[index];
+  },
 
   /**
    * @param {(route: string, args: string) => any} cb function to run after
    *     route changes
    * @returns {number}
    */
-  addAfter(cb) { return this.afterPageLoad.push(cb) - 1;},
+  addAfter(cb) {
+    return this.afterPageLoad.push(cb) - 1;
+  },
 
   /**
    * Remove a listener on after route changes
    * @param {number} index return value of `addAfter()`
    */
-  removeAfter(index) { return delete this.afterPageLoad[index];},
+  removeAfter(index) {
+    return delete this.afterPageLoad[index];
+  },
 };
 
 /**
@@ -94,8 +102,7 @@ export const callbacks = {
 export const load = async (routeName, args = {}, search) => {
   args ||= {};
 
-  if (!(routeName in routes))
-    routeName = 404;
+  if (!(routeName in routes)) routeName = 404;
 
   loadingEl.classList.add("is-active");
 
@@ -109,17 +116,16 @@ export const load = async (routeName, args = {}, search) => {
 
   const init = routeJS.default;
 
-  if (document)
-    pages.registerCustomComponents(route.file, document);
+  if (document) pages.registerCustomComponents(route.file, document);
 
   // in case page needs to do things before being unloaded, to "reset" something
   const next = {
-    module : routeJS,
-    file : route.file,
-    name : routeName,
+    module: routeJS,
+    file: route.file,
+    name: routeName,
     args,
-    location : convertRouteToPath(routeName, args, search),
-    path : convertRouteToPath(routeName, args),
+    location: convertRouteToPath(routeName, args, search),
+    path: convertRouteToPath(routeName, args),
     search,
   };
 
@@ -148,16 +154,14 @@ export const convertRouteToPath = (name, args, search) => {
 
   const route = routes[name];
 
-  if (!route)
-    return null;
+  if (!route) return null;
 
   let path = route.path;
 
   for (const key of Object.keys(args))
     path = path.replace(`:${key}`, args[key]);
 
-  if (search)
-    path += "?" + search.toString();
+  if (search) path += "?" + search.toString();
 
   return path;
 };
@@ -171,30 +175,27 @@ export const convertRouteToPath = (name, args, search) => {
 export const convertPathToRoute = (origPath) => {
   // fix to allow empty path is same as /
   const [path, search] = origPath?.split("?") || [];
-  const splitPath = path ? path.split("/") : [ "", "" ];
+  const splitPath = path ? path.split("/") : ["", ""];
 
   for (const routeName of Object.keys(routes)) {
     const route = routes[routeName];
     const routePath = route.path;
 
     // support 404 and other routes like it
-    if (!routePath)
-      continue;
+    if (!routePath) continue;
 
     const splitRoutePath = routePath.split("/");
     const args = {};
 
     let match = true;
 
-    if (splitPath.length !== splitRoutePath.length)
-      continue;
+    if (splitPath.length !== splitRoutePath.length) continue;
 
     // check if current route matches path & obtain args from it
     for (let i = 0; i < splitRoutePath.length; i++) {
       const part = splitRoutePath[i];
 
-      if (part === splitPath[i])
-        continue;
+      if (part === splitPath[i]) continue;
       else if (part.startsWith(":")) {
         args[part.slice(1)] = splitPath[i];
       } else {
@@ -205,9 +206,9 @@ export const convertPathToRoute = (origPath) => {
 
     if (match) {
       return {
-        route : routeName,
-        data : args,
-        search : search && new URLSearchParams(search),
+        route: routeName,
+        data: args,
+        search: search && new URLSearchParams(search),
       };
     }
   }
@@ -226,19 +227,17 @@ export const convertPathToRoute = (origPath) => {
 export const goToRoute = (name, args, search) => {
   args ||= {};
 
-  if (!(name in routes))
-    throw new Error(`Route '${name}' does not exist.`);
+  if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
 
   // call route change callbacks before unloading current page
   const stopChange = callbacks.beforeRouteChange.map((cb) => cb(name, args));
 
-  if (stopChange.includes(true))
-    return;
+  if (stopChange.includes(true)) return;
 
   // change page location & load page afterwards
   const path = convertRouteToPath(name, args, search);
 
-  const data = {route : name, data : args, search : search?.toString()};
+  const data = { route: name, data: args, search: search?.toString() };
 
   history.pushState(data, "", PATH_PREFIX + path);
 
@@ -253,9 +252,9 @@ export const goToRoute = (name, args, search) => {
  */
 export const getPath = (force = false) => {
   if (!force && current?.path)
-    return [ current.path, current.search ].filter(Boolean).join("?");
+    return [current.path, current.search].filter(Boolean).join("?");
 
-  const {href, host} = document.location;
+  const { href, host } = document.location;
   const index = href.indexOf(host);
 
   return href.slice(index + host.length).replace(PATH_PREFIX_REGEX, "");
@@ -280,7 +279,7 @@ export const loadPath = (def) => {
 };
 
 export class HTMLAppRouteElement extends HTMLAnchorElement {
-  static observedAttributes = [ "name", "when-active", "search" ];
+  static observedAttributes = ["name", "when-active", "search"];
 
   #args = {};
   #search = null;
@@ -288,8 +287,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
 
   connectedCallback() {
     this.addEventListener("click", (ev) => {
-      if (ev.ctrlKey || ev.metaKey || this.target === "_blank")
-        return;
+      if (ev.ctrlKey || ev.metaKey || this.target === "_blank") return;
 
       ev.preventDefault();
 
@@ -303,10 +301,14 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     this.#onRouteChange = callbacks.addAfter(() => this._updateActiveState());
   }
 
-  disconnectedCallback() { callbacks.removeAfter(this.#onRouteChange); }
+  disconnectedCallback() {
+    callbacks.removeAfter(this.#onRouteChange);
+  }
 
   // Recompute 'href' link (for new tab clicks) when parameters change
-  attributeChangedCallback() { this._updateAttrs(); }
+  attributeChangedCallback() {
+    this._updateAttrs();
+  }
 
   _updateAttrs() {
     // update url params
@@ -315,14 +317,13 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     const observed = this.constructor.observedAttributes;
 
     for (const attr of this.attributes) {
-      const {name, value} = attr;
+      const { name, value } = attr;
 
       if (name.startsWith(":")) {
         args[name.slice(1)] = value;
 
         // add to observed attributes
-        if (!observed.includes(name))
-          observed.push(name);
+        if (!observed.includes(name)) observed.push(name);
       }
     }
 
@@ -343,8 +344,8 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     const isSameRoute = getCurrent()?.name === this.route;
     const currentArgsEntries = Object.entries(getCurrent()?.args || {});
     const isSameArgs =
-        currentArgsEntries.length === Object.keys(this.#args).length &&
-        currentArgsEntries.every(([ key, val ]) => this.#args[key] === val);
+      currentArgsEntries.length === Object.keys(this.#args).length &&
+      currentArgsEntries.every(([key, val]) => this.#args[key] === val);
 
     // we only care if the search params are the same or not if any were
     // specified in the <a> itself!
@@ -352,37 +353,42 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     currentSearch?.sort();
     this.#search?.sort();
     const isSameSearch =
-        !this.#search ||
-        (currentSearch && currentSearch.toString() === this.#search.toString());
+      !this.#search ||
+      (currentSearch && currentSearch.toString() === this.#search.toString());
 
     const whenActive = this.getAttribute("when-active")?.split(" ");
 
-    if (!whenActive?.length)
-      return;
+    if (!whenActive?.length) return;
 
     for (const className of whenActive) {
       this.classList.toggle(
-          className,
-          !!(isSameRoute && isSameArgs && isSameSearch),
+        className,
+        !!(isSameRoute && isSameArgs && isSameSearch),
       );
     }
   }
 
-  get route() { return this.getAttribute("route"); }
+  get route() {
+    return this.getAttribute("route");
+  }
 
   set route(route) {
     this.setAttribute("route", route);
     this._updateAttrs();
   }
 
-  get args() { return {...this.#args}; }
+  get args() {
+    return { ...this.#args };
+  }
 
   setArg(key, value) {
     this.setAttribute(`:${key}`, value);
     this._updateAttrs();
   }
 
-  get search() { return this.getAttribute("search"); }
+  get search() {
+    return this.getAttribute("search");
+  }
 
   set search(value) {
     this.setAttribute("search", String(value));
@@ -411,5 +417,5 @@ export default () => {
    * Use as `<a is="app-route" route="profile" :id="5" target="_blank">go to
    * profile of user ID 5!</a>`
    */
-  customElements.define("app-route", HTMLAppRouteElement, {extends : "a"});
+  customElements.define("app-route", HTMLAppRouteElement, { extends: "a" });
 };
