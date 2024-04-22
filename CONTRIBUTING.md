@@ -9,10 +9,10 @@ _These paths are all under `src/client`_
 Use the `app-route` custom component for app links
 
 ```html
-<a is="app-route route="ROUTENAME" :arg="VALUE" when-active="is-active">link</a>
+<a is="app-route route="ROUTENAME" :arg="VALUE" search="key=value&key2=val2" when-active="is-active">link</a>
 ```
 
-Use `goToRoute(name, args)` and `getPath()` from `js/routes/index.js` as necessary.
+Use `goToRoute(name, args, search)` and `getPath()` from `js/routes/index.js` as necessary.
 
 - The `load*()` functions load a page without changing the location address! Use only if applicable
 - `when-active` attribute adds those classnames to the `app-route` element (not the child `<a>`!) if the route name & args match exactly

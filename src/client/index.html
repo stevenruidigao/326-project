@@ -27,7 +27,7 @@
 
         <nav class="navbar is-fixed-top has-shadow" aria-label="main navigation" id="navigation-bar">
             <div class="navbar-brand">
-                <a is="app-route" class="navbar-item" route="home">
+                <a is="app-route" class="navbar-item" route="home" when-active="is-active">
                     <img src="/images/logo.png" alt="logo">
                 </a>
 
@@ -41,10 +41,10 @@
 
             <div id="navigation-bar-menu" class="navbar-menu">
                 <div class="navbar-start">
-                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="dashboard">Dashboard</a>
-                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="browse">Browse</a>
-                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="messages">Messages</a>
-                    <a is="app-route" class="navbar-item" when-active="is-active is-tab" route="profile">Profile</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active" route="dashboard">Dashboard</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active" route="browse">Browse</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active" route="messages">Messages</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active" route="profile">Profile</a>
                 </div>
 
                 <div class="navbar-end">
