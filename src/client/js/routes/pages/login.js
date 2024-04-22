@@ -1,4 +1,5 @@
 import { app } from "../helper.js";
+import { goToRoute } from "../index.js";
 
 export default (args, doc) => {
   app.innerHTML = "";
@@ -11,30 +12,19 @@ export default (args, doc) => {
   // doc is DocumentFragment of corresponding HTML file
   // can querySelector, etc... to add to app
   
+  const login = doc.querySelector("#login").cloneNode(true);
   
 
-  const name = document.createElement("input");
-  name.id = "login-name";
-  
-  const nameLabel = document.createElement("label");
-  nameLabel.innerText = "Username: ";
-  nameLabel.htmlFor = "login-name";
-
-  const pwd = document.createElement("input");
-  pwd.type="password";
-  pwd.id = "login-pwd";
-
-  const pwdLabel = document.createElement("label");
-  pwdLabel.innerText = "Password: ";
-  pwdLabel.htmlFor = "login-pwd";
-  
-  const submit = document.createElement("button");
-  submit.textContent = "Log in";
-  submit.addEventListener("click", () => {
+  /*submit.addEventListener("click", () => {
     console.log("login button clicked");
-  });
+    // TODO: Display loading screen while waiting
+    // TODO: Communicate to server
+    // Create a session? 
+    goToRoute("home"); // Temporary
+    // Remove this event listener before it's deleted?
+  });*/
 
-  [nameLabel, name, document.createElement("br"), pwdLabel, pwd, document.createElement("br"), submit].forEach(x => app.appendChild(x));
+  app.appendChild(login);
 
   
 };
