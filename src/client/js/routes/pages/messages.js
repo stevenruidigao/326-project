@@ -13,15 +13,19 @@ const cleanId = (arg) => {
 };
 
 export const onunload = async (prev, next) => {
+  // TODO: check if going from messages --> messages, if so, don't unload
+  // would get rid of websockets connection when leaving messages
   console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
 };
 
-const sendMessage = async (msg, fromId, toId) => 
-  api.messages.create({
+const sendMessage = async (msg, fromId, toId) => {
+  return api.messages.create({
     text: msg,
     fromId,
     toId,
   });
+}
+
 
 export default async (args, doc) => {
   app.innerHTML = "";
@@ -92,6 +96,7 @@ export default async (args, doc) => {
     usernameEl.innerText = otherUser.name;
     
     const messageEl = document.createElement("span");
+    messageEl.classList.add("msg-preview-text");
     messageEl.setAttribute("slot", "preview");
     messageEl.innerText = lastMsg.text;
     
@@ -105,6 +110,7 @@ export default async (args, doc) => {
   convoWrapperEl.setAttribute("id", "conversation-wrapper");
   app.appendChild(convoWrapperEl);
 
+  // either render a conversation or a blank conversation
   try {
     // clean up the id of other user (treats garbage id as undefined)
     const otherUserId = cleanId(args.id);
@@ -112,14 +118,13 @@ export default async (args, doc) => {
     // check to see if the other user exists, if doesn't error, continue rendering
     const otherUser = await api.users.get(otherUserId);
     
-    // TODO: render the full conversation specified
 
     // render the frame to hold the conversation
     const convoEl = doc.getElementById("conversation").cloneNode(true);
     convoWrapperEl.appendChild(convoEl);
 
     const convoHeaderEl = convoEl.querySelector("#convo-header");
-    const messageContainerEl = convoEl.querySelector("#message-container");
+    const messageContainerEl = convoEl.querySelector("#message-container"); // FIXME: can probably get rid of this
     const messageInputEl = convoEl.querySelector("#message-form");
 
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
@@ -129,8 +134,23 @@ export default async (args, doc) => {
     console.log("messageContainerEl", messageContainerEl);
     console.log("messageInputEl", messageInputEl);
 
-    if (conversations[otherUserId]) {
-      conversations[otherUserId].forEach((msg) => {
+    
+    const renderNewMessage = async (msg, isActiveConvo=false, updateSidebar=true, isInitialRender=false) => {
+      // update the sidebar preview with the new message
+      // FIXME: check if this code actually runs correctly (might not be able to be checked until websockets is implemented, may have to just do a manual wait 5 seconds then trigger a message send to see if the preview updates)
+      if (updateSidebar) {
+        // get the preview element
+        const previewEl = document.getElementById(`preview-${msg.fromId === user._id ? msg.toId : msg.fromId}`);
+        // get the message element
+        const messageEl = previewEl.querySelector("span.msg-preview-text");
+        // update the message element
+        messageEl.innerText = msg.text;
+      }
+
+      if (isActiveConvo) {
+        // TODO: also render message in the conversation
+        console.log("rendering new message in conversation");
+
         const messageEl = document.createElement("messages-message");
 
         const msgName = msg.fromId === user._id ? user.name : otherUser.name;
@@ -147,30 +167,43 @@ export default async (args, doc) => {
         messageEl.appendChild(messageContentEl);
         
 
-        messageContainerEl.appendChild(messageEl);
+        isInitialRender ? messageContainerEl.appendChild(messageEl) : messageContainerEl.prepend(messageEl);
+
+      }
+    };
+
+
+    // FIXME: can probably use a question mark to make this more readable
+    if (conversations[otherUserId]) {
+      conversations[otherUserId].forEach((msg) => {
+        renderNewMessage(msg, true, false, true);
+        // FIXME: not sure why using parameter names doesn't work
+        // renderNewMessage(messageContainerEl, msg, isActiveConvo=true, updateSidebar=false);
       });
 
     }
     else {
       console.log(`[messages] no messages found between user ${user._id} and ${otherUserId}`);
-    }
-
-    // look for messages between the two users
-      // if messages found:
-        // render the conversation
-      // else: if no messages found
+      // TODO: else: if no messages found
         // create an empty conversation -- consider adding a ui bit to prompt "start the conversation!"
         // (allow user to send message to other user)
         // create a blank conversation in the sidebar
+    }
+
 
     // add event listener to send messages
-    messageInputEl.querySelector("#send-button").addEventListener("click", async (e) => {
+    // TODO: instead listen to submit event on form
+    // messageInputEl.querySelector("#send-button").addEventListener("click", async (e) => {
+    messageInputEl.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const msg = messageInputEl.querySelector("#message-box").value;
-      if (!msg) return;
-      await sendMessage(msg, user._id, otherUserId);
+      const msgText = messageInputEl.querySelector("#message-box").value;
+      if (!msgText) return;
+      const sentMsg = await sendMessage(msgText, user._id, otherUserId);
       // clear the message input
       messageInputEl.querySelector("#message-box").value = "";
+
+      // render the new message in the conversation
+      renderNewMessage(sentMsg, true, true);
     });
 
     // highlight the other user in the side bar (add a class)
