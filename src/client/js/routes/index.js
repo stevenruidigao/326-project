@@ -15,7 +15,7 @@ export const routes = {
   conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
   profile: { path: "/profile", file: "profile" },
   user: { path: "/profile/:id", file: "profile" },
-
+  login: {path: "/auth/login", file: "auth/login", hasHTML: true },
   logout: { path: "/auth/logout", file: "logout" },
   signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
 

@@ -164,6 +164,19 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  handle password in backend
 
+const loginUser = async ({username, password}) => {
+  const results = await mock.users.find({
+    selector: {
+      username: { $eq: username },
+      //password: { $eq: password }
+    },
+    limit: 1
+  });
+  if (results.docs.length < 1) throw new Error("No user found with that username and password");
+  console.log(results);//
+  return results.docs[0];
+};
+
 const registerUser = async ({ name, username, email, password }) => {
   const [emailOut, usernameOut] = await Promise.all([
     mock.users.find({
@@ -236,6 +249,7 @@ const updateUser = async (id, data) => {
 };
 
 export const users = {
+  login: loginUser,
   register: registerUser,
   get: getUser,
   all: allUsers,
