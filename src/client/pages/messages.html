@@ -20,14 +20,14 @@
 
 <!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
-    <!-- TODO: add a header that indicates who you're chatting with -->
+    <!-- TODO: consider making this a link to their profile -->
     <div id="convo-header">
         <h2 id="convo-name">Chat with ???</h2>
     </div>
     <div id="message-container"></div>
     <form id="message-form">
         <input type="text" id="message-box" placeholder="Type a message...">
-        <button type="submit" id="send-button">Send</button>
+        <button type="button" id="send-button">Send</button>
     </form>
 </div>
 
@@ -77,7 +77,13 @@
 
 <!-- template for each individual message rendered in a conversation -->
 <template id="message">
-    <div class="user">
+    <div class="msg-from">
+        <p><slot name="name-from">???</slot></p>
+    </div>
+    <div class="msg-content">
+        <p><slot name="msg-content">???</slot></p>
+    </div>
+    <!-- <div class="user">
         <p>Message from <slot name="name" class="name">???</slot></p>
 
         <a is="app-route" route="profile">profile</a>
@@ -86,5 +92,5 @@
         <pre class="content">
             <slot name="skills">Unknown content</slot>
         </pre>
-    </div>
+    </div> -->
 </template>
