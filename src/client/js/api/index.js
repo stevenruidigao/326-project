@@ -112,7 +112,7 @@ export const appointments = {
 const MESSAGES_PAGE_SIZE = 10;
 const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
-// TODO: figure out what functions to implement here
+const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
 
 const getAllMessagesInvolvingUser = (userId) =>
   mock.messages.find({
@@ -137,9 +137,22 @@ const getMessagesInvolvingUser = (userId, page = 1) => {
   );
 }
 
+const createMessage = (data) =>
+  mock.messages.post({
+    ...data,
+    time: Date.now(),
+  });
+
+
+// TODO: should I add functions to get all messages?
 export const messages = {
+  // fetch
+  all: getAllMessages,
   allWithUser: getAllMessagesInvolvingUser,
-  getWithUser: getMessagesInvolvingUser,
+  getWithUser: getMessagesInvolvingUser, // paginated
+
+  // modify
+  create: createMessage,
 };
 
 // ===== USERS =====
