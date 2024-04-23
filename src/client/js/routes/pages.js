@@ -30,6 +30,7 @@ export const fetchDOM = async (name) => {
 };
 
 export const registerCustomComponents = (name, xml) => {
+  console.debug("[pages] registerCustomComponents", name, xml);
   const templates = [...xml.querySelectorAll("template")];
 
   for (const template of templates) {
