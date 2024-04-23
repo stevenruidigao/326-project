@@ -60,8 +60,9 @@ export default async (args, doc) => {
   console.log("conversations", conversations);
   console.log("orderOfConversations", orderOfConversations);
 
-  // TODO: render the sidebar with all the user's conversations + msg previews + set all to not highlighted (maybe check if class exists, and if its there remove it)
-  // make sure these conversation previews are links to goToRoute("conversation", { id: conversationId })
+  // render the sidebar with all the user's conversations + msg previews
+  // set all previews to not highlighted
+  // all previews are links to the conversation with the other user
   const sidebarEl = doc.getElementById("message-sidebar").cloneNode(true);
   app.appendChild(sidebarEl);
 
@@ -72,15 +73,32 @@ export default async (args, doc) => {
     const otherUser = await api.users.get(otherUserId);
     const lastMsg = conversations[convoKey][0];
 
-    // FIXME: how to set the args?
-    const convoEl = new HTMLAppRouteElement();
-    convoEl.route = "conversation";
-    convoEl.arg = otherUserId;
-    // convoEl.className = "conversation";
-    convoEl.innerText = `${otherUser.username}: ${lastMsg.text}`;
-    previewContainer.appendChild(convoEl);
+    const previewEl = document.createElement("messages-sidebar-preview");
+    previewEl.setAttribute("id", `preview-${otherUserId}`);
+
+    // routes link to the right convo, removes the highlight in case it's highlighted
+    const linkEl = previewEl.shadowRoot.querySelector("a");
+    linkEl.setAttribute(":id", otherUserId);
+    linkEl.classList.remove("selected-chat");
+    
+    const usernameEl = document.createElement("span");
+    usernameEl.setAttribute("slot", "sidebar-username");
+    usernameEl.innerText = otherUser.username;
+    
+    const messageEl = document.createElement("span");
+    messageEl.setAttribute("slot", "preview");
+    messageEl.innerText = lastMsg.text;
+    
+    previewEl.appendChild(usernameEl);
+    previewEl.appendChild(messageEl);
+    
+    previewContainer.appendChild(previewEl);
   }
   
+  const convoWrapperEl = document.createElement("div");
+  convoWrapperEl.setAttribute("id", "conversation-wrapper");
+  app.appendChild(convoWrapperEl);
+
   try {
     // clean up the id of other user (treats garbage id as undefined)
     const otherUserId = cleanId(args.id);
@@ -91,6 +109,10 @@ export default async (args, doc) => {
     // TODO: render the full conversation specified
 
     // render the frame to hold the conversation
+    
+    const convoEl = doc.getElementById("conversation").cloneNode(true);
+    convoWrapperEl.appendChild(convoEl);
+
 
     // look for messages between the two users
       // if messages found:
@@ -102,6 +124,8 @@ export default async (args, doc) => {
 
 
     // highlight the other user in the side bar (add a class)
+    const currentPreview = document.getElementById(`preview-${otherUserId}`);
+    currentPreview.shadowRoot.querySelector("a").classList.add("selected-chat");
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
@@ -111,5 +135,7 @@ export default async (args, doc) => {
     }
 
     // TODO: render a blank convo (text and/or image saying to select a conversation from the sidebar)
+    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
+    convoWrapperEl.appendChild(blankConvoEl);
   }
 };

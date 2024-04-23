@@ -1,0 +1,24 @@
+<div id="login">
+    <h1 class="title">Log In</h1>
+
+    <form>
+        <div class="field">
+            <label class="label" for="login-name">Username: </label>
+            <div class="control">
+                <input required class="input" name="username" id="login-name">
+            </div>
+        </div>
+        <div class="field">
+            <label class="label" for="login-pwd">Password: </label>
+            <div class="control">
+                <input required type="password" class="input" name="password" id="login-pwd">
+            </div>
+        </div>
+        <div class="field is-grouped">
+            <div class="control">
+                <button type="submit" class="button is-link" id="login-submit">Log In</button>
+            </div>
+        </div>
+    </form>
+    <div class="notification is-danger is-hidden" id="login-error"></div>
+</div>
