@@ -14,8 +14,9 @@ export const routes = {
   search: { path: "/browse/:search", file: "browse", hasHTML: true },
   messages: { path: "/messages", file: "messages", hasHTML: true },
   conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
-  profile: { path: "/profile", file: "profile" },
-  user: { path: "/profile/:id", file: "profile" },
+  profile: { path: "/profile", file: "profile", hasHTML: true },
+  user: { path: "/profile/:id", file: "profile", hasHTML: true },
+  
   login: {path: "/auth/login", file: "auth/login", hasHTML: true },
   logout: { path: "/auth/logout", file: "logout" },
   signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
@@ -206,7 +207,7 @@ export const convertPathToRoute = (origPath) => {
     for (let i = 0; i < splitRoutePath.length; i++) {
       const part = splitRoutePath[i];
 
-      if (part === splitPath[i]) continue;
+      if (part === splitPath[i] && !part.startsWith(":")) continue;
       else if (part.startsWith(":")) {
         args[part.slice(1)] = splitPath[i];
       } else {

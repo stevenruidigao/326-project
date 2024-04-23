@@ -18,7 +18,7 @@ export const toggleElementAll = (
   els =
     els instanceof NodeList || Array.isArray(els)
       ? els
-      : document.querySelectorAll(els);
+      : parent.querySelectorAll(els);
 
   for (const el of [...els]) {
     el.classList.toggle(className, force);
