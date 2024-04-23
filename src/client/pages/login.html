@@ -1,17 +1,22 @@
 <div id="login">
-    <div class="field">
-        <label class="label" for="login-name">Username: </label>
-        <div class="control has-icons-left">
-            <input class="input" id="login-name">
+
+    <form>
+        <div class="field">
+            <label class="label" for="login-name">Username: </label>
+            <div class="control">
+                <input required class="input" name="username" id="login-name">
+            </div>
         </div>
-    </div>
-    <div class="field">
-        <label class="label" for="login-pwd">Password: </label>
-        <div class="control">
-            <input class="input" id="login-pwd">
+        <div class="field">
+            <label class="label" for="login-pwd">Password: </label>
+            <div class="control">
+                <input required class="input" name="password" id="login-pwd">
+            </div>
         </div>
-    </div>
-    <div class="control">
-        <button class="button">Log In</button>
-    </div>
+        <div class="field is-grouped">
+            <div class="control">
+                <button type="submit" class="button is-link" id="login-submit">Log In</button>
+            </div>
+        </div>
+    </form>
 </div>
