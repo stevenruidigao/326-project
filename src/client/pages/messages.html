@@ -1,6 +1,49 @@
 
 
-<template id="message-preview">
+<div id="message-sidebar">
+    <link rel="stylesheet" href="/styles/messages.css">
+    <style>
+        .message-sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 20%;
+            height: 100%;
+            background-color: #333;
+            color: white;
+        }
+    </style>
+    <!-- TODO: maybe an h2 that says "conversations" and a "new chat" button -->
+    <h2>Conversations</h2>
+    <button>New Chat</button>
+    <div id="message-list"></div>
+</div>
+
+<div id="conversation">
+    <!-- TODO: add a message box and a send button, maybe also a header that indicates who you're chatting with -->
+</div>
+
+<template id="sidebar-preview">
+    <style>
+        a {
+            display: block;
+            text-decoration: none;
+            color: white; /* FIXME: figure out what bulma colors to use */
+        }
+        .msg-preview {
+            font-weight: bold;
+            font-style: italic;
+        }
+        .sidebar-username {
+            font-weight: bold;
+            color: yellow; /* FIXME: figure out what bulma colors to use */
+        }
+    </style>
+    <!-- FIXME: how to dynamically set the value of :arg ? -->
+    <a is="app-route route="messages" :arg="VALUE" when-active="is-active">
+        <h4><slot name="sidebar-username" class="sidebar-username">???</slot></h4>
+        <!-- message preview -->
+        <p><slot name="preview" class="msg-preview">???</slot></p>
+    </a>
     <div class="user">
         <p>Message from <slot name="name" class="name">???</slot></p>
 
