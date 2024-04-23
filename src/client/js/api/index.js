@@ -115,22 +115,19 @@ const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 // TODO: figure out what functions to implement here
 
 const getMessagesInvolvingUser = (userId, page = 1) =>
-  messagesPagination(page, (opts) =>
+  messagesPagination(page, (opts) => 
     mock.messages.find({
       selector: {
-        $or: [{ fromId: userId }, { toId: userId }],
+        $or: [{ fromId: { $eq: userId} }, { toId: {$eq: userId} }],
       },
-      sort: ['fromId', 'toId', 'time'],
+      // use_index: ['fromId', 'toId', 'time'],
       ...opts,
     }),
+
   );
 
 export const messages = {
-  register: registerUser,
-  get: getUser,
-  all: allUsers,
-  withSkills: allUsersWithSkills,
-  update: updateUser,
+  getWithUser: getMessagesInvolvingUser,
 };
 
 // ===== USERS =====
