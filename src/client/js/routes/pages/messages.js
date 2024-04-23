@@ -135,7 +135,7 @@ export default async (args, doc) => {
     console.log("messageInputEl", messageInputEl);
 
     
-    const renderNewMessage = async (msg, isActiveConvo=false, updateSidebar=true, isInitialRender=false) => {
+    const createNewMessageEl = async (msg, isActiveConvo=false, updateSidebar=true) => {
       // update the sidebar preview with the new message
       // FIXME: check if this code actually runs correctly (might not be able to be checked until websockets is implemented, may have to just do a manual wait 5 seconds then trigger a message send to see if the preview updates)
       if (updateSidebar) {
@@ -167,20 +167,19 @@ export default async (args, doc) => {
         messageEl.appendChild(messageContentEl);
         
 
-        isInitialRender ? messageContainerEl.appendChild(messageEl) : messageContainerEl.prepend(messageEl);
-
+        return messageEl;
       }
     };
 
 
-    // FIXME: can probably use a question mark to make this more readable
     if (conversations[otherUserId]) {
-      conversations[otherUserId].forEach((msg) => {
-        renderNewMessage(msg, true, false, true);
-        // FIXME: not sure why using parameter names doesn't work
-        // renderNewMessage(messageContainerEl, msg, isActiveConvo=true, updateSidebar=false);
-      });
-
+      messageContainerEl.append(...(
+        await Promise.all(
+          conversations[otherUserId].map(
+            (msg) => createNewMessageEl(msg, true, false)
+          )
+        )
+      ));
     }
     else {
       console.log(`[messages] no messages found between user ${user._id} and ${otherUserId}`);
@@ -203,7 +202,9 @@ export default async (args, doc) => {
       messageInputEl.querySelector("#message-box").value = "";
 
       // render the new message in the conversation
-      renderNewMessage(sentMsg, true, true);
+      messageContainerEl.prepend(
+        await createNewMessageEl(sentMsg, true, true)
+      );
     });
 
     // highlight the other user in the side bar (add a class)
