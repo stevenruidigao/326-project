@@ -18,20 +18,21 @@ const initialize = async (db, key, cb) => {
 
     await db.bulkDocs(mock[key]);
 
-    if (cb) await cb(db);
+    if (cb)
+      await cb(db);
 
     console.info(`[MOCK] Initialized ${db.name} mock data`);
   }
 };
 
-const createIndex = async (db, ...fields) => {
-  await db.createIndex({ index: { fields } });
-};
+const createIndex =
+    async (db, ...fields) => { await db.createIndex({index : {fields}}); };
 
 // used to allow other files to know the status of mock api
 // allows them to wait for mock api to initialize first
 export default Promise.all([
   initialize(users, "MOCK_USERS"),
   initialize(appointments, "MOCK_APPOINTMENTS"),
-  initialize(messages, "MOCK_MESSAGES", (db) => createIndex(db, "time" /*, "fromId", "toId"*/)),
+  initialize(messages, "MOCK_MESSAGES",
+             (db) => createIndex(db, "time" /*, "fromId", "toId"*/)),
 ]);

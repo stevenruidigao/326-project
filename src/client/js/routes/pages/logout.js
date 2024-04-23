@@ -1,6 +1,6 @@
+import {session} from "../../api/index.js";
+import {setupNavbar} from "../../layout.js";
 import * as routes from "../index.js";
-import { session } from "../../api/index.js";
-import { setupNavbar } from "../../layout.js";
 
 export default async () => {
   console.log("** logout loaded");

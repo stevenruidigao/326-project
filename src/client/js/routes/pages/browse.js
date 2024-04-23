@@ -1,6 +1,6 @@
-import { app } from "../helper.js";
-import { HTMLAppRouteElement, goToRoute, getCurrent } from "../index.js";
 import * as api from "../../api/index.js";
+import {app} from "../helper.js";
+import {getCurrent, goToRoute, HTMLAppRouteElement} from "../index.js";
 
 export const onunload = async (prev, next) => {
   console.log(`[browse] unloading ${prev.file} for ${next.file}!`);
@@ -11,22 +11,30 @@ function generateSearchParams() {
   const wantsInput = document.getElementById("search-wants");
 
   const params = new URLSearchParams();
-  params.set("has", hasInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
-  params.set("wants", wantsInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
+  params.set(
+      "has",
+      hasInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
+  params.set(
+      "wants",
+      wantsInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
 
   return params;
 }
 
 /**
- * Renders a list of users with their profile pictures, names, usernames, and skills into the "browse" HTML element.
+ * Renders a list of users with their profile pictures, names, usernames, and
+ * skills into the "browse" HTML element.
  *
  * @param {number} page - The page number to fetch users from.
- * @param {Array<string>} skillsHad - The skills that the users to search for had.
- * @param {Array<string>} skillsWant - The skills that the users to search for want.
+ * @param {Array<string>} skillsHad - The skills that the users to search for
+ *     had.
+ * @param {Array<string>} skillsWant - The skills that the users to search for
+ *     want.
  */
-async function renderUsers(page=1, skillsHad=[], skillsWant=[]) {
+async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
   const browseEl = document.getElementById("browse");
-  const users = Array.from(await api.users.withSkills(page, skillsHad, skillsWant));
+  const users =
+      Array.from(await api.users.withSkills(page, skillsHad, skillsWant));
 
   for (const user of users) {
     const userEl = document.createElement("browse-user");
@@ -52,7 +60,8 @@ async function renderUsers(page=1, skillsHad=[], skillsWant=[]) {
     hasSkillsEl.setAttribute("slot", "hasSkills");
     hasSkillsEl.className = "skills";
 
-    hasSkillsEl.innerText = "Has skills: " + (user.skills.length == 0 ? "None" : "");
+    hasSkillsEl.innerText =
+        "Has skills: " + (user.skills.length == 0 ? "None" : "");
 
     for (const skill of user.skills) {
       const skillEl = new HTMLAppRouteElement();
@@ -67,7 +76,8 @@ async function renderUsers(page=1, skillsHad=[], skillsWant=[]) {
     wantsSkillsEl.setAttribute("slot", "wantsSkills");
     wantsSkillsEl.className = "skills";
 
-    wantsSkillsEl.innerText = "Wants skills: " + (user.skillsWanted.length == 0 ? "None" : "");
+    wantsSkillsEl.innerText =
+        "Wants skills: " + (user.skillsWanted.length == 0 ? "None" : "");
 
     for (const skill of user.skillsWanted) {
       const skillEl = new HTMLAppRouteElement();
@@ -136,17 +146,20 @@ export default async (args) => {
   }
 
   browseEl.innerHTML = "";
-  renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+  renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+              wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
 
   // Add event listeners for searching users
   hasInput.addEventListener("input", () => {
     browseEl.innerHTML = "";
-    renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+    renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+                wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
   });
 
   wantsInput.addEventListener("input", () => {
     browseEl.innerHTML = "";
-    renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+    renderUsers(0, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+                wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
   });
 
   hasInput.addEventListener("keypress", (event) => {
@@ -161,7 +174,6 @@ export default async (args) => {
     }
   });
 
-  button.addEventListener("click", () => {
-    goToRoute("browse", {}, generateSearchParams());
-  });
+  button.addEventListener(
+      "click", () => { goToRoute("browse", {}, generateSearchParams()); });
 };
