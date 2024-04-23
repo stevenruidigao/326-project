@@ -107,12 +107,38 @@ export const appointments = {
   update: updateAppointment,
 };
 
+// ===== MESSAGES =====
+
+const MESSAGES_PAGE_SIZE = 10;
+const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
+
+// TODO: figure out what functions to implement here
+
+const getMessagesInvolvingUser = (userId, page = 1) =>
+  messagesPagination(page, (opts) =>
+    mock.messages.find({
+      selector: {
+        $or: [{ fromId: userId }, { toId: userId }],
+      },
+      sort: ['fromId', 'toId', 'time'],
+      ...opts,
+    }),
+  );
+
+export const messages = {
+  register: registerUser,
+  get: getUser,
+  all: allUsers,
+  withSkills: allUsersWithSkills,
+  update: updateUser,
+};
+
 // ===== USERS =====
 
 const USERS_PAGE_SIZE = 5;
 const userPagination = withPagination(USERS_PAGE_SIZE);
 
-// TODO  hadle password in backend
+// TODO  handle password in backend
 
 const registerUser = ({ name, username, email, password }) =>
   mock.users.post({ name, username, email });
