@@ -2,24 +2,39 @@
 
 <div id="message-sidebar">
     <link rel="stylesheet" href="/styles/messages.css">
-    <style>
-        .message-sidebar {
+    <!-- <style>
+        #message-sidebar {
             display: flex;
             flex-direction: column;
-            width: 20%;
+            width: 30%;
             height: 100%;
             background-color: #333;
             color: white;
         }
-    </style>
+    </style> -->
     <!-- TODO: maybe an h2 that says "conversations" and a "new chat" button -->
     <h2>Conversations</h2>
     <button>New Chat</button>
     <div id="message-list"></div>
 </div>
 
+<!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
-    <!-- TODO: add a message box and a send button, maybe also a header that indicates who you're chatting with -->
+    <!-- TODO: add a header that indicates who you're chatting with -->
+    <div id="convo-header">
+        <h2 id="convo-name">Chat with ???</h2>
+    </div>
+    <div id="message-container"></div>
+    <form id="message-form">
+        <input type="text" id="message-box" placeholder="Type a message...">
+        <button type="submit" id="send-button">Send</button>
+    </form>
+</div>
+
+<!-- loaded into conversation-wrapper when no convo is selected -->
+<div id="unselected-convo">
+    <!-- TODO: add image/text saying no convo selected -->
+    <h2>No conversation selected</h2>
 </div>
 
 <template id="sidebar-preview">
@@ -30,21 +45,25 @@
             color: white; /* FIXME: figure out what bulma colors to use */
         }
         .msg-preview {
-            font-weight: bold;
-            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sidebar-username {
             font-weight: bold;
             color: yellow; /* FIXME: figure out what bulma colors to use */
         }
+        .selected-chat {
+            background-color: #555;
+        }
     </style>
     <!-- FIXME: how to dynamically set the value of :arg ? -->
-    <a is="app-route route="messages" :arg="VALUE" when-active="is-active">
-        <h4><slot name="sidebar-username" class="sidebar-username">???</slot></h4>
+    <a is="app-route" route="conversation" when-active="is-active">
+        <h4 class="sidebar-username"><slot name="sidebar-username">???</slot></h4>
         <!-- message preview -->
-        <p><slot name="preview" class="msg-preview">???</slot></p>
+        <p class="msg-preview"><slot name="preview">???</slot></p>
     </a>
-    <div class="user">
+    <!-- <div class="user">
         <p>Message from <slot name="name" class="name">???</slot></p>
 
         <a is="app-route" route="profile">profile</a>
@@ -53,7 +72,7 @@
         <pre class="content">
             <slot name="skills">Unknown content</slot>
         </pre>
-    </div>
+    </div> -->
 </template>
 
 <!-- template for each individual message rendered in a conversation -->
