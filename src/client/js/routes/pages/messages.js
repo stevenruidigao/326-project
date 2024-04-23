@@ -19,12 +19,15 @@ export const onunload = async (prev, next) => {
 };
 
 
-const sendMessage = async (msg, fromId, toId) => 
-  api.messages.create({
+
+const sendMessage = async (msg, fromId, toId) => {
+  return api.messages.create({
     text: msg,
     fromId,
     toId,
   });
+}
+
 
 export default async (args, doc) => {
   app.innerHTML = "";
