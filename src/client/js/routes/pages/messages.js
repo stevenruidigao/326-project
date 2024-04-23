@@ -10,12 +10,18 @@ const cleanId = (arg) => {
   const num = parseInt(arg, 10);
   if (isNaN(num)) return undefined;
   return num.toString();
-}
+};
 
 export const onunload = async (prev, next) => {
   console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
 };
 
+const sendMessage = async (msg, fromId, toId) => 
+  api.messages.create({
+    text: msg,
+    fromId,
+    toId,
+  });
 
 export default async (args, doc) => {
   app.innerHTML = "";
@@ -83,7 +89,7 @@ export default async (args, doc) => {
     
     const usernameEl = document.createElement("span");
     usernameEl.setAttribute("slot", "sidebar-username");
-    usernameEl.innerText = otherUser.username;
+    usernameEl.innerText = otherUser.name;
     
     const messageEl = document.createElement("span");
     messageEl.setAttribute("slot", "preview");
@@ -104,24 +110,68 @@ export default async (args, doc) => {
     const otherUserId = cleanId(args.id);
     
     // check to see if the other user exists, if doesn't error, continue rendering
-    await api.users.get(otherUserId);
+    const otherUser = await api.users.get(otherUserId);
     
     // TODO: render the full conversation specified
 
     // render the frame to hold the conversation
-    
     const convoEl = doc.getElementById("conversation").cloneNode(true);
     convoWrapperEl.appendChild(convoEl);
 
+    const convoHeaderEl = convoEl.querySelector("#convo-header");
+    const messageContainerEl = convoEl.querySelector("#message-container");
+    const messageInputEl = convoEl.querySelector("#message-form");
+
+    convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
+
+    console.log("other user", otherUser);
+    console.log("convoHeaderEl", convoHeaderEl);
+    console.log("messageContainerEl", messageContainerEl);
+    console.log("messageInputEl", messageInputEl);
+
+    if (conversations[otherUserId]) {
+      conversations[otherUserId].forEach((msg) => {
+        const messageEl = document.createElement("messages-message");
+
+        const msgName = msg.fromId === user._id ? user.name : otherUser.name;
+        
+        const usernameEl = document.createElement("span");
+        usernameEl.setAttribute("slot", "name-from");
+        usernameEl.innerText = msgName;
+        
+        const messageContentEl = document.createElement("span");
+        messageContentEl.setAttribute("slot", "msg-content");
+        messageContentEl.innerText = msg.text;
+        
+        messageEl.appendChild(usernameEl);
+        messageEl.appendChild(messageContentEl);
+        
+
+        messageContainerEl.appendChild(messageEl);
+      });
+
+    }
+    else {
+      console.log(`[messages] no messages found between user ${user._id} and ${otherUserId}`);
+    }
 
     // look for messages between the two users
       // if messages found:
         // render the conversation
       // else: if no messages found
-        // create an empty conversation
+        // create an empty conversation -- consider adding a ui bit to prompt "start the conversation!"
         // (allow user to send message to other user)
         // create a blank conversation in the sidebar
 
+    // add event listener to send messages
+    messageInputEl.querySelector("#send-button").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const msg = messageInputEl.querySelector("#message-box").value;
+      if (!msg) return;
+      await sendMessage(msg, user._id, otherUserId);
+      // clear the message input
+      messageInputEl.querySelector("#message-box").value = "";
+    });
 
     // highlight the other user in the side bar (add a class)
     const currentPreview = document.getElementById(`preview-${otherUserId}`);
