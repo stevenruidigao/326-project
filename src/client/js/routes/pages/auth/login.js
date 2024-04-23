@@ -1,9 +1,8 @@
-import { app } from "../helper.js";
-import { goToRoute } from "../index.js";
-import { session, users } from "../../api/index.js";
-import { setupNavbar } from "../../layout.js";
-import { toggleElement } from "../helper.js";
-import { showErrors } from "./auth/signup.js";
+import { app } from "../../helper.js";
+import { goToRoute } from "../../index.js";
+import { session, users } from "../../../api/index.js";
+import { setupNavbar } from "../../../layout.js";
+import { toggleElement } from "../../helper.js";
 
 const showError = (el, error) => {
   if (!el) return console.warn("error display element not found"); // Nowhere to display
