@@ -114,19 +114,31 @@ const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
 // TODO: figure out what functions to implement here
 
-const getMessagesInvolvingUser = (userId, page = 1) =>
+const getAllMessagesInvolvingUser = (userId) =>
+  mock.messages.find({
+    selector: {
+      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+    },
+    // sort: ["time"],
+  });
+
+// FIXME: pagination does not correctly give newest messages first
+const getMessagesInvolvingUser = (userId, page = 1) => {
+  console.warn("pagination does not correctly give newest messages first");
   messagesPagination(page, (opts) => 
     mock.messages.find({
       selector: {
         $or: [{ fromId: { $eq: userId} }, { toId: {$eq: userId} }],
       },
-      // use_index: ['fromId', 'toId', 'time'],
+      // use_index: ['time', 'fromId', 'toId'],
+      // sort: ['time'],
       ...opts,
     }),
-
   );
+}
 
 export const messages = {
+  allWithUser: getAllMessagesInvolvingUser,
   getWithUser: getMessagesInvolvingUser,
 };
 
