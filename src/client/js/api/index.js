@@ -213,7 +213,7 @@ export const createSession = async (userId) => {
 
   await local.set("token", doc.id);
 
-  setSessionCurrent(undefined);
+  setSessionCurrent();
 };
 
 export const getSession = async () => {

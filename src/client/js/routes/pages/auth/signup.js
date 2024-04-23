@@ -1,26 +1,27 @@
 import { session, users } from "../../../api/index.js";
 import { setupNavbar } from "../../../layout.js";
 import { app, toggleElement } from "../../helper.js";
-import * as routes from "../../index.js";
+import { goToRoute } from "../../index.js";
 
-let errorsEl;
+let errorsEl = null;
 
 export const showErrors = (errors) => {
-  if (!errorsEl) return console.warn("`errorsEl` has not been initialized!");
+  if (!errorsEl) console.warn("`errorsEl` has not been initialized!");
+  else {
+    errorsEl.innerText = errors.join("\n");
 
-  errorsEl.innerText = errors.join("\n");
-
-  toggleElement(errorsEl, "is-hidden", !errors.length);
+    toggleElement(errorsEl, "is-hidden", !errors.length);
+  }
 };
 
 export const register = async (data) => {
   showErrors([]);
 
-  let id;
+  let id = null;
 
   try {
     const res = await users.register(data);
-    console.log("register res", res);
+
     id = res.id;
   } catch (err) {
     console.error("An error occurred during registration --", err);
@@ -43,7 +44,7 @@ export const register = async (data) => {
     return;
   }
 
-  return routes.goToRoute("dashboard");
+  return goToRoute("dashboard");
 };
 
 export default (args, doc) => {
