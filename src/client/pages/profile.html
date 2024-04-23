@@ -1,0 +1,86 @@
+<div id="profile">
+    <h1 class="title">Profile</h1>
+
+    <div class="article media">
+        <figure class="media-left">
+            <p class="image is-128x128">
+                <img id="profile-img" alt="avatar" class="is-rounded" src="/images/logo.png">
+            </p>
+            <div class="is-hidden buttons are-small mt-5" id="profile-img-buttons">
+                <button class="button is-link" type="button" id="profile-img-upload-btn">Upload</button>
+                <button class="button is-danger" type="button" id="profile-img-delete-btn">Delete</button>
+            </div>
+        </figure>
+        <div class="media-content">
+            <div class="content" id="profile-public">
+                <p class="mb-2">
+                    <strong class="profile-name"></strong>
+                    <small>@<span class="profile-username"></span></small>
+                </p>
+
+                <p class="my-0">
+                    <strong>Knows:</strong>
+                    <span class="profile-knows"></span>
+                </p>
+
+                <p class="my-0">
+                    <strong>Interests:</strong>
+                    <span class="profile-interests"></span>
+                </p>
+
+                <a is="app-route" class="profile-edit-button button is-hidden mt-2" route="profile">Edit</a>
+            </div>
+
+            <div class="content is-hidden" id="profile-edit">
+                <form class="form">
+                    <input type="file" class="input is-hidden profile-img-upload" name="img"  accept="image/*">
+
+                    <div class="field is-grouped mb-0">
+                        <div class="control">
+                            <input class="input profile-name" type="text" autocomplete="name" placeholder="Name" name="name">
+                        </div>
+                        <div class="control">
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <button class="button is-static" type="button">@</button>
+                                </p>
+                                <p class="control">
+                                    <input class="input profile-username" type="text" autocomplete="username" placeholder="Username" name="username">
+                                </p>
+                            </div>
+                        </div>
+                        <p class="control">
+                            <input type="text" class="input profile-id is-static is-small" readonly placeholder="ID">
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label for="profile-email" class="label">Email:</label>
+                        <div class="control">
+                            <input type="email" class="input profile-email" id="profile-email" name="email">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="profile-knows-input" class="label">Knows:</label>
+                        <div class="control">
+                            <input type="text" class="input profile-knows" id="profile-knows-input" name="skills">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="profile-interests-input" class="label">Interests:</label>
+                        <div class="control">
+                            <input type="text" class="input profile-interests" id="profile-interests-input" name="skillsWanted">
+                        </div>
+                    </div>
+                    <div class="field is-grouped">
+                        <div class="control">
+                            <button type="submit" class="button is-primary">Save</button>
+                        </div>
+                        <div class="control">
+                            <a is="app-route" route="user" class="button" id="profile-public-btn">View public</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

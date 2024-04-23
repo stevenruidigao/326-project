@@ -201,7 +201,29 @@ const registerUser = async ({ name, username, email, password }) => {
   return mock.users.post({ name, username, email });
 };
 
-const getUser = (id) => mock.users.get(id);
+const getUser = (id, opts = {}) => mock.users.get(id, opts);
+
+const getUserByUsername = (username, opts) =>
+  mock.users
+    .find({
+      selector: { username: { $eq: username } },
+      limit: 1,
+      ...opts,
+    })
+    .then((out) => out.docs[0]);
+
+const getUserAvatar = async (user) => {
+  const avatar = user._attachments?.avatar;
+
+  if (!avatar) return null;
+  else if (avatar.data) return avatar.data;
+
+  const attachment = await mock.users.getAttachment(user._id, "avatar");
+
+  avatar.data = attachment;
+
+  return attachment;
+};
 
 const allUsers = (page = 1) =>
   userPagination(page, (opts) =>
@@ -233,6 +255,13 @@ const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
     }),
   );
 
+/**
+ * NOTICE: 'data' replaces ALL data the user holds aside from `_id`, `_rev`, and `updatedAt`!
+ * Pass the final modified document.
+ * @param {string} id
+ * @param {object} data
+ * @returns
+ */
 const updateUser = async (id, data) => {
   const doc = await mock.users.get(id);
 
@@ -240,7 +269,6 @@ const updateUser = async (id, data) => {
   // replace changed data
   // prevent replacing id & rev
   return mock.users.put({
-    ...doc,
     ...data,
     _id: id,
     _rev: doc._rev,
@@ -252,6 +280,8 @@ export const users = {
   login: loginUser,
   register: registerUser,
   get: getUser,
+  getByUsername: getUserByUsername,
+  getAvatar: getUserAvatar,
   all: allUsers,
   withSkills: allUsersWithSkills,
   update: updateUser,
@@ -296,7 +326,7 @@ const getSessionUser = async () => {
   if (!session?.userId) return null;
 
   // TODO handle error better somehow if user id does not exist?
-  return users.get(session.userId).catch(() => null);
+  return users.get(session.userId, { attachments: true, binary: true }).catch(() => null);
 };
 
 export const deleteSession = async () => {
@@ -316,4 +346,5 @@ export const session = {
   delete: deleteSession,
 
   current: getSessionCurrent,
+  setCurrent: setSessionCurrent,
 };
