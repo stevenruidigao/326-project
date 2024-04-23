@@ -1,17 +1,15 @@
 import * as api from "../../api/index.js";
-import {app} from "../helper.js";
+import { app } from "../helper.js";
 import * as routes from "../index.js";
-import {HTMLAppRouteElement} from "../index.js";
+import { HTMLAppRouteElement } from "../index.js";
 
 // returns undefined if arg cannot be parsed as a base 10 number
 // otherwise returns the number as a string
-const cleanId =
-    (arg) => {
-      const num = parseInt(arg, 10);
-      if (isNaN(num))
-        return undefined;
-      return num.toString();
-    }
+const cleanId = (arg) => {
+  const num = parseInt(arg, 10);
+  if (isNaN(num)) return undefined;
+  return num.toString();
+};
 
 export const onunload = async (prev, next) => {
   console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
@@ -108,8 +106,9 @@ export default async (args, doc) => {
     // if there was an arg provided, log error and redirect to blank
     // conversation
     if (args.id) {
-      console.error(`[messages] error fetching conversation with user ${
-          args.id}: ${err}`);
+      console.error(
+        `[messages] error fetching conversation with user ${args.id}: ${err}`,
+      );
       return routes.goToRoute("messages");
     }
 
