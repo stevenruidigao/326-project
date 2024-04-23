@@ -43,7 +43,6 @@
         background-color: #444;
         
         height: calc(100vh - var(--bulma-navbar-height) - var(--bulma-msg-sender-height) - var(--bulma-msg-header-height));
-        /* overflow: auto; */
         display: flex;
         flex-direction: column-reverse;
 

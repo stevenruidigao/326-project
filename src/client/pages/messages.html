@@ -27,7 +27,7 @@
     <div id="message-container"></div>
     <form id="message-form">
         <input type="text" id="message-box" placeholder="Type a message...">
-        <button type="button" id="send-button">Send</button>
+        <button type="submit" id="send-button">Send</button>
     </form>
 </div>
 
@@ -63,16 +63,6 @@
         <!-- message preview -->
         <p class="msg-preview"><slot name="preview">???</slot></p>
     </a>
-    <!-- <div class="user">
-        <p>Message from <slot name="name" class="name">???</slot></p>
-
-        <a is="app-route" route="profile">profile</a>
-
-        <p>They have these skills:</p>
-        <pre class="content">
-            <slot name="skills">Unknown content</slot>
-        </pre>
-    </div> -->
 </template>
 
 <!-- template for each individual message rendered in a conversation -->
@@ -83,14 +73,4 @@
     <div class="msg-content">
         <p><slot name="msg-content">???</slot></p>
     </div>
-    <!-- <div class="user">
-        <p>Message from <slot name="name" class="name">???</slot></p>
-
-        <a is="app-route" route="profile">profile</a>
-
-        <p>They have these skills:</p>
-        <pre class="content">
-            <slot name="skills">Unknown content</slot>
-        </pre>
-    </div> -->
 </template>

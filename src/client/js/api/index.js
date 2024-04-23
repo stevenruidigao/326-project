@@ -157,11 +157,18 @@ const getMessagesInvolvingUser = (userId, page = 1) => {
   );
 }
 
-const createMessage = (data) =>
-  mock.messages.post({
+const createMessage = (data) => {
+  const newMsg = {
     ...data,
     time: Date.now(),
-  });
+  };
+  mock.messages.post(newMsg);
+  return newMsg;
+}
+  // mock.messages.post({
+  //   ...data,
+  //   time: Date.now(),
+  // });
 
 
 // TODO: should I add functions to get all messages?
