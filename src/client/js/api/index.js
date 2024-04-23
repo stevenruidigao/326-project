@@ -109,6 +109,54 @@ export const appointments = {
   update: updateAppointment,
 };
 
+// ===== MESSAGES =====
+
+const MESSAGES_PAGE_SIZE = 10;
+const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
+
+const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+
+const getAllMessagesInvolvingUser = (userId) =>
+  mock.messages.find({
+    selector: {
+      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+    },
+    // sort: ["time"],
+  });
+
+// FIXME: pagination does not correctly give newest messages first
+const getMessagesInvolvingUser = (userId, page = 1) => {
+  console.warn("pagination does not correctly give newest messages first");
+  messagesPagination(page, (opts) => 
+    mock.messages.find({
+      selector: {
+        $or: [{ fromId: { $eq: userId} }, { toId: {$eq: userId} }],
+      },
+      // use_index: ['time', 'fromId', 'toId'],
+      // sort: ['time'],
+      ...opts,
+    }),
+  );
+}
+
+const createMessage = (data) =>
+  mock.messages.post({
+    ...data,
+    time: Date.now(),
+  });
+
+
+// TODO: should I add functions to get all messages?
+export const messages = {
+  // fetch
+  all: getAllMessages,
+  allWithUser: getAllMessagesInvolvingUser,
+  getWithUser: getMessagesInvolvingUser, // paginated
+
+  // modify
+  create: createMessage,
+};
+
 // ===== USERS =====
 
 const USERS_PAGE_SIZE = 5;
