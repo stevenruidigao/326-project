@@ -11,8 +11,8 @@ export const routes = {
   dashboard: { path: "/dashboard", file: "dashboard" },
   browse: { path: "/browse", file: "browse", hasHTML: true },
   search: { path: "/browse/:search", file: "browse", hasHTML: true },
-  messages: { path: "/messages", file: "messages" },
-  conversation: { path: "/messages/:id", file: "messages" },
+  messages: { path: "/messages", file: "messages", hasHTML: true },
+  conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
   profile: { path: "/profile", file: "profile" },
   user: { path: "/profile/:id", file: "profile" },
 
