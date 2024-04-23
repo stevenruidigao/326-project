@@ -13,5 +13,5 @@ export default async () => {
     await setupNavbar();
   }
 
-  return routes.goToRoute("home");
+  await routes.goToRoute("home");
 };

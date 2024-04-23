@@ -1,10 +1,11 @@
-import * as mock from "./mock/index.js";
 import * as local from "./local.js";
+import * as mock from "./mock/index.js";
 
 /*
-    NOTE: .find() doesn't return total_rows equivalent (since we're querying data)
-    so we don't know when pagination ends until we reach a page with no rows.
-    Those queries will have to likely implement a "show more" button/infinite scrolling on the frontend
+    NOTE: .find() doesn't return total_rows equivalent (since we're querying
+   data) so we don't know when pagination ends until we reach a page with no
+   rows. Those queries will have to likely implement a "show more"
+   button/infinite scrolling on the frontend
 */
 const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
@@ -71,7 +72,8 @@ const withLearnerAppointments = (userId, page = 1) =>
   );
 
 // modify
-// -> default attrs probably? but those would happen in backend anyways (validation & stuff)
+// -> default attrs probably? but those would happen in backend anyways
+// (validation & stuff)
 const createAppointment = (data) =>
   mock.appointments.post({
     ...data,
@@ -114,8 +116,29 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  hadle password in backend
 
-const registerUser = ({ name, username, email, password }) =>
-  mock.users.post({ name, username, email });
+const registerUser = async ({ name, username, email, password }) => {
+  const [emailOut, usernameOut] = await Promise.all([
+    mock.users.find({
+      selector: {
+        email: { $eq: email },
+      },
+      limit: 1,
+    }),
+
+    mock.users.find({
+      selector: {
+        username: { $eq: username },
+      },
+      limit: 1,
+    }),
+  ]);
+
+  if (emailOut.docs.length) throw new Error("User already exists with email");
+  else if (usernameOut.docs.length)
+    throw new Error("User already exists with username");
+
+  return mock.users.post({ name, username, email });
+};
 
 const getUser = (id) => mock.users.get(id);
 
@@ -189,6 +212,8 @@ export const createSession = async (userId) => {
   console.log("createSession", doc);
 
   await local.set("token", doc.id);
+
+  setSessionCurrent();
 };
 
 export const getSession = async () => {
@@ -208,8 +233,8 @@ const getSessionUser = async () => {
 
   if (!session?.userId) return null;
 
-  // TODO handle error somehow if user id does not exist?
-  return users.get(session.userId);
+  // TODO handle error better somehow if user id does not exist?
+  return users.get(session.userId).catch(() => null);
 };
 
 export const deleteSession = async () => {
