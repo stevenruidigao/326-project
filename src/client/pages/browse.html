@@ -1,0 +1,19 @@
+<div id="search">
+    <input id="search-box" type="text" placeholder="Search for tutors">
+    <button type="submit-btn">Search</button>
+</div>
+
+<template id="user">
+    <link rel="stylesheet" href="/styles/browse.css">
+    <div class="user">
+        <div>
+            <slot name="profile-picture" class="profile-picture">Profile<br>Picture</slot>
+            <div>
+                <slot name="name" class="name">Name</slot>
+                <slot name="username" class="username">@username</slot>
+            </div>
+        </div>
+        <slot name="hasSkills" class="skills">Skills</slot>
+        <slot name="wantsSkills" class="skills">Skills</slot>
+    </div>
+</template>

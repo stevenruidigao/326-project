@@ -9,7 +9,7 @@ _These paths are all under `src/client`_
 Use the `app-route` custom component for app links
 
 ```html
-<a is="app-route route="ROUTENAME" :arg="VALUE" search="key=value&key2=val2" when-active="is-active">link</a>
+<a is="app-route" route="ROUTENAME" :arg="VALUE" search="key=value&key2=val2" when-active="is-active">link</a>
 ```
 
 Use `goToRoute(name, args, search)` and `getPath()` from `js/routes/index.js` as necessary.

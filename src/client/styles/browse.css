@@ -1,0 +1,27 @@
+.user {
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+    min-height: fit-content;
+    gap: 10px;
+    border: lightgrey solid 1px;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+.user div {
+    display: flex;
+    gap: 10px;
+    height: 50%;
+}
+
+.user div div {
+    display: flex;
+    gap: 0;
+    flex-direction: column;
+}
+
+.user div div .name,
+.user div div .username {
+    margin: 10px 0;
+}
