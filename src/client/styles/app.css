@@ -72,5 +72,5 @@ body {
 
 #app {
     /* Prevent footer from jumping in page before content loads */
-    min-height: calc(100vh - 52px);
+    min-height: calc(100vh - var(--bulma-navbar-height));
 }
