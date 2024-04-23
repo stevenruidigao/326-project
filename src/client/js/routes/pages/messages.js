@@ -72,13 +72,26 @@ export default async (args, doc) => {
     const otherUser = await api.users.get(otherUserId);
     const lastMsg = conversations[convoKey][0];
 
-    // FIXME: how to set the args?
-    const convoEl = new HTMLAppRouteElement();
-    convoEl.route = "conversation";
-    convoEl.arg = otherUserId;
-    // convoEl.className = "conversation";
-    convoEl.innerText = `${otherUser.username}: ${lastMsg.text}`;
-    previewContainer.appendChild(convoEl);
+    const previewEl = document.createElement("messages-sidebar-preview");
+    previewEl.setAttribute("id", `preview-${otherUserId}`);
+
+    // routes link to the right convo, removes the highlight in case it's highlighted
+    const linkEl = previewEl.shadowRoot.querySelector("a");
+    linkEl.setAttribute(":id", otherUserId);
+    linkEl.classList.remove("selected-chat");
+    
+    const usernameEl = document.createElement("span");
+    usernameEl.setAttribute("slot", "sidebar-username");
+    usernameEl.innerText = otherUser.username;
+    
+    const messageEl = document.createElement("span");
+    messageEl.setAttribute("slot", "preview");
+    messageEl.innerText = lastMsg.text;
+    
+    previewEl.appendChild(usernameEl);
+    previewEl.appendChild(messageEl);
+    
+    previewContainer.appendChild(previewEl);
   }
   
   try {
@@ -102,6 +115,8 @@ export default async (args, doc) => {
 
 
     // highlight the other user in the side bar (add a class)
+    const currentPreview = document.getElementById(`preview-${otherUserId}`);
+    currentPreview.shadowRoot.querySelector("a").classList.add("selected-chat");
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
