@@ -32,12 +32,15 @@ export default async (args) => {
     return routes.goToRoute("home");
   }
 
-  // clean up the id of other user (treats garbage id as undefined)
-  let otherUserId = cleanId(args.id);
-
+  // TODO: figure out why I need an Array.from here
+  const allUserMessages = Array.from(await api.messages.allWithUser(user._id));
+  
   // TODO: render the sidebar with all the user's conversations + msg previews + set all to not highlighted (maybe check if class exists, and if its there remove it)
-
+  
   try {
+    // clean up the id of other user (treats garbage id as undefined)
+    const otherUserId = cleanId(args.id);
+
     // check to see if the other user exists, if doesn't error, continue rendering
     api.users.get(otherUserId);
     
@@ -57,11 +60,12 @@ export default async (args) => {
     // highlight the other user in the side bar (add a class)
   }
   catch (err) {
-    // only log error if there was an arg provided
-    if (args.id)
-      console.error(`[messages] error fetching conversation with user ${otherUserId}: ${err}`);
+    // if there was an arg provided, log error and redirect to blank conversation
+    if (args.id) {
+      console.error(`[messages] error fetching conversation with user ${args.id}: ${err}`);
+      return routes.goToRoute("messages");
+    }
 
-    otherUserId = undefined;
     // TODO: render a blank convo (text and/or image saying to select a conversation from the sidebar)
   }
 };

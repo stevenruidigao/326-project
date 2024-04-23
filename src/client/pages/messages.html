@@ -1,0 +1,28 @@
+
+
+<template id="message-preview">
+    <div class="user">
+        <p>Message from <slot name="name" class="name">???</slot></p>
+
+        <a is="app-route" route="profile">profile</a>
+
+        <p>They have these skills:</p>
+        <pre class="content">
+            <slot name="skills">Unknown content</slot>
+        </pre>
+    </div>
+</template>
+
+<!-- template for each individual message rendered in a conversation -->
+<template id="message">
+    <div class="user">
+        <p>Message from <slot name="name" class="name">???</slot></p>
+
+        <a is="app-route" route="profile">profile</a>
+
+        <p>They have these skills:</p>
+        <pre class="content">
+            <slot name="skills">Unknown content</slot>
+        </pre>
+    </div>
+</template>
