@@ -1,5 +1,4 @@
 <div id="login">
-
     <form>
         <div class="field">
             <label class="label" for="login-name">Username: </label>
@@ -10,7 +9,7 @@
         <div class="field">
             <label class="label" for="login-pwd">Password: </label>
             <div class="control">
-                <input required class="input" name="password" id="login-pwd">
+                <input required type="password" class="input" name="password" id="login-pwd">
             </div>
         </div>
         <div class="field is-grouped">
@@ -19,4 +18,5 @@
             </div>
         </div>
     </form>
+    <div class="notification is-danger is-hidden" id="login-error"></div>
 </div>
