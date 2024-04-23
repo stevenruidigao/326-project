@@ -1,7 +1,8 @@
 .user {
     display: flex;
     flex-direction: column;
-    height: 80px;
+    /* height: 80px; */
+    height: 100%;
     gap: 10px;
     border: lightgrey solid 1px;
     padding: 5px;
