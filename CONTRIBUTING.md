@@ -9,7 +9,14 @@ _These paths are all under `src/client`_
 Use the `app-route` custom component for app links
 
 ```html
-<a is="app-route" route="ROUTENAME" :arg="VALUE" search="key=value&key2=val2" when-active="is-active">link</a>
+<a
+  is="app-route"
+  route="ROUTENAME"
+  :arg="VALUE"
+  search="key=value&key2=val2"
+  when-active="is-active"
+  >link</a
+>
 ```
 
 Use `goToRoute(name, args, search)` and `getPath()` from `js/routes/index.js` as necessary.
@@ -67,6 +74,6 @@ Use `goToRoute(name, args, search)` and `getPath()` from `js/routes/index.js` as
   - Note that templates through custom components use the `ShadowDOM`, which means they do NOT inherit CSS AND you cannot query their children from `document`, only through that element's `.shadowRoot`
 
     ```js
-    document.querySelector('pre') //null
-    document.querySelector('home-message').shadowRoot.querySelector('pre')  // <pre class="content">
+    document.querySelector("pre"); //null
+    document.querySelector("home-message").shadowRoot.querySelector("pre"); // <pre class="content">
     ```
