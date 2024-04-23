@@ -60,8 +60,9 @@ export default async (args, doc) => {
   console.log("conversations", conversations);
   console.log("orderOfConversations", orderOfConversations);
 
-  // TODO: render the sidebar with all the user's conversations + msg previews + set all to not highlighted (maybe check if class exists, and if its there remove it)
-  // make sure these conversation previews are links to goToRoute("conversation", { id: conversationId })
+  // render the sidebar with all the user's conversations + msg previews
+  // set all previews to not highlighted
+  // all previews are links to the conversation with the other user
   const sidebarEl = doc.getElementById("message-sidebar").cloneNode(true);
   app.appendChild(sidebarEl);
 
@@ -94,6 +95,10 @@ export default async (args, doc) => {
     previewContainer.appendChild(previewEl);
   }
   
+  const convoWrapperEl = document.createElement("div");
+  convoWrapperEl.setAttribute("id", "conversation-wrapper");
+  app.appendChild(convoWrapperEl);
+
   try {
     // clean up the id of other user (treats garbage id as undefined)
     const otherUserId = cleanId(args.id);
@@ -104,6 +109,10 @@ export default async (args, doc) => {
     // TODO: render the full conversation specified
 
     // render the frame to hold the conversation
+    
+    const convoEl = doc.getElementById("conversation").cloneNode(true);
+    convoWrapperEl.appendChild(convoEl);
+
 
     // look for messages between the two users
       // if messages found:
@@ -126,5 +135,7 @@ export default async (args, doc) => {
     }
 
     // TODO: render a blank convo (text and/or image saying to select a conversation from the sidebar)
+    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
+    convoWrapperEl.appendChild(blankConvoEl);
   }
 };

@@ -18,8 +18,23 @@
     <div id="message-list"></div>
 </div>
 
+<!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
-    <!-- TODO: add a message box and a send button, maybe also a header that indicates who you're chatting with -->
+    <!-- TODO: add a header that indicates who you're chatting with -->
+    <div id="convo-header">
+        <h2 id="convo-name">Chat with ???</h2>
+    </div>
+    <div id="message-container"></div>
+    <form id="message-form">
+        <input type="text" id="message-box" placeholder="Type a message...">
+        <button type="submit" id="send-button">Send</button>
+    </form>
+</div>
+
+<!-- loaded into conversation-wrapper when no convo is selected -->
+<div id="unselected-convo">
+    <!-- TODO: add image/text saying no convo selected -->
+    <h2>No conversation selected</h2>
 </div>
 
 <template id="sidebar-preview">
