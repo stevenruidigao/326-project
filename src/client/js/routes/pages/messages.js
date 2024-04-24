@@ -24,6 +24,7 @@ const sendMessage = async (msg, fromId, toId) => {
   });
 }
 
+// NOTE: code taken from bulma.io documentation
 const setupBulmaModals = () => {
   const openModal = (el) => el.classList.add('is-active');
   const closeModal = (el) => el.classList.remove('is-active');
@@ -264,7 +265,37 @@ export default async (args, doc) => {
       renderSidebar();
     });
 
-    
+    // add event listener to create appointment
+    const createAppointmentForm = document.getElementById("form-create-appt");
+    createAppointmentForm.addEventListener("submit", async (e) => {
+      // we don't want the actual submit event to happen
+      e.preventDefault();
+
+      const formData = new FormData(createAppointmentForm);
+      const apptData = Object.fromEntries(formData.entries());
+
+      const parsedApptData = {
+        teacherId: apptData.role === "teaching" ? user._id : otherUser._id,
+        learnerId: apptData.role === "learning" ? user._id : otherUser._id,
+        type: apptData.type,
+        url: apptData.url,
+        topic: apptData.topic,
+      };
+
+      const inputTime = apptData.time;
+
+      // convert time to unix timestamp
+      const [date, time] = inputTime.split("T");
+      const [year, month, day] = date.split("-");
+      const [hour, minute] = time.split(":");
+      const timestamp = new Date(year, month, day, hour, minute).getTime();
+
+      parsedApptData.time = timestamp;
+
+      console.log("[messages] creating appointment", parsedApptData);
+
+      await api.appointments.create(parsedApptData);
+    });
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
