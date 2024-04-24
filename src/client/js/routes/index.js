@@ -23,12 +23,15 @@ export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
  *   hasHTML?: boolean,
  *   hasCSS?: boolean,
  * }} Route
-*/
+ */
 /**
  * The routes for the application, mapped from route name to route data.
- * - `path` may contain dynamic parts, referenced to as arguments, eg. `/profile/:id`
- * - `file` is the name of the JS file to load for the route, located at `/pages/[file].js`
- * - `hasHTML` loads the HTML fragment for the route, located at `/pages/[file].html`
+ * - `path` may contain dynamic parts, referenced to as arguments, eg.
+ * `/profile/:id`
+ * - `file` is the name of the JS file to load for the route, located at
+ * `/pages/[file].js`
+ * - `hasHTML` loads the HTML fragment for the route, located at
+ * `/pages/[file].html`
  * - `hasCSS` loads the CSS for the route, located at `/styles/pages/[file].css`
  * @type {Object<string, Route>}
  */
@@ -37,8 +40,18 @@ export const routes = {
   dashboard: { path: "/dashboard", file: "dashboard" },
   browse: { path: "/browse", file: "browse" },
   search: { path: "/browse/:search", file: "browse" },
-  messages: { path: "/messages", file: "messages", hasHTML: true, hasCSS: true },
-  conversation: { path: "/messages/:id", file: "messages", hasHTML: true, hasCSS: true },
+  messages: {
+    path: "/messages",
+    file: "messages",
+    hasHTML: true,
+    hasCSS: true,
+  },
+  conversation: {
+    path: "/messages/:id",
+    file: "messages",
+    hasHTML: true,
+    hasCSS: true,
+  },
   profile: { path: "/profile", file: "profile", hasHTML: true, hasCSS: true },
   user: { path: "/profile/:id", file: "profile", hasHTML: true, hasCSS: true },
 
@@ -60,7 +73,7 @@ const loadingEl = document.getElementById("loading");
  * @type {HTMLStyleElement}
  */
 const routeStyles = document.createElement("style");
-routeStyles.id = 'route-styles';
+routeStyles.id = "route-styles";
 
 /**
  * @typedef {?
@@ -72,14 +85,16 @@ routeStyles.id = 'route-styles';
 
 /**
  * Information on the current loaded page.
- * Likely not null when it is used, but it is null until the first page is loaded.
+ * Likely not null when it is used, but it is null until the first page is
+ * loaded.
  * @type {RoutePage}
  */
 let current = null;
 
 /**
  * Information on the previously loaded page.
- * If the browser was refreshed, this will be null. Otherwise, it will be data on the last page.
+ * If the browser was refreshed, this will be null. Otherwise, it will be data
+ * on the last page.
  * @type {RoutePage}
  */
 let previous = null;
@@ -190,21 +205,24 @@ export const load = async (routeName, args = {}, search) => {
   app.dataset.path = current.path;
 
   // Replace the old page's CSS with the new page's CSS.
-  // Most of this CSS should be scoped anyways, but it doesn't hurt to get rid of it.
+  // Most of this CSS should be scoped anyways, but it doesn't hurt to get rid
+  // of it.
   routeStyles.textContent = css || "";
 
   await init(args, document);
 
   // After loading the page, finalize the route change.
-  // Sometimes `init` may go to another route - somehow this has not caused issues
-  // since these callbacks are called after that function finishes. Something to watch out for.
+  // Sometimes `init` may go to another route - somehow this has not caused
+  // issues since these callbacks are called after that function finishes.
+  // Something to watch out for.
 
   // Call the route change callbacks after the page has loaded
   callbacks.afterPageLoad.forEach((cb) => cb(routeName, args));
 
   loadingEl.classList.remove("is-active");
 
-  // If the route has a specific onload function (I don't believe any do), call it.
+  // If the route has a specific onload function (I don't believe any do), call
+  // it.
   await routeJS?.onload?.(routeName, args);
 };
 
@@ -327,7 +345,8 @@ export const goToRoute = (name, args, search) => {
  * @returns {string}
  */
 export const getPath = (force = false) => {
-  // if there is a page currently loaded, use that path as that's the one the app knows
+  // if there is a page currently loaded, use that path as that's the one the
+  // app knows
   if (!force && current?.path)
     return [current.path, current.search].filter(Boolean).join("?");
 
@@ -366,7 +385,8 @@ export const refresh = () => loadPath();
  * - `route` attribute is the name of the route to navigate to
  * - `:arg` attributes are arguments to pass to the route
  * - `search` attribute is the search params to pass to the route
- * - `when-active` attribute is a space-separated list of classes to add when the route is active
+ * - `when-active` attribute is a space-separated list of classes to add when
+ * the route is active
  * @extends {HTMLAnchorElement}
  * @example
  * <a is="app-route" route="profile" :id="5" when-active="is-active">Profile</a>
@@ -374,11 +394,18 @@ export const refresh = () => loadPath();
  */
 export class HTMLAppRouteElement extends HTMLAnchorElement {
   /**
-   * Listen to changes on these attributes (+ route arguments as those are dynamic).
-   * NOTE: Weird behavior occurs with this - it seems that adding to this list does not
-   * update existing elements? Only uses list when registering the element with browser? Try to reuse params!!
+   * Listen to changes on these attributes (+ route arguments as those are
+   * dynamic). NOTE: Weird behavior occurs with this - it seems that adding to
+   * this list does not update existing elements? Only uses list when
+   * registering the element with browser? Try to reuse params!!
    */
-  static observedAttributes = ["route", "when-active", "search", ":id", ":search"];
+  static observedAttributes = [
+    "route",
+    "when-active",
+    "search",
+    ":id",
+    ":search",
+  ];
 
   #args = {};
   #search = null;
@@ -386,8 +413,8 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
 
   connectedCallback() {
     // Handle clicks on app routes.
-    // This is not needed when using a hash router (like we are now, with PATH_PREFIX=/#),
-    // but it would be were we to stop using it.
+    // This is not needed when using a hash router (like we are now, with
+    // PATH_PREFIX=/#), but it would be were we to stop using it.
     this.addEventListener("click", (ev) => {
       if (ev.ctrlKey || ev.metaKey || this.target === "_blank") return;
 
@@ -506,7 +533,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   /**
    * Set a route's argument
    * @param {string} key the route argument
-   * @param {string} value 
+   * @param {string} value
    */
   setArg(key, value) {
     this.setAttribute(`:${key}`, value);

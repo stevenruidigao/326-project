@@ -74,7 +74,8 @@ const withLearnerAppointments = (userId, page = 1) =>
 /**
  * Returns an id-to-user map of all users involved in the appointments.
  * Scuffed way to obtain relationship values...
- * @param {Appointment[]} appts Only requires `teacherId` and `learnerId` properties for each item
+ * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
+ *     properties for each item
  * @returns {Promise<Object.<string, User>>}
  */
 const getAppointmentUsersInvolved = async (appts) => {
@@ -145,17 +146,17 @@ const getAllMessagesInvolvingUser = (userId) =>
 // FIXME: pagination does not correctly give newest messages first
 const getMessagesInvolvingUser = (userId, page = 1) => {
   console.warn("pagination does not correctly give newest messages first");
-  messagesPagination(page, (opts) => 
+  messagesPagination(page, (opts) =>
     mock.messages.find({
       selector: {
-        $or: [{ fromId: { $eq: userId} }, { toId: {$eq: userId} }],
+        $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
       },
       // use_index: ['time', 'fromId', 'toId'],
       // sort: ['time'],
       ...opts,
     }),
   );
-}
+};
 
 const createMessage = (data) => {
   const newMsg = {
@@ -164,12 +165,11 @@ const createMessage = (data) => {
   };
   mock.messages.post(newMsg);
   return newMsg;
-}
-  // mock.messages.post({
-  //   ...data,
-  //   time: Date.now(),
-  // });
-
+};
+// mock.messages.post({
+//   ...data,
+//   time: Date.now(),
+// });
 
 // TODO: should I add functions to get all messages?
 export const messages = {
@@ -189,16 +189,17 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  handle password in backend
 
-const loginUser = async ({username, password}) => {
+const loginUser = async ({ username, password }) => {
   const results = await mock.users.find({
     selector: {
       username: { $eq: username },
-      //password: { $eq: password }
+      // password: { $eq: password }
     },
-    limit: 1
+    limit: 1,
   });
-  if (results.docs.length < 1) throw new Error("No user found with that username and password");
-  console.log(results);//
+  if (results.docs.length < 1)
+    throw new Error("No user found with that username and password");
+  console.log(results); //
   return results.docs[0];
 };
 
@@ -281,8 +282,8 @@ const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
   );
 
 /**
- * NOTICE: 'data' replaces ALL data the user holds aside from `_id`, `_rev`, and `updatedAt`!
- * Pass the final modified document.
+ * NOTICE: 'data' replaces ALL data the user holds aside from `_id`, `_rev`, and
+ * `updatedAt`! Pass the final modified document.
  * @param {string} id
  * @param {object} data
  * @returns
@@ -351,7 +352,9 @@ const getSessionUser = async () => {
   if (!session?.userId) return null;
 
   // TODO handle error better somehow if user id does not exist?
-  return users.get(session.userId, { attachments: true, binary: true }).catch(() => null);
+  return users
+    .get(session.userId, { attachments: true, binary: true })
+    .catch(() => null);
 };
 
 export const deleteSession = async () => {
