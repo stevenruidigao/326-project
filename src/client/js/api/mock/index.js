@@ -33,5 +33,7 @@ const createIndex = async (db, ...fields) => {
 export default Promise.all([
   initialize(users, "MOCK_USERS"),
   initialize(appointments, "MOCK_APPOINTMENTS"),
-  initialize(messages, "MOCK_MESSAGES", (db) => createIndex(db, "time" /*, "fromId", "toId"*/)),
+  initialize(messages, "MOCK_MESSAGES", (db) =>
+    createIndex(db, "time" /*, "fromId", "toId"*/),
+  ),
 ]);

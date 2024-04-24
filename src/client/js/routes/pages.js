@@ -1,6 +1,6 @@
 /**
  * Memoize a function -- calling the same function with the same arguments will return the same result.
- * @param {(...args) => T} cb 
+ * @param {(...args) => T} cb
  * @returns {(...args) => Promise<T>}
  */
 const memo = (cb) => {
@@ -55,11 +55,11 @@ export const fetchCSS = async (name) => fetch(`/styles/pages/${name}.css`);
  * Register any custom components found in the given XML Document.
  * Any `<template>` elements found will be registered as a custom element
  * with the prefix `[name]-` (e.g., `[name]-[template-id]`).
- * 
+ *
  * Due to the shadow DOM (required), CSS is not inherited.
  * This clashes with our use of Bulma CSS, so it's preferably avoided.
  * @param {string} name route file name
- * @param {DocumentFragment} xml 
+ * @param {DocumentFragment} xml
  */
 export const registerCustomComponents = (name, xml) => {
   console.debug("[pages] registerCustomComponents", name, xml);

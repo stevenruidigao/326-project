@@ -50,7 +50,6 @@ export const MOCK_APPOINTMENTS = [
     return v;
 });
 
-
 // prettier-ignore
 // generated w/ https://www.mockaroo.com/6f6505d0
 // generated 100 messages between users 1 and 5
