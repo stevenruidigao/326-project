@@ -25,8 +25,30 @@ const sendMessage = async (msg, fromId, toId) => {
 }
 
 // NOTE: code taken from bulma.io documentation
-const setupBulmaModals = () => {
-  const openModal = (el) => el.classList.add('is-active');
+const setupBulmaModals = (user) => {
+  const openModal = async (el, e) => {
+
+    console.log("opening modal with event", e);
+    if (e.target?.dataset?.apptid) {
+      const apptId = e.target.dataset.apptid;
+      const currentAppt = await api.appointments.get(apptId);
+
+      console.log("[messages] opening edit appt modal", currentAppt);
+
+      el.querySelector("input[name='topic']").value = currentAppt.topic;
+      el.querySelector("input[name='url']").value = currentAppt.url;
+      el.querySelector("input[name='time']").value = new Date(currentAppt.time).toISOString().slice(0, 16);
+
+      el.querySelector(`input[name='role'][value='${currentAppt.teacherId === user._id ? "teaching" : "learning"}']`).checked = true;
+      el.querySelector(`input[name='type'][value='${currentAppt.type}']`).checked = true;
+
+      el.querySelector(".is-success").setAttribute("data-apptid", apptId);
+
+      // data-apptid="00cb35de-6fa1-43be-ad43-6686c574e82d"
+    }
+    
+    el.classList.add('is-active')
+  };
   const closeModal = (el) => el.classList.remove('is-active');
   const closeAllModals = () => {
     (document.querySelectorAll('.modal') || []).forEach((modalEl) => {
@@ -42,8 +64,9 @@ const setupBulmaModals = () => {
     const modal = triggerEl.dataset.target;
     const targetEl = document.getElementById(modal);
 
-    triggerEl.addEventListener('click', () => {
-      openModal(targetEl);
+    triggerEl.addEventListener('click', (e) => {
+      console.log("clicked", );
+      openModal(targetEl, e);
     });
   });
 
@@ -174,11 +197,28 @@ export default async (args, doc) => {
 
   // only render all modals html on full render 
   if (isFullRender) {
+    // render all non-template modals
     app.append(...
-      [...doc.querySelectorAll(".modal")].map(
-        (modalEl) => modalEl.cloneNode(true)
-      )
+      [...doc.querySelectorAll(".modal")]
+        .filter((modalEl) => !modalEl.classList.contains("modal-template"))
+        .map((modalEl) => modalEl.cloneNode(true))
     );
+
+    // render one create appointment modal from the template
+    const createApptModal = doc.querySelector("#modal-appt").cloneNode(true);
+    createApptModal.setAttribute("id", "modal-create-appt");
+
+    // TODO: make sure that button triggers to open edit modal have a data-apptid="<id>"
+    // render one edit appointment modal from the template
+    const editApptModal = doc.querySelector("#modal-appt").cloneNode(true);
+    editApptModal.setAttribute("id", "modal-edit-appt");
+    console.log("editApptModal", editApptModal);
+    const editForm = editApptModal.querySelector("#form-create-appt");
+    editForm.setAttribute("id", "form-edit-appt");
+    
+
+
+    app.append(createApptModal, editApptModal);
   }
 
   // either render a conversation or a blank conversation
@@ -265,13 +305,7 @@ export default async (args, doc) => {
       renderSidebar();
     });
 
-    // add event listener to create appointment
-    const createAppointmentForm = document.getElementById("form-create-appt");
-    createAppointmentForm.addEventListener("submit", async (e) => {
-      // we don't want the actual submit event to happen
-      e.preventDefault();
-
-      const formData = new FormData(createAppointmentForm);
+    const parseApptFormData = (formData) => {
       const apptData = Object.fromEntries(formData.entries());
 
       const parsedApptData = {
@@ -292,9 +326,42 @@ export default async (args, doc) => {
 
       parsedApptData.time = timestamp;
 
+      return parsedApptData;
+    }
+
+    // add event listener to create appointment
+    const createAppointmentForm = document.getElementById("form-create-appt");
+    createAppointmentForm.addEventListener("submit", (e) => {
+      // we don't want the actual submit event to happen
+      e.preventDefault();
+    });
+    createAppointmentForm.querySelector(".is-success").addEventListener("click", async () => {
+      const formData = new FormData(createAppointmentForm);
+
+      const parsedApptData = parseApptFormData(formData);
+
       console.log("[messages] creating appointment", parsedApptData);
 
       await api.appointments.create(parsedApptData);
+    });
+
+    // TODO: this requires the form to have an edited id alongside the other edit changes
+    // add event listener to edit appointment
+    const editAppointmentForm = document.getElementById("form-edit-appt");
+    editAppointmentForm.addEventListener("submit", (e) => {
+      // we don't want the actual submit event to happen
+      e.preventDefault();
+    });
+    editAppointmentForm.querySelector(".is-success").addEventListener("click", async (e) => {
+      const apptId = e.target.dataset.apptid;
+
+      const formData = new FormData(editAppointmentForm);
+
+      const parsedApptData = parseApptFormData(formData);
+
+      console.log("[messages] editing appointment", parsedApptData);
+
+      await api.appointments.update(apptId, parsedApptData);
     });
   }
   catch (err) {
@@ -311,5 +378,5 @@ export default async (args, doc) => {
   }
 
   // must be called at the end of everything to ensure all necessary elements are rendered
-  setupBulmaModals();
+  setupBulmaModals(user);
 };
