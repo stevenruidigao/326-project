@@ -11,6 +11,24 @@
     flex-direction: column;
     width: 30%;
     background-color: #333;
+
+    a {
+        display: block;
+        text-decoration: none;
+        color: white; /* FIXME: figure out what bulma colors to use */
+    }
+    .msg-preview {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .sidebar-username {
+        font-weight: bold;
+        color: yellow; /* FIXME: figure out what bulma colors to use */
+    }
+    .selected-chat {
+        background-color: #555;
+    }
 }
 #conversation-wrapper {
     --bulma-msg-header-height: 30px;
@@ -46,7 +64,7 @@
         display: flex;
         flex-direction: column-reverse;
 
-        messages-message {
+        .message {
             display: flex;
             flex-direction: row;
             align-items: center;
