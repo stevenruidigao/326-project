@@ -1,7 +1,7 @@
 import { appointments, session, users } from "../../api/index.js";
 import { setupNavbar } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
-import { HTMLAppRouteElement, goToRoute } from "../index.js";
+import { goToRoute, HTMLAppRouteElement } from "../index.js";
 
 export const loadAppointments = async (doc, profileEl, user) => {
   const apptsParentEl = profileEl.querySelector("#profile-appointments");
