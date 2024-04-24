@@ -7,6 +7,12 @@ export const appointments = new PouchDB("appointments");
 export const session = new PouchDB("mock");
 export const messages = new PouchDB("messages");
 
+/**
+ * Initialize the database with mock data if it is empty
+ * @param {PouchDBDatabase} db
+ * @param {string} key
+ * @param {Function} [cb]  callback function to run after initialization
+ */
 const initialize = async (db, key, cb) => {
   const info = await db.info();
 
@@ -24,6 +30,11 @@ const initialize = async (db, key, cb) => {
   }
 };
 
+/**
+ * Create an index for a database with the given fields
+ * @param {PouchDBDatabase} db
+ * @param  {...string} fields
+ */
 const createIndex = async (db, ...fields) => {
   await db.createIndex({ index: { fields } });
 };

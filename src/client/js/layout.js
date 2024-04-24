@@ -43,6 +43,9 @@ export const onAppLoad = () => {
   return (onLoadPromise = Promise.all([setupNavbar()]));
 };
 
+/**
+ * Run layout logic that only needs to run once
+ */
 export default () => {
   // navbar burger nav -- https://bulma.io/documentation/components/navbar/
   const $navbarBurgers = [...document.querySelectorAll(".navbar-burger")];
@@ -57,6 +60,4 @@ export default () => {
       $target.classList.toggle("is-active");
     });
   });
-
-  const user = session.getUser();
 };
