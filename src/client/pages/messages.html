@@ -40,16 +40,78 @@
 </div>
 
 <!-- create appointment modal -->
-<!-- NOTE needs: am I learning or teaching; when is this happening, in-person or remote -> url or location -->
+<!-- NOTE needs:
+    am I learning or teaching
+    when is this happening
+    in-person or remote
+    url? -->
 <div id="modal-create-appt" class="modal">
     <div class="modal-background"></div>
+    <div class="modal-card">
+        <form id="form-create-appt">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Create Appointment</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                
+                <div class="field">
+                    <label class="label">Topic:</label>
+                    <div class="control">
+                        <input class="input" type="text" name="topic" placeholder="CS 326" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">My Role:</label>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="role" value="learning" required>
+                            Learning
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="role" value="teaching" required>
+                            Teaching
+                        </label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Appointment Time:</label>
+                    <div class="control">
+                        <input class="input" type="datetime-local" name="time" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Location:</label>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="type" value="in-person" required>
+                            In-Person
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="type" value="online" required>
+                            Online
+                        </label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">URL:</label>
+                    <div class="control">
+                        <input class="input" type="text" name="url" placeholder="https://zoom.us/meeting/0123456789">
+                    </div>
+                </div>
 
-    <div class="modal-content">
-        <div class="box">
-            <p>Modal JS example</p>
-            <!-- Your content -->
-        </div>
+            </section>
+            <footer class="modal-card-foot">
+                <div class="buttons field is-grouped">
+                    <div class="control">
+                        <button type="submit" class="button is-success">Create Appointment</button>
+                    </div>
+                    <div class="control">
+                        <button class="button">Cancel</button>
+                    </div>
+                </div>
+            </footer>
+
+        </form>
     </div>
-
-    <button class="modal-close is-large" aria-label="close"></button>
 </div>

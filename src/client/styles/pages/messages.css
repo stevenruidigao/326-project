@@ -98,6 +98,7 @@
             #create-appt-button {
                 width: var(--msg-sender-height);
                 padding: 0 10px;
+                height: 100%;
             }
     
             /* TODO: override the default focus look */
