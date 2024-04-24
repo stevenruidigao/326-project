@@ -226,6 +226,7 @@ export default async (args, doc) => {
   try {
     // check to see if the other user exists, if doesn't error, continue rendering
     const otherUser = await api.users.get(args.id);
+    
 
     setTitle(`Chat with ${otherUser.name}`);
 
@@ -248,6 +249,31 @@ export default async (args, doc) => {
 
     convoWrapperEl.appendChild(convoEl);
 
+    // unpaginated get all appointments by calling until no more next
+    const getAllAppts = async () => {
+      const allAppts = [];
+      for (let curPage = 1; ; curPage++) {
+        const response = await api.appointments.all(curPage);
+        allAppts.push(...Array.from(response));
+        if (!response.pagination.next) break;
+      }
+      return allAppts;
+    };
+    
+
+    // get all appointments between user and other user
+    const relevantAppts = (await getAllAppts()).filter((appt) => {
+      return (appt.teacherId === user._id && appt.learnerId === otherUser._id)
+          || (appt.teacherId === otherUser._id && appt.learnerId === user._id);
+    });
+
+    // sort appointments by time in place
+    relevantAppts.sort((a, b) => b.time - a.time);
+
+    console.log("[messages] relevant appts", relevantAppts);
+
+
+
 
     // returns a new message element to be added to a convo
     // do not use for new messages that aren't part of the current conversation
@@ -265,13 +291,47 @@ export default async (args, doc) => {
       return messageEl;
     };
 
+    const createNewAppointmentEl = async (appt) => {
+      const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
-    if (conversations[otherUser._id]) {
+      const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
+      const time = new Date(appt.time).toLocaleString();
+
+      apptEl.querySelector("h4.time").innerText = time;
+      apptEl.querySelector("span.role").innerText = apptRole;
+      apptEl.querySelector("span.topic").innerText = appt.topic;
+      apptEl.querySelector("span.type").innerText = appt.type;
+      apptEl.querySelector("span.url").innerText = appt.url;
+
+      apptEl.querySelector(".js-modal-trigger").setAttribute("data-apptid", appt._id);
+
+      return apptEl;
+    };
+
+    const zippedElements = (convos, appts) => {
+      if (!convos) return appts.map(createNewAppointmentEl);
+      
+      const allMessageBlocks = [...convos, ...appts];
+      allMessageBlocks.sort((a, b) => b.time - a.time);
+
+      return allMessageBlocks.map((msg) => {
+        if (msg.text) {
+          return createNewMessageEl(msg);
+        }
+        else {
+          return createNewAppointmentEl(msg);
+        }
+      });
+    };
+
+    const relevantConvos = conversations[otherUser._id]
+
+    // TODO: add an || check for appointments so that no msgs but yes appts still render
+    if (relevantConvos || relevantAppts.length) {
+      console.log("HEHEHEHE", relevantConvos, relevantAppts);
       messageContainerEl.append(...(
         await Promise.all(
-          conversations[otherUser._id].map(
-            (msg) => createNewMessageEl(msg)
-          )
+          zippedElements(relevantConvos, relevantAppts)
         )
       ));
     }

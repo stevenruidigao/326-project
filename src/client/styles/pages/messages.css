@@ -66,10 +66,9 @@
             
     
             /* FIXME: messages styling overriden sometimes by app.css styles and bulma styles */
-            div.message {
+            div.message-block {
                 display: block;
                 padding: 10px;
-                background-color: #555;
                 height: auto;
                 width: 100%;
                 margin: 5px auto;
@@ -78,11 +77,26 @@
     
                 h4 {
                     font-weight: bold;
-                    color: lightyellow;
                 }
     
                 &:hover {
                     background-color: #666;
+                }
+
+
+                &.message {
+                    background-color: #555;
+
+                    h4 {
+                        color: lightyellow;
+                    }
+                }
+                &.appointment {
+                    background-color: #333;
+
+                    h4 {
+                        color: lightgreen;
+                    }
                 }
             }
         }
