@@ -1,7 +1,7 @@
-import { appointments, session, users } from "../../api/index.js";
-import { setupNavbar } from "../../layout.js";
-import { app, setTitle, toggleElementAll } from "../helper.js";
-import { HTMLAppRouteElement, goToRoute } from "../index.js";
+import {appointments, session, users} from "../../api/index.js";
+import {setupNavbar} from "../../layout.js";
+import {app, setTitle, toggleElementAll} from "../helper.js";
+import {goToRoute, HTMLAppRouteElement} from "../index.js";
 
 export const loadAppointments = async (doc, profileEl, user) => {
   const apptsParentEl = profileEl.querySelector("#profile-appointments");
@@ -9,41 +9,38 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   apptsParentEl.classList.remove("is-hidden");
 
-  const userAppointments = (await appointments.withUser(user._id, 1)).slice(
-    0,
-    3,
-  );
+  const userAppointments = (await appointments.withUser(user._id, 1))
+                               .slice(
+                                   0,
+                                   3,
+                               );
 
   const usersInvolved = await appointments.getUsersInvolved(userAppointments);
 
   // render appointments
   for (const appt of userAppointments) {
-    const newApptEl = doc
-      .querySelector(".profile-appointments-cell")
-      .cloneNode(true);
+    const newApptEl =
+        doc.querySelector(".profile-appointments-cell").cloneNode(true);
     newApptEl.querySelector(".profile-appointments-card-topic").innerText =
-      appt.topic;
+        appt.topic;
 
     const date = new Date(appt.time);
 
     newApptEl.querySelector(".profile-appointments-card-time").innerText =
-      date.toLocaleDateString();
-    newApptEl
-      .querySelector(".profile-appointments-card-time")
-      .setAttribute("datetime", date.toISOString());
+        date.toLocaleDateString();
+    newApptEl.querySelector(".profile-appointments-card-time")
+        .setAttribute("datetime", date.toISOString());
 
     const otherUser =
-      usersInvolved[
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId
-      ];
+        usersInvolved[appt.teacherId === user._id ? appt.learnerId
+                                                  : appt.teacherId];
     const link = new HTMLAppRouteElement();
     link.route = "user";
     link.setArg("id", otherUser._id);
     link.innerText = `@${otherUser.username}`;
 
-    newApptEl
-      .querySelector(".profile-appointments-card-user")
-      .appendChild(link);
+    newApptEl.querySelector(".profile-appointments-card-user")
+        .appendChild(link);
 
     apptsGridEl.appendChild(newApptEl);
   }
@@ -68,9 +65,9 @@ export default async (args, doc) => {
 
   app.innerHTML = "";
 
-  const user = username
-    ? await users[getMethod](username, { attachments: true, binary: true })
-    : loggedInUser;
+  const user = username ? await users[getMethod](
+                              username, {attachments : true, binary : true})
+                        : loggedInUser;
   const isEditingUser = !args.id;
   const isSameUser = loggedInUser?._id === user?._id;
 
@@ -92,7 +89,7 @@ export default async (args, doc) => {
   editContent.classList.toggle("is-hidden", !isEditingUser);
 
   const content = div.querySelector(
-    `#profile-${isEditingUser ? "edit" : "public"}`,
+      `#profile-${isEditingUser ? "edit" : "public"}`,
   );
   const key = isEditingUser ? "value" : "innerText";
 
@@ -133,14 +130,13 @@ export default async (args, doc) => {
 
       await users.update(user._id, {
         ...user,
-        _attachments: file
-          ? {
-              avatar: {
-                content_type: file.type,
-                data: file,
-              },
-            }
-          : {},
+        _attachments : file ? {
+          avatar : {
+            content_type : file.type,
+            data : file,
+          },
+        }
+                            : {},
       });
 
       imageEl.src = file ? URL.createObjectURL(file) : "/images/logo.png";
@@ -183,11 +179,11 @@ export default async (args, doc) => {
       data.skillsWanted = data.skillsWanted?.split(/,\s+/) || [];
 
       users
-        .update(user._id, {
-          ...user,
-          ...data,
-        })
-        .finally(() => submitEl.classList.remove("is-loading"));
+          .update(user._id, {
+            ...user,
+            ...data,
+          })
+          .finally(() => submitEl.classList.remove("is-loading"));
 
       // TODO backend validation of duplicate email & username
     });
@@ -212,15 +208,15 @@ export default async (args, doc) => {
     const interests = user.skillsWanted || [];
 
     const addSkills = (parentEl, searchKey, skills) =>
-      skills.forEach((skill) => {
-        const link = new HTMLAppRouteElement();
+        skills.forEach((skill) => {
+          const link = new HTMLAppRouteElement();
 
-        link.route = "browse";
-        link.search = `${searchKey}=${skill}`;
-        link.innerText = skill;
+          link.route = "browse";
+          link.search = `${searchKey}=${skill}`;
+          link.innerText = skill;
 
-        parentEl.appendChild(link);
-      });
+          parentEl.appendChild(link);
+        });
 
     addSkills(knowsEl, "knows", known);
     addSkills(interestsEl, "interests", interests);
