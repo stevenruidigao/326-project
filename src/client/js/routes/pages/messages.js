@@ -407,6 +407,10 @@ export default async (args, doc) => {
       const messageContentEl = messageEl.querySelector(".msg-content");
       messageContentEl.innerText = msg.text;
 
+      const timeEl = messageEl.querySelector(".msg-time");
+      timeEl.innerText = new Date(msg.time).toLocaleString();
+      timeEl.timestamp = msg.time;
+
       messageEl.dataset.user = isThisUser ? "self" : "other";
 
       return messageEl;
