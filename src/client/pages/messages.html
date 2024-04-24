@@ -1,5 +1,5 @@
 <div id="message-sidebar" class="menu pt-3 column is-one-quarter">
-    <p class="menu-label has-text-weight-bold px-2 mt-2">Conversations</p>
+    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Conversations</p>
     <ul id="message-list" class="menu-list"></ul>
 </div>
 
@@ -32,40 +32,47 @@
             <h2 id="convo-name">Chat with ???</h2>
         </a>
     </div> -->
-    <section class="hero is-small is-link" id="convo-header">
+    <section class="hero is-small" id="convo-header">
         <div class="hero-body">
-            <a is="app-route" route="user" when-active="is-active">
-                <h2 id="convo-name">Chat with ???</h2>
+            <a is="app-route" route="user" when-active="is-active" class="has-text-link-bold">
+                <h2 id="convo-name" class="has-font-weight-semibold">Chat with ???</h2>
             </a>
         </div>
-        <!-- <div class="hero-body">
-          <p class="title">Small hero</p>
-          <p class="subtitle">Small subtitle</p>
-        </div> -->
       </section>
     <div id="message-container"></div>
-    <form id="message-form">
-        <button type="button" id="create-appt-button" class="js-modal-trigger" data-target="modal-create-appt">+</button>
-        <input type="text" id="message-box" placeholder="Type a message..." autocomplete="off">
-        <button type="submit" id="send-button">Send</button>
+    <form id="message-form" class="form p-1">
+        <div class="field has-addons">
+            <div class="control">
+                <button type="button" id="create-appt-button" class="button is-info js-modal-trigger" data-target="modal-create-appt">+</button>
+            </div>
+            <div class="control is-expanded">
+                <input type="text" id="message-box" placeholder="Type a message..." autocomplete="off" class="input">
+            </div>
+            <div class="control">
+                <button type="submit" id="send-button" class="button is-primary">Send</button>
+            </div>
+        </div>
     </form>
 </div>
 
 <!-- loaded into conversation-wrapper when no convo is selected -->
-<div id="unselected-convo">
+<div id="unselected-convo" class="column">
     <!-- TODO: add image/text saying no convo selected -->
-    <h2>No conversation selected</h2>
+    <div class="container">
+        <h2 class="subtitle">No conversation selected</h2>
+    </div>
 </div>
 
 <!-- template for each individual message rendered in a conversation -->
-<div class="message message-block">
+<div class="message message-block has-background-primary-soft has-text-primary-bold">
     <p class="msg-from has-text-weight-bold has-text-warning"></p>
+    <time class="msg-time is-pulled-right">asdsd</time>
     <p class="msg-content"></p>
 </div>
 <!-- template for each individual appointment to render in a conversation -->
-<div class="appointment message-block">
-    <p class="time"></p>
-    <p class="activity has-text-weight-bold">
+<div class="appointment message-block has-background-success-bold has-text-success-soft">
+    <p class="time has-text-success has-text-weight-bold"></p>
+    <p class="activity">
         <span class="role"></span> <span class="topic"></span>
     </p>
     <p class="type-container">Meeting <span class="type"></span></p>
