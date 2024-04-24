@@ -1,0 +1,12 @@
+[data-file="profile"] {
+
+    .profile-knows {
+        a:not(:first-of-type)::before {
+            content: ", ";
+        }
+    }
+
+    .profile-appointments-card-topic {
+        font-style: italic;
+    }
+}

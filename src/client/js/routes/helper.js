@@ -43,3 +43,9 @@ export const toggleElement = (
 
   return toggleElementAll([el], className, force, parent);
 };
+
+export const setTitle = (title) => {
+  document.title = [title, title && " | ", "TutorSwap"]
+    .filter(Boolean)
+    .join("");
+};
