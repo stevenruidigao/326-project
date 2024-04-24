@@ -147,6 +147,8 @@ export default async (args, doc) => {
     // NOTE: cannot use autofocus attribute in the html since it won't refocus when changing conversations with a click
     messageInputEl.querySelector("input").focus();
 
+    
+    convoHeaderEl.querySelector("a").setAttribute(":id", otherUser._id);
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
 
 
@@ -178,10 +180,11 @@ export default async (args, doc) => {
     }
     else {
       console.log(`[messages] no messages found between user ${user._id} and ${otherUser._id}`);
-      // TODO: else: if no messages found
-        // create an empty conversation -- consider adding a ui bit to prompt "start the conversation!"
-        // (allow user to send message to other user)
-        // create a blank conversation in the sidebar
+      // NOTE: I don't think any additional code is necessary for a blank conversation
+      // TODO: consider adding a ui bit to prompt "start the conversation!"
+      
+      // TODO: also consider creating a blank conversation in the sidebar
+        // isn't strictly necessary, honestly works as is
     }
 
 
