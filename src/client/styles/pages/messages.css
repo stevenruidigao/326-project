@@ -94,6 +94,11 @@
             align-items: center;
             height: var(--msg-sender-height);
             background-color: #555;
+
+            #create-appt-button {
+                width: var(--msg-sender-height);
+                padding: 0 10px;
+            }
     
             /* TODO: override the default focus look */
             input {
