@@ -109,7 +109,7 @@ async function createUserCard(user) {
   name.className = "title is-5";
 
   const username = new HTMLAppRouteElement();
-  username.setAttribute("route", "profile");
+  username.setAttribute("route", "user");
   username.setAttribute(":id", user._id);
   username.innerText = `@${user.username}`;
   username.className = "username is-6";
