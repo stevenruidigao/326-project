@@ -4,9 +4,34 @@ import { app } from "./helper.js";
 
 import * as pages from "./pages.js";
 
+/**
+ * Prefix for all paths in the app
+ * @type {string}
+ */
 export const PATH_PREFIX = "/#";
+
+/**
+ * Regular expression to match the path prefix
+ * @type {RegExp}
+ */
 export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 
+/**
+ * @typedef {{
+ *   path: string,
+ *   file: string,
+ *   hasHTML?: boolean,
+ *   hasCSS?: boolean,
+ * }} Route
+*/
+/**
+ * The routes for the application, mapped from route name to route data.
+ * - `path` may contain dynamic parts, referenced to as arguments, eg. `/profile/:id`
+ * - `file` is the name of the JS file to load for the route, located at `/pages/[file].js`
+ * - `hasHTML` loads the HTML fragment for the route, located at `/pages/[file].html`
+ * - `hasCSS` loads the CSS for the route, located at `/styles/pages/[file].css`
+ * @type {Object<string, Route>}
+ */
 export const routes = {
   home: { path: "/", file: "home", hasHTML: true },
   dashboard: { path: "/dashboard", file: "dashboard" },
@@ -24,7 +49,16 @@ export const routes = {
   404: { file: "404" },
 };
 
+/**
+ * The loading element to show when a page is loading
+ * @type {HTMLElement}
+ */
 const loadingEl = document.getElementById("loading");
+
+/**
+ * The styles for the current route
+ * @type {HTMLStyleElement}
+ */
 const routeStyles = document.createElement("style");
 
 /**
@@ -36,11 +70,15 @@ const routeStyles = document.createElement("style");
  */
 
 /**
+ * Information on the current loaded page.
+ * Likely not null when it is used, but it is null until the first page is loaded.
  * @type {RoutePage}
  */
 let current = null;
 
 /**
+ * Information on the previously loaded page.
+ * If the browser was refreshed, this will be null. Otherwise, it will be data on the last page.
  * @type {RoutePage}
  */
 let previous = null;
@@ -57,6 +95,9 @@ export const getCurrent = () => current;
  */
 export const getPrevious = () => previous;
 
+/**
+ * Scuffed way to handle events before & after route changes.
+ */
 export const callbacks = {
   beforeRouteChange: [],
   afterPageLoad: [],
@@ -124,7 +165,9 @@ export const load = async (routeName, args = {}, search) => {
 
   if (document) pages.registerCustomComponents(route.file, document);
 
-  // in case page needs to do things before being unloaded, to "reset" something
+  /**
+   * @type {RoutePage}
+   */
   const next = {
     module: routeJS,
     file: route.file,
@@ -135,22 +178,32 @@ export const load = async (routeName, args = {}, search) => {
     search,
   };
 
+  // in case page needs to do things before being unloaded, to "reset" something
   current?.module?.onunload?.(current, next);
   previous = current;
   current = next;
 
-  app.setAttribute("data-route", current.name);
-  app.setAttribute("data-file", current.file);
-  app.setAttribute("data-path", current.path);
+  // Update app data attributes; useful for CSS styling.
+  app.dataset.route = current.name;
+  app.dataset.file = current.file;
+  app.dataset.path = current.path;
 
+  // Replace the old page's CSS with the new page's CSS.
+  // Most of this CSS should be scoped anyways, but it doesn't hurt to get rid of it.
   routeStyles.textContent = css || "";
 
   await init(args, document);
 
+  // After loading the page, finalize the route change.
+  // Sometimes `init` may go to another route - somehow this has not caused issues
+  // since these callbacks are called after that function finishes. Something to watch out for.
+
+  // Call the route change callbacks after the page has loaded
   callbacks.afterPageLoad.forEach((cb) => cb(routeName, args));
 
   loadingEl.classList.remove("is-active");
 
+  // If the route has a specific onload function (I don't believe any do), call it.
   await routeJS?.onload?.(routeName, args);
 };
 
@@ -170,6 +223,7 @@ export const convertRouteToPath = (name, args, search) => {
 
   let path = route.path;
 
+  // Replace dynamic parts of path with their argument values
   for (const key of Object.keys(args))
     path = path.replace(`:${key}`, args[key]);
 
@@ -260,11 +314,12 @@ export const goToRoute = (name, args, search) => {
 
 /**
  * Returns the application's path, supporting hash-only & otherwise.
- * Includes search params!
+ * Includes search params! Does NOT include the path prefix.
  * @param {boolean} force - force obtaining from current browser location
  * @returns {string}
  */
 export const getPath = (force = false) => {
+  // if there is a page currently loaded, use that path as that's the one the app knows
   if (!force && current?.path)
     return [current.path, current.search].filter(Boolean).join("?");
 
@@ -283,7 +338,7 @@ export const loadPath = (def) => {
   const path = getPath(true);
   const info = def || convertPathToRoute(path);
 
-  console.log("[routes] loadPath() path =", path, "=>", info);
+  console.debug("[routes] loadPath() path =", path, "=>", info);
 
   // coming from popstate, cannot serialize URLSearchParams
   if (typeof info?.search === "string")
@@ -292,7 +347,21 @@ export const loadPath = (def) => {
   load(info?.route, info?.data, info?.search);
 };
 
+/**
+ * Custom HTML element extending `<a>` for app routes.
+ * - `route` attribute is the name of the route to navigate to
+ * - `:arg` attributes are arguments to pass to the route
+ * - `search` attribute is the search params to pass to the route
+ * - `when-active` attribute is a space-separated list of classes to add when the route is active
+ * @extends {HTMLAnchorElement}
+ * @example
+ * <a is="app-route" route="profile" :id="5" when-active="is-active">Profile</a>
+ * <a is="app-route" route="profile" :id="5" search="key=value">Profile</a>
+ */
 export class HTMLAppRouteElement extends HTMLAnchorElement {
+  /**
+   * Listen to changes on these attributes (+ route arguments as those are dynamic)
+   */
   static observedAttributes = ["name", "when-active", "search"];
 
   #args = {};
@@ -300,6 +369,9 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   #onRouteChange;
 
   connectedCallback() {
+    // Handle clicks on app routes.
+    // This is not needed when using a hash router (like we are now, with PATH_PREFIX=/#),
+    // but it would be were we to stop using it.
     this.addEventListener("click", (ev) => {
       if (ev.ctrlKey || ev.metaKey || this.target === "_blank") return;
 
@@ -324,6 +396,10 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     this._updateAttrs();
   }
 
+  /**
+   * Recalculate the route arguments & final `href` attribute
+   * based on the current attributes of the element.
+   */
   _updateAttrs() {
     // update url params
     const args = {};
@@ -353,6 +429,9 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     this._updateActiveState();
   }
 
+  /**
+   * Update the active state of the app route link.
+   */
   _updateActiveState() {
     // calculate whether the route name & arguments match
     const isSameRoute = getCurrent()?.name === this.route;
@@ -382,28 +461,54 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     }
   }
 
+  /**
+   * The name of the route to navigate to
+   * @returns {string}
+   */
   get route() {
     return this.getAttribute("route");
   }
 
+  /**
+   * Set the name of the route to navigate to
+   * @param {string} route
+   */
   set route(route) {
     this.setAttribute("route", route);
     this._updateAttrs();
   }
 
+  /**
+   * The arguments to pass to the route.
+   * Changes to this object do not update the element.
+   * @returns {object}
+   */
   get args() {
     return { ...this.#args };
   }
 
+  /**
+   * Set a route's argument
+   * @param {string} key the route argument
+   * @param {string} value 
+   */
   setArg(key, value) {
     this.setAttribute(`:${key}`, value);
     this._updateAttrs();
   }
 
+  /**
+   * Obtain the search params for the route.
+   * Overrides the original `a.search` since we're using hash routing.
+   */
   get search() {
     return this.getAttribute("search");
   }
 
+  /**
+   * Set the search params for the route.
+   * @param {string|URLSearchParams} value
+   */
   set search(value) {
     this.setAttribute("search", String(value));
     this._updateAttrs();
