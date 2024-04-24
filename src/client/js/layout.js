@@ -1,5 +1,5 @@
-import { session, users } from "./api/index.js";
-import { toggleElement, toggleElementAll } from "./routes/helper.js";
+import {session, users} from "./api/index.js";
+import {toggleElement, toggleElementAll} from "./routes/helper.js";
 
 let onLoadPromise = null;
 
@@ -38,21 +38,23 @@ export const setupNavbar = async () => {
  * @returns {Promise}
  */
 export const onAppLoad = () => {
-  if (onLoadPromise) return onLoadPromise;
+  if (onLoadPromise)
+    return onLoadPromise;
 
-  return (onLoadPromise = Promise.all([setupNavbar()]));
+  return (onLoadPromise = Promise.all([ setupNavbar() ]));
 };
 
 export default () => {
   // navbar burger nav -- https://bulma.io/documentation/components/navbar/
-  const $navbarBurgers = [...document.querySelectorAll(".navbar-burger")];
+  const $navbarBurgers = [...document.querySelectorAll(".navbar-burger") ];
 
   $navbarBurgers.forEach((el) => {
     el.addEventListener("click", () => {
       const target = el.dataset.target;
       const $target = document.getElementById(target);
 
-      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+      // Toggle the "is-active" class on both the "navbar-burger" and the
+      // "navbar-menu"
       el.classList.toggle("is-active");
       $target.classList.toggle("is-active");
     });
