@@ -72,7 +72,7 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
  */
 async function createUserCard(user) {
   const card = document.createElement("div");
-  card.className = "card user-card cell";
+  card.className = "card user-card cell is-col-span-2";
 
   const cardContent = document.createElement("div");
   cardContent.className = "card-content";
@@ -92,6 +92,7 @@ async function createUserCard(user) {
   console.log(avatar, user);
 
   const profilePicture = document.createElement("img");
+  profilePicture.className = "is-rounded";
   profilePicture.src = avatar
     ? URL.createObjectURL(avatar)
     : "/images/logo.png";
@@ -129,9 +130,9 @@ async function createUserCard(user) {
   const knows = document.createElement("span");
   knows.className = "skills";
 
-  knows.innerText = "Knows: " + (user.skills.length == 0 ? "None" : "");
+  knows.innerText = "Knows: " + (!user.skills?.length ? "None" : "");
 
-  for (const known of user.skills) {
+  for (const known of user.skills || []) {
     const skill = new HTMLAppRouteElement();
     skill.setAttribute("route", "browse");
     skill.setAttribute("search", "?knows=" + known);
@@ -147,9 +148,9 @@ async function createUserCard(user) {
   interests.className = "skills";
 
   interests.innerText =
-    "Interests: " + (user.skillsWanted.length == 0 ? "None" : "");
+    "Interests: " + (!user.skillsWanted?.length ? "None" : "");
 
-  for (const interest of user.skillsWanted) {
+  for (const interest of user.skillsWanted || []) {
     const skill = new HTMLAppRouteElement();
     skill.setAttribute("route", "browse");
     skill.setAttribute("search", "?interests=" + interest);
@@ -245,19 +246,19 @@ export default async (args) => {
 
   // User info (grid)
   const browseContainer = document.createElement("div");
-  browseContainer.className = "grid is-col-min-10";
+  browseContainer.className = "grid mt-2";
   browseContainer.id = "browse";
 
   app.appendChild(browseContainer);
 
   const loadMoreButton = document.createElement("button");
   loadMoreButton.innerText = "Load More";
-  loadMoreButton.className = "button is-light is-hidden";
+  loadMoreButton.className = "button is-light is-hidden mb-5";
   loadMoreButton.id = "load-more-button";
 
   const endOfResults = document.createElement("p");
   endOfResults.innerText = "You're at the end of the search results!";
-  endOfResults.className = "is-hidden";
+  endOfResults.className = "is-hidden mb-5";
   endOfResults.id = "load-end";
 
   app.appendChild(loadMoreButton);
