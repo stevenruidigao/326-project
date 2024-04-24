@@ -360,9 +360,11 @@ export const loadPath = (def) => {
  */
 export class HTMLAppRouteElement extends HTMLAnchorElement {
   /**
-   * Listen to changes on these attributes (+ route arguments as those are dynamic)
+   * Listen to changes on these attributes (+ route arguments as those are dynamic).
+   * NOTE: Weird behavior occurs with this - it seems that adding to this list does not
+   * update existing elements? Only uses list when registering the element with browser? Try to reuse params!!
    */
-  static observedAttributes = ["name", "when-active", "search"];
+  static observedAttributes = ["route", "when-active", "search", ":id", ":search"];
 
   #args = {};
   #search = null;
@@ -392,7 +394,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   }
 
   // Recompute 'href' link (for new tab clicks) when parameters change
-  attributeChangedCallback() {
+  attributeChangedCallback(key, old, newval) {
     this._updateAttrs();
   }
 
