@@ -44,6 +44,10 @@ export const toggleElement = (
   return toggleElementAll([el], className, force, parent);
 };
 
+/**
+ * Set the document title, appending " | TutorSwap" if a title is provided
+ * @param {string} title
+ */
 export const setTitle = (title) => {
   document.title = [title, title && " | ", "TutorSwap"]
     .filter(Boolean)
