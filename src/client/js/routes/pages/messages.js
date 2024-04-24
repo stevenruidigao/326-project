@@ -330,6 +330,7 @@ export default async (args, doc) => {
       return parsedApptData;
     }
 
+    // TODO: should i do some form validation? or leave it up to the backend?
     // add event listener to create appointment
     const createAppointmentForm = document.getElementById("form-create-appt");
     console.log("create appt form", createAppointmentForm);
@@ -348,7 +349,6 @@ export default async (args, doc) => {
       await api.appointments.create(parsedApptData);
     });
 
-    // TODO: this requires the form to have an edited id alongside the other edit changes
     // add event listener to edit appointment
     const editAppointmentForm = document.getElementById("form-edit-appt");
     console.log("edit appt form", editAppointmentForm);
