@@ -72,7 +72,7 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
  */
 async function createUserCard(user) {
   const card = document.createElement("div");
-  card.className = "card user-card";
+  card.className = "card user-card cell";
 
   const cardContent = document.createElement("div");
   cardContent.className = "card-content";
@@ -243,6 +243,7 @@ export default async (args) => {
 
   // User info (grid)
   const browseContainer = document.createElement("div");
+  browseContainer.className = "grid is-col-min-10";
   browseContainer.id = "browse";
 
   app.appendChild(browseContainer);

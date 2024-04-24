@@ -222,8 +222,8 @@ export default async (args, doc) => {
         parentEl.appendChild(link);
       });
 
-    addSkills(knowsEl, "has", known);
-    addSkills(interestsEl, "wants", interests);
+    addSkills(knowsEl, "knows", known);
+    addSkills(interestsEl, "interests", interests);
 
     // obtain sample set of appointments
     loadAppointments(doc, div, user);
