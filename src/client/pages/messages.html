@@ -1,5 +1,5 @@
-<div id="message-sidebar" class="menu pt-3 column is-one-quarter">
-    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Conversations</p>
+<div id="message-sidebar" class="menu column is-one-quarter">
+    <p class="has-text-weight-semibold px-2 pt-2 py-2 mb-0 subtitle has-text-primary-bold conversations-label">Conversations</p>
     <ul id="message-list" class="menu-list"></ul>
 </div>
 
@@ -40,7 +40,7 @@
         </div>
       </section>
     <div id="message-container"></div>
-    <form id="message-form" class="form p-1">
+    <form id="message-form" class="form pt-1 pb-2 px-2">
         <div class="field has-addons">
             <div class="control">
                 <button type="button" id="create-appt-button" class="button is-info js-modal-trigger" data-target="modal-create-appt">+</button>
@@ -70,14 +70,14 @@
     <p class="msg-content"></p>
 </div>
 <!-- template for each individual appointment to render in a conversation -->
-<div class="appointment message-block has-background-success-bold has-text-success-soft">
-    <p class="time has-text-success has-text-weight-bold"></p>
+<div class="appointment message-block has-background-success-bolder has-text-success-invert">
+    <button type="button" id="edit-appt-button" class="js-modal-trigger button is-outlined is-inverted is-small is-pulled-right" data-target="modal-edit-appt" data-apptid="">Edit</button>
+    <p class="time has-text-success-soft-invert has-text-weight-bold"></p>
     <p class="activity">
         <span class="role"></span> <span class="topic"></span>
     </p>
     <p class="type-container">Meeting <span class="type"></span></p>
     <p class="url-container">URL: <span class="url"></span></p>
-    <button type="button" id="edit-appt-button" class="js-modal-trigger" data-target="modal-edit-appt" data-apptid="">Edit</button>
 </div>
 
 <!-- create/edit appointment modal -->

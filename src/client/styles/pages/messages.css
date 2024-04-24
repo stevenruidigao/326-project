@@ -8,6 +8,13 @@
     overflow-x: hidden;
     border-right: 1px solid var(--bulma-primary-on-scheme);
 
+    .conversations-label {
+        position: sticky;
+        top: 0;
+        background: var(--bulma-scheme-invert);
+        z-index: 9;
+    }
+
     a {
         display: block;
         text-decoration: none;
