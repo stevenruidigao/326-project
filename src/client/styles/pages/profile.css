@@ -9,4 +9,10 @@
     .profile-appointments-card-topic {
         font-style: italic;
     }
+
+    #profile-id {
+        &::before {
+            content: "User ID: ";
+        }
+    }
 }

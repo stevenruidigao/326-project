@@ -14,6 +14,11 @@ export const loadAppointments = async (doc, profileEl, user) => {
     3,
   );
 
+  if (!userAppointments.length) {
+    apptsParentEl.classList.add("is-hidden");
+    return;
+  }
+
   const usersInvolved = await appointments.getUsersInvolved(userAppointments);
 
   // render appointments
