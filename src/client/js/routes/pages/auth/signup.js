@@ -47,8 +47,15 @@ export const register = async (data) => {
   return goToRoute("dashboard");
 };
 
-export default (args, doc) => {
+export default async (args, doc) => {
   app.innerHTML = "";
+
+  const loggedInUser = await session.current();
+
+  if (loggedInUser) {
+    await goToRoute("dashboard");
+    return;
+  }
 
   const formContainer = doc.querySelector("#signup-form");
   const form = doc.querySelector("form");

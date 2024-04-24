@@ -12,8 +12,15 @@ const showError = (el, error) => {
   }
 };
 
-export default (args, doc) => {
+export default async (args, doc) => {
   app.innerHTML = "";
+
+  const loggedInUser = await session.current();
+
+  if (loggedInUser) {
+    await goToRoute("dashboard");
+    return;
+  }
 
   console.log("** login loaded with args", args);
   
