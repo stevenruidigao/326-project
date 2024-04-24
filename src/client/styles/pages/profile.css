@@ -1,6 +1,6 @@
 [data-file="profile"] {
 
-    .profile-knows {
+    .profile-knows, .profile-interests {
         a:not(:first-of-type)::before {
             content: ", ";
         }
