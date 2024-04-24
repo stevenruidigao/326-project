@@ -85,25 +85,22 @@ export default async (args, doc) => {
     const otherUser = await api.users.get(otherUserId);
     const lastMsg = conversations[convoKey][0];
 
-    const previewEl = document.createElement("messages-sidebar-preview");
+    const previewEl = doc.querySelector(".msg-sidebar-preview").cloneNode(true);
+    // FIXME: replace id with "data-userId" attribute
     previewEl.setAttribute("id", `preview-${otherUserId}`);
 
     // routes link to the right convo, removes the highlight in case it's highlighted
-    const linkEl = previewEl.shadowRoot.querySelector("a");
+    const linkEl = previewEl.querySelector("a");
     linkEl.setAttribute(":id", otherUserId);
     linkEl.classList.remove("selected-chat");
     
-    const usernameEl = document.createElement("span");
-    usernameEl.setAttribute("slot", "sidebar-username");
+    const usernameEl = linkEl.querySelector("h4");
     usernameEl.innerText = otherUser.name;
     
-    const messageEl = document.createElement("span");
+    const messageEl = linkEl.querySelector("p");
     messageEl.classList.add("msg-preview-text");
-    messageEl.setAttribute("slot", "preview");
     messageEl.innerText = lastMsg.text;
     
-    previewEl.appendChild(usernameEl);
-    previewEl.appendChild(messageEl);
     
     previewContainer.appendChild(previewEl);
   }
@@ -126,8 +123,10 @@ export default async (args, doc) => {
     convoWrapperEl.appendChild(convoEl);
 
     const convoHeaderEl = convoEl.querySelector("#convo-header");
-    const messageContainerEl = convoEl.querySelector("#message-container"); // FIXME: can probably get rid of this
+    const messageContainerEl = convoEl.querySelector("#message-container");
     const messageInputEl = convoEl.querySelector("#message-form");
+
+    messageInputEl.querySelector("input").focus();
 
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
 
@@ -142,9 +141,10 @@ export default async (args, doc) => {
       // FIXME: check if this code actually runs correctly (might not be able to be checked until websockets is implemented, may have to just do a manual wait 5 seconds then trigger a message send to see if the preview updates)
       if (updateSidebar) {
         // get the preview element
+        // FIXME: replace id with "data-userId" attribute in a querySelector
         const previewEl = document.getElementById(`preview-${msg.fromId === user._id ? msg.toId : msg.fromId}`);
         // get the message element
-        const messageEl = previewEl.querySelector("span.msg-preview-text");
+        const messageEl = previewEl.querySelector("a p.msg-preview");
         // update the message element
         messageEl.innerText = msg.text;
       }
@@ -153,20 +153,16 @@ export default async (args, doc) => {
         // TODO: also render message in the conversation
         console.log("rendering new message in conversation");
 
-        const messageEl = document.createElement("messages-message");
+        // const messageEl = document.createElement("messages-message");
+        const messageEl = doc.querySelector(".message").cloneNode(true);
 
         const msgName = msg.fromId === user._id ? user.name : otherUser.name;
         
-        const usernameEl = document.createElement("span");
-        usernameEl.setAttribute("slot", "name-from");
+        const usernameEl = messageEl.querySelector("h4");
         usernameEl.innerText = msgName;
         
-        const messageContentEl = document.createElement("span");
-        messageContentEl.setAttribute("slot", "msg-content");
+        const messageContentEl = messageEl.querySelector("p");
         messageContentEl.innerText = msg.text;
-        
-        messageEl.appendChild(usernameEl);
-        messageEl.appendChild(messageContentEl);
         
 
         return messageEl;
@@ -211,7 +207,7 @@ export default async (args, doc) => {
 
     // highlight the other user in the side bar (add a class)
     const currentPreview = document.getElementById(`preview-${otherUserId}`);
-    currentPreview.shadowRoot.querySelector("a").classList.add("selected-chat");
+    currentPreview.querySelector("a").classList.add("selected-chat");
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
