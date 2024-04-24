@@ -1,4 +1,4 @@
-import { app } from "../helper.js";
+import { app, setTitle } from "../helper.js";
 import * as api from "../../api/index.js";
 import * as routes from "../index.js";
 
@@ -24,9 +24,48 @@ const sendMessage = async (msg, fromId, toId) => {
   });
 }
 
+const setupBulmaModals = () => {
+  const openModal = (el) => el.classList.add('is-active');
+  const closeModal = (el) => el.classList.remove('is-active');
+  const closeAllModals = () => {
+    (document.querySelectorAll('.modal') || []).forEach((modalEl) => {
+      closeModal(modalEl);
+    });
+  };
+
+  // make sure all modals are closed on any render
+  closeAllModals();
+
+  // Add a click event on buttons to open a specific modal
+  (document.querySelectorAll('.js-modal-trigger') || []).forEach((triggerEl) => {
+    const modal = triggerEl.dataset.target;
+    const targetEl = document.getElementById(modal);
+
+    triggerEl.addEventListener('click', () => {
+      openModal(targetEl);
+    });
+  });
+
+  // Add a click event on various child elements to close the parent modal
+  (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach((closeEl) => {
+    const $target = closeEl.closest('.modal');
+
+    closeEl.addEventListener('click', () => {
+      closeModal($target);
+    });
+  });
+
+  // Add a keyboard event to close all modals
+  document.addEventListener('keydown', (event) => {
+    if(event.key === "Escape") {
+      closeAllModals();
+    }
+  });
+};
+
 
 export default async (args, doc) => {
-  const isFullRender = routes.getPrevious()?.file !== "messages"
+  const isFullRender = routes.getPrevious()?.file !== "messages";
 
   if (isFullRender) {
     app.innerHTML = "";
@@ -82,7 +121,6 @@ export default async (args, doc) => {
   const previewContainer = document.getElementById("message-list");
   
   const renderSidebar = async () => {
-    previewContainer.innerHTML = "";
 
     console.log("[messages] rendering sidebar")
 
@@ -95,6 +133,7 @@ export default async (args, doc) => {
       return lastMsgB.time - lastMsgA.time;
     });
   
+    const previews = [];
     
     for (const convoKey of orderOfConversations) {
       const otherUserId = convoKey;
@@ -109,10 +148,14 @@ export default async (args, doc) => {
       
       linkEl.querySelector("h4").innerText = otherUser.name;
       linkEl.querySelector("p").innerText = lastMsg.text;
+
+      previews.push(previewEl);
       
-      previewContainer.appendChild(previewEl);
+      // previewContainer.appendChild(previewEl);
     }
 
+    previewContainer.innerHTML = "";
+    previewContainer.append(...previews);
   };
   
   // only needs to rerender if new message is sent/received
@@ -128,15 +171,24 @@ export default async (args, doc) => {
   // always clear the conversation wrapper -- rerendering this is not jarring to the user
   convoWrapperEl.innerHTML = "";
 
+  // only render all modals html on full render 
+  if (isFullRender) {
+    app.append(...
+      [...doc.querySelectorAll(".modal")].map(
+        (modalEl) => modalEl.cloneNode(true)
+      )
+    );
+  }
+
   // either render a conversation or a blank conversation
   try {
     // check to see if the other user exists, if doesn't error, continue rendering
     const otherUser = await api.users.get(args.id);
-    
+
+    setTitle(`Chat with ${otherUser.name}`);
 
     // render the frame to hold the conversation
     const convoEl = doc.getElementById("conversation").cloneNode(true);
-    convoWrapperEl.appendChild(convoEl);
 
     // grab the header, message container, and input elements
     const convoHeaderEl = convoEl.querySelector("#convo-header");
@@ -150,6 +202,9 @@ export default async (args, doc) => {
     
     convoHeaderEl.querySelector("a").setAttribute(":id", otherUser._id);
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
+
+
+    convoWrapperEl.appendChild(convoEl);
 
 
     // returns a new message element to be added to a convo
@@ -208,6 +263,8 @@ export default async (args, doc) => {
       // new message requires a rerender of message previews
       renderSidebar();
     });
+
+    
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
@@ -216,8 +273,12 @@ export default async (args, doc) => {
       return routes.goToRoute("messages");
     }
 
+    setTitle(`My Messages`);
     // if no arg provided, render a blank conversation
     const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
     convoWrapperEl.appendChild(blankConvoEl);
   }
+
+  // must be called at the end of everything to ensure all necessary elements are rendered
+  setupBulmaModals();
 };

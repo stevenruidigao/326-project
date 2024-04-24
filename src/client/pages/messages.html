@@ -21,6 +21,7 @@
     </div>
     <div id="message-container"></div>
     <form id="message-form">
+        <button type="button" id="create-appt-button" class="js-modal-trigger" data-target="modal-create-appt">+</button>
         <input type="text" id="message-box" placeholder="Type a message..." autocomplete="off">
         <button type="submit" id="send-button">Send</button>
     </form>
@@ -36,4 +37,19 @@
 <div class="message">
     <h4 class="msg-from"></h4>
     <p class="msg-content"></p>
+</div>
+
+<!-- create appointment modal -->
+<!-- NOTE needs: am I learning or teaching; when is this happening, in-person or remote -> url or location -->
+<div id="modal-create-appt" class="modal">
+    <div class="modal-background"></div>
+
+    <div class="modal-content">
+        <div class="box">
+            <p>Modal JS example</p>
+            <!-- Your content -->
+        </div>
+    </div>
+
+    <button class="modal-close is-large" aria-label="close"></button>
 </div>
