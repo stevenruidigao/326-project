@@ -88,7 +88,7 @@ export default async (args, doc) => {
   const publicContent = div.querySelector("#profile-public");
   const editContent = div.querySelector("#profile-edit");
 
-  publicContent.classList.toggle("is-hidden", !!isEditingUser);
+  publicContent.classList.toggle("is-hidden", Boolean(isEditingUser));
   editContent.classList.toggle("is-hidden", !isEditingUser);
 
   const content = div.querySelector(

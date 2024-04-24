@@ -13,7 +13,7 @@ export const setupNavbar = async () => {
   const imageContainer = document.querySelector("#navbar-user-image");
   const image = imageContainer.querySelector("img");
 
-  toggleElement("#navbar-guest-actions", "is-hidden", !!user);
+  toggleElement("#navbar-guest-actions", "is-hidden", Boolean(user));
   toggleElement(userActions, "is-hidden", !user);
 
   toggleElementAll("#navbar-guest-actions .is-skeleton", "is-skeleton", false);

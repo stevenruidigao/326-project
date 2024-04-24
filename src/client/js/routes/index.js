@@ -456,7 +456,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     for (const className of whenActive) {
       this.classList.toggle(
         className,
-        !!(isSameRoute && isSameArgs && isSameSearch),
+        Boolean(isSameRoute && isSameArgs && isSameSearch),
       );
     }
   }
