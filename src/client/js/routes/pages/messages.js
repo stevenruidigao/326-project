@@ -1,9 +1,10 @@
-import { app, setTitle } from "../helper.js";
 import * as api from "../../api/index.js";
+import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
 export const onunload = async (prev, next) => {
-  // TODO: when implementing websockets, do not close connection if going from messages --> messages
+  // TODO: when implementing websockets, do not close connection if going from
+  // messages --> messages
 
   if (prev.file === "messages" && next.file === "messages") {
     console.log(`[messages] not unloading, loading new conversation!`);
@@ -44,7 +45,9 @@ const setupBulmaModals = () => {
       el.querySelector("input[name='time']").value = [date, time].join("T");
 
       el.querySelector(
-        `input[name='role'][value='${currentAppt.teacherId === userId ? "teaching" : "learning"}']`,
+        `input[name='role'][value='${
+          currentAppt.teacherId === userId ? "teaching" : "learning"
+        }']`,
       ).checked = true;
       el.querySelector(
         `input[name='type'][value='${currentAppt.type}']`,
@@ -173,9 +176,11 @@ export default async (args, doc) => {
     const columnContainer = document.createElement("div");
     columnContainer.className = "columns is-gapless mb-0";
     columnContainer.id = "messages-container";
-    columnContainer.style.width = '100%';
+    columnContainer.style.width = "100%";
 
-    columnContainer.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
+    columnContainer.appendChild(
+      doc.getElementById("message-sidebar").cloneNode(true),
+    );
     app.appendChild(columnContainer);
   }
 
@@ -187,7 +192,8 @@ export default async (args, doc) => {
 
     await reFetchMessages();
 
-    // sort the keys of conversations by most recent message to display most recent conversations at top
+    // sort the keys of conversations by most recent message to display most
+    // recent conversations at top
     const orderOfConversations = Object.keys(conversations).sort((a, b) => {
       const lastMsgA = conversations[a][0];
       const lastMsgB = conversations[b][0];
@@ -205,7 +211,8 @@ export default async (args, doc) => {
         .querySelector(".msg-sidebar-preview")
         .cloneNode(true);
 
-      // routes link to the right convo, removes the highlight in case it's highlighted
+      // routes link to the right convo, removes the highlight in case it's
+      // highlighted
       const linkEl = previewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUserId);
 
@@ -217,8 +224,10 @@ export default async (args, doc) => {
       linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
 
       const avatar = await api.users.getAvatar(otherUser);
-        
-      linkEl.querySelector("img").src = avatar ? URL.createObjectURL(avatar) : '/images/logo.png';
+
+      linkEl.querySelector("img").src = avatar
+        ? URL.createObjectURL(avatar)
+        : "/images/logo.png";
 
       previews.push(previewEl);
 
@@ -240,7 +249,8 @@ export default async (args, doc) => {
     columnContainer.appendChild(convoWrapperEl);
   }
   const convoWrapperEl = document.getElementById("conversation-wrapper");
-  // always clear the conversation wrapper -- rerendering this is not jarring to the user
+  // always clear the conversation wrapper -- rerendering this is not jarring to
+  // the user
   convoWrapperEl.innerHTML = "";
 
   // only render all modals html on full render
@@ -256,8 +266,8 @@ export default async (args, doc) => {
     const createApptModal = doc.querySelector("#modal-appt").cloneNode(true);
     createApptModal.setAttribute("id", "modal-create-appt");
 
-    // TODO: make sure that button triggers to open edit modal have a data-apptid="<id>"
-    // render one edit appointment modal from the template
+    // TODO: make sure that button triggers to open edit modal have a
+    // data-apptid="<id>" render one edit appointment modal from the template
     const editApptModal = doc.querySelector("#modal-appt").cloneNode(true);
     editApptModal.setAttribute("id", "modal-edit-appt");
 
@@ -343,7 +353,8 @@ export default async (args, doc) => {
 
   // either render a conversation or a blank conversation
   try {
-    // check to see if the other user exists, if doesn't error, continue rendering
+    // check to see if the other user exists, if doesn't error, continue
+    // rendering
     const otherUser = await api.users.get(args.id);
 
     conversationOtherUser = otherUser;
@@ -360,7 +371,8 @@ export default async (args, doc) => {
     const messageInputEl = convoEl.querySelector("#message-form");
 
     // autofocus on the message input
-    // NOTE: cannot use autofocus attribute in the html since it won't refocus when changing conversations with a click
+    // NOTE: cannot use autofocus attribute in the html since it won't refocus
+    // when changing conversations with a click
     messageInputEl.querySelector("input").focus();
 
     convoHeaderEl.querySelector("a").setAttribute(":id", otherUser._id);
@@ -452,7 +464,8 @@ export default async (args, doc) => {
 
     const relevantConvos = conversations[otherUser._id];
 
-    // TODO: add an || check for appointments so that no msgs but yes appts still render
+    // TODO: add an || check for appointments so that no msgs but yes appts
+    // still render
     if (relevantConvos || relevantAppts.length) {
       console.log("HEHEHEHE", relevantConvos, relevantAppts);
       messageContainerEl.append(
@@ -462,7 +475,8 @@ export default async (args, doc) => {
       console.log(
         `[messages] no messages found between user ${user._id} and ${otherUser._id}`,
       );
-      // NOTE: I don't think any additional code is necessary for a blank conversation
+      // NOTE: I don't think any additional code is necessary for a blank
+      // conversation
       // TODO: consider adding a ui bit to prompt "start the conversation!"
 
       // TODO: also consider creating a blank conversation in the sidebar
@@ -488,10 +502,12 @@ export default async (args, doc) => {
       renderSidebar();
     });
 
-    // must be called at the end of everything to ensure all necessary elements are rendered
+    // must be called at the end of everything to ensure all necessary elements
+    // are rendered
     setupBulmaModals();
   } catch (err) {
-    // if there was an arg provided, log error and redirect to blank conversation
+    // if there was an arg provided, log error and redirect to blank
+    // conversation
     if (args.id) {
       console.error(
         `[messages] error fetching conversation with user ${args.id}:`,
