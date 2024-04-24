@@ -23,13 +23,16 @@
         font-weight: bold;
         color: yellow; /* FIXME: figure out what bulma colors to use */
     }
-    .selected-chat {
+    /* .selected-chat {
+        background-color: #555;
+    } */
+    .is-active {
         background-color: #555;
     }
 }
 #conversation-wrapper {
-    --bulma-msg-header-height: 40px;
-    --bulma-msg-sender-height: 40px;
+    --msg-header-height: 40px;
+    --msg-sender-height: 40px;
 
     display: flex;
     flex-direction: column;
@@ -38,10 +41,10 @@
 
     #conversation {
         #convo-header {
-            height: var(--bulma-msg-header-height);
+            height: var(--msg-header-height);
             padding: 0 10px;
             background-color: #555;
-            line-height: var(--bulma-msg-header-height);
+            line-height: var(--msg-header-height);
             
             h2 {
                 font-size: 20px;
@@ -59,7 +62,7 @@
             padding: 5px 10px;
             background-color: #444;
 
-            height: calc(100vh - var(--bulma-navbar-height) - var(--bulma-msg-sender-height) - var(--bulma-msg-header-height));
+            height: calc(100vh - var(--bulma-navbar-height) - var(--msg-sender-height) - var(--msg-header-height));
             
     
             /* FIXME: messages styling overriden sometimes by app.css styles and bulma styles */
@@ -89,7 +92,7 @@
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
-            height: var(--bulma-msg-sender-height);
+            height: var(--msg-sender-height);
             background-color: #555;
     
             /* TODO: override the default focus look */
