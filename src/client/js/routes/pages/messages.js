@@ -212,10 +212,11 @@ export default async (args, doc) => {
     // render one edit appointment modal from the template
     const editApptModal = doc.querySelector("#modal-appt").cloneNode(true);
     editApptModal.setAttribute("id", "modal-edit-appt");
-    console.log("editApptModal", editApptModal);
-    const editForm = editApptModal.querySelector("#form-create-appt");
-    editForm.setAttribute("id", "form-edit-appt");
-    
+
+    editApptModal.querySelector("#form-create-appt").setAttribute("id", "form-edit-appt");
+    editApptModal.querySelector(".modal-card-title").innerText = "Edit Appointment";
+    editApptModal.querySelector(".is-success").innerText = "Confirm Edits";
+
 
 
     app.append(createApptModal, editApptModal);
@@ -331,8 +332,10 @@ export default async (args, doc) => {
 
     // add event listener to create appointment
     const createAppointmentForm = document.getElementById("form-create-appt");
+    console.log("create appt form", createAppointmentForm);
     createAppointmentForm.addEventListener("submit", (e) => {
       // we don't want the actual submit event to happen
+      console.log("[messages] prevented create form submit event!");
       e.preventDefault();
     });
     createAppointmentForm.querySelector(".is-success").addEventListener("click", async () => {
@@ -348,8 +351,10 @@ export default async (args, doc) => {
     // TODO: this requires the form to have an edited id alongside the other edit changes
     // add event listener to edit appointment
     const editAppointmentForm = document.getElementById("form-edit-appt");
+    console.log("edit appt form", editAppointmentForm);
     editAppointmentForm.addEventListener("submit", (e) => {
       // we don't want the actual submit event to happen
+      console.log("[messages] prevented edit form submit event!");
       e.preventDefault();
     });
     editAppointmentForm.querySelector(".is-success").addEventListener("click", async (e) => {
