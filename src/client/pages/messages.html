@@ -1,21 +1,19 @@
 
 <!-- TODO: make sure this is scrollable -->
 <div id="message-sidebar">
-    <link rel="stylesheet" href="/styles/messages.css">
     <h2>Conversations</h2>
-    <!-- <button>New Chat</button> NOTE: don't need to make a new chat, that's handled elsewhere -->
     <div id="message-list"></div>
 </div>
 
 <!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
-    <!-- TODO: consider making this a link to their profile -->
+    <!-- TODO: consider making this header a link to their profile -->
     <div id="convo-header">
         <h2 id="convo-name">Chat with ???</h2>
     </div>
     <div id="message-container"></div>
     <form id="message-form">
-        <input type="text" id="message-box" placeholder="Type a message..." autofocus>
+        <input type="text" id="message-box" placeholder="Type a message...">
         <button type="submit" id="send-button">Send</button>
     </form>
 </div>
@@ -28,25 +26,6 @@
 
 <!-- "template" copied for each sidebar preview -->
 <div class="msg-sidebar-preview">
-    <!-- <style>
-        a {
-            display: block;
-            text-decoration: none;
-            color: white; /* FIXME: figure out what bulma colors to use */
-        }
-        .msg-preview {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .sidebar-username {
-            font-weight: bold;
-            color: yellow; /* FIXME: figure out what bulma colors to use */
-        }
-        .selected-chat {
-            background-color: #555;
-        }
-    </style> -->
     <a is="app-route" route="conversation" when-active="is-active">
         <h4 class="sidebar-username"></h4>
         <p class="msg-preview"></p>

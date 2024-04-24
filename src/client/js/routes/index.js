@@ -37,8 +37,8 @@ export const routes = {
   dashboard: { path: "/dashboard", file: "dashboard" },
   browse: { path: "/browse", file: "browse" },
   search: { path: "/browse/:search", file: "browse" },
-  messages: { path: "/messages", file: "messages", hasHTML: true },
-  conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
+  messages: { path: "/messages", file: "messages", hasHTML: true, hasCSS: true },
+  conversation: { path: "/messages/:id", file: "messages", hasHTML: true, hasCSS: true },
   profile: { path: "/profile", file: "profile", hasHTML: true, hasCSS: true },
   user: { path: "/profile/:id", file: "profile", hasHTML: true, hasCSS: true },
 
