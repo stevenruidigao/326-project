@@ -18,14 +18,14 @@ function generateSearchParams() {
 
   const params = new URLSearchParams();
   params.set(
-    "has",
+    "knows",
     hasInput.value
       .split(/,\s*/g)
       .filter((str) => str !== "")
       .join(","),
   );
   params.set(
-    "wants",
+    "interests",
     wantsInput.value
       .split(/,\s*/g)
       .filter((str) => str !== "")
@@ -78,13 +78,13 @@ async function createUserCard(user) {
   cardContent.className = "card-content";
 
   const media = document.createElement("div");
-  media.className = "media";
+  media.className = "media mb-4";
 
   const mediaLeft = document.createElement("div");
   mediaLeft.className = "media-left";
 
   const figure = document.createElement("figure");
-  figure.className = "image is-48x48";
+  figure.className = "image is-48x48 is-square";
 
   // Basic user info (pic, name, username)
   const avatar = await api.users.getAvatar(user);
@@ -92,6 +92,7 @@ async function createUserCard(user) {
   console.log(avatar, user);
 
   const profilePicture = document.createElement("img");
+  profilePicture.loading = "lazy";
   profilePicture.className = "is-rounded";
   profilePicture.src = avatar
     ? URL.createObjectURL(avatar)
@@ -218,7 +219,7 @@ export default async (args) => {
   console.log("** browse loaded with args", args);
 
   // Search inputs
-  const searchDiv = document.createElement("div");
+  const searchDiv = document.createElement("form");
   searchDiv.id = "search-div";
 
   const hasInput = document.createElement("input");
@@ -237,6 +238,7 @@ export default async (args) => {
   button.innerText = "Search";
   button.className = "button is-light";
   button.id = "search-button";
+  button.type = "submit";
 
   searchDiv.appendChild(hasInput);
   searchDiv.appendChild(wantsInput);
@@ -307,19 +309,8 @@ export default async (args) => {
     );
   });
 
-  hasInput.addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-      goToRoute("browse", {}, generateSearchParams());
-    }
-  });
-
-  wantsInput.addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-      goToRoute("browse", {}, generateSearchParams());
-    }
-  });
-
-  button.addEventListener("click", () => {
+  searchDiv.addEventListener("submit", (event) => {
+    event.preventDefault();
     goToRoute("browse", {}, generateSearchParams());
   });
 };
