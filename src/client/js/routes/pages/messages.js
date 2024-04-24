@@ -1,16 +1,7 @@
 import { app } from "../helper.js";
 import * as api from "../../api/index.js";
-import { HTMLAppRouteElement } from "../index.js";
 import * as routes from "../index.js";
 
-
-// returns undefined if arg cannot be parsed as a base 10 number
-//otherwise returns the number as a string
-const cleanId = (arg) => {
-  const num = parseInt(arg, 10);
-  if (isNaN(num)) return undefined;
-  return num.toString();
-};
 
 export const onunload = async (prev, next) => {
   // TODO: check if going from messages --> messages, if so, don't unload
@@ -37,7 +28,6 @@ export default async (args, doc) => {
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.getUser();
 
-  console.log("user", user);
 
   if (!user) {
     console.log("[messages] user not logged in! returning to home");
@@ -70,7 +60,6 @@ export default async (args, doc) => {
   });
 
   console.log("conversations", conversations);
-  console.log("orderOfConversations", orderOfConversations);
 
   // render the sidebar with all the user's conversations + msg previews
   // set all previews to not highlighted
@@ -112,7 +101,8 @@ export default async (args, doc) => {
   // either render a conversation or a blank conversation
   try {
     // clean up the id of other user (treats garbage id as undefined)
-    const otherUserId = cleanId(args.id);
+    // const otherUserId = cleanId(args.id);
+    const otherUserId = args.id;
     
     // check to see if the other user exists, if doesn't error, continue rendering
     const otherUser = await api.users.get(otherUserId);
@@ -130,10 +120,6 @@ export default async (args, doc) => {
 
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
 
-    console.log("other user", otherUser);
-    console.log("convoHeaderEl", convoHeaderEl);
-    console.log("messageContainerEl", messageContainerEl);
-    console.log("messageInputEl", messageInputEl);
 
     
     const createNewMessageEl = async (msg, isActiveConvo=false, updateSidebar=true) => {
@@ -151,7 +137,6 @@ export default async (args, doc) => {
 
       if (isActiveConvo) {
         // TODO: also render message in the conversation
-        console.log("rendering new message in conversation");
 
         // const messageEl = document.createElement("messages-message");
         const messageEl = doc.querySelector(".message").cloneNode(true);
