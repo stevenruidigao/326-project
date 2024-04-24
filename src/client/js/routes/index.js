@@ -1,7 +1,7 @@
 import mock from "../api/mock/index.js";
 import * as layout from "../layout.js";
-import { app } from "./helper.js";
 
+import { app } from "./helper.js";
 import * as pages from "./pages.js";
 
 export const PATH_PREFIX = "/#";
@@ -232,7 +232,8 @@ export const convertPathToRoute = (origPath) => {
 /**
  * @param {String} name the name of the route to navigate to, must exist in
  *     routes
- * @param {Object} args arguments to pass to route  -- pass force=true to force pushState
+ * @param {Object} args arguments to pass to route  -- pass force=true to force
+ *     pushState
  * @param {URLSearchParams} search
  * @example goToRoute(user, { id: 5 });
  */
