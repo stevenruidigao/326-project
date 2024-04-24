@@ -3,8 +3,7 @@
     <button type="submit-btn">Search</button>
 </div>
 
-<template id="user">
-    <link rel="stylesheet" href="/styles/browse.css">
+<template id="user-old">
     <div class="user">
         <div>
             <slot name="profile-picture" class="profile-picture">Profile<br>Picture</slot>
@@ -15,5 +14,31 @@
         </div>
         <slot name="hasSkills" class="skills">Skills</slot>
         <slot name="wantsSkills" class="skills">Skills</slot>
+    </div>
+</template>
+
+<template id="user">
+    <div class="card">
+        <div class="card-content">
+            <div class="media">
+                <div class="media-left">
+                    <figure class="image is-48x48">
+                        <img
+                          src="https://bulma.io/assets/images/placeholders/96x96.png"
+                          alt="Placeholder image"
+                        />
+                        <slot name="sprofile-picture"></slot>
+                    </figure>
+                </div>
+                <div class="media-content">
+                    <slot name="name" class="name title is-6">Name</slot>
+                    <slot name="username" class="username subtitle is-6">@username</slot>
+                </div>
+            </div>
+            <div class="content">
+                <slot name="hasSkills" class="skills">Skills</slot>
+                <slot name="wantsSkills" class="skills">Skills</slot>
+            </div>
+        </div>
     </div>
 </template>

@@ -1,7 +1,7 @@
 import mock from "../api/mock/index.js";
 import * as layout from "../layout.js";
-import { app } from "./helper.js";
 
+import { app } from "./helper.js";
 import * as pages from "./pages.js";
 
 /**
@@ -35,8 +35,8 @@ export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 export const routes = {
   home: { path: "/", file: "home", hasHTML: true },
   dashboard: { path: "/dashboard", file: "dashboard" },
-  browse: { path: "/browse", file: "browse", hasHTML: true },
-  search: { path: "/browse/:search", file: "browse", hasHTML: true },
+  browse: { path: "/browse", file: "browse" },
+  search: { path: "/browse/:search", file: "browse" },
   messages: { path: "/messages", file: "messages", hasHTML: true },
   conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
   profile: { path: "/profile", file: "profile", hasHTML: true, hasCSS: true },
@@ -227,7 +227,10 @@ export const convertRouteToPath = (name, args, search) => {
   for (const key of Object.keys(args))
     path = path.replace(`:${key}`, args[key]);
 
-  if (search) path += "?" + search.toString();
+  if (search?.size) {
+    search.sort?.();
+    path += "?" + search.toString();
+  }
 
   return path;
 };
@@ -286,7 +289,8 @@ export const convertPathToRoute = (origPath) => {
 /**
  * @param {String} name the name of the route to navigate to, must exist in
  *     routes
- * @param {Object} args arguments to pass to route  -- pass force=true to force pushState
+ * @param {Object} args arguments to pass to route  -- pass force=true to force
+ *     pushState
  * @param {URLSearchParams} search
  * @example goToRoute(user, { id: 5 });
  */
@@ -302,6 +306,9 @@ export const goToRoute = (name, args, search) => {
 
   // change page location & load page afterwards
   const path = convertRouteToPath(name, args, search);
+
+  // sort params to ensure consistency
+  search?.sort?.();
 
   const data = { route: name, data: args, search: search?.toString() };
 

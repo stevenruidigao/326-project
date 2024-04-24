@@ -26,19 +26,20 @@ body {
     margin: 10px 0;
 }
 
+.user-card {
+    margin-bottom: var(--bulma-block-spacing);
+}
+
+.username {
+    display: block;
+}
+
 .skills {
-    background-color: aqua;
+    display: block;
 }
 
 .skill ~ .skill:before {
     content: ", ";
-}
-
-.profile-picture {
-    width: auto;
-    height: auto;
-    overflow: hidden;
-    object-fit: contain;
 }
 
 #loading {
@@ -77,23 +78,6 @@ body {
     justify-content: center;
     margin: 10px 0;
     gap: 10px;
-}
-
-/* #search-box {
-    width: 50%;
-}
-
-#search-button {
-    background-color: var(--bulma-primary-bold);
-    border-radius: 5px;
-    padding: 0.5em;
-} */
-
-#browse {
-    display: grid;
-    gap: 5px;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
 
 #app {
