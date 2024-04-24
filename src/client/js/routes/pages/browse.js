@@ -1,6 +1,6 @@
 import * as api from "../../api/index.js";
-import {app} from "../helper.js";
-import {getCurrent, goToRoute, HTMLAppRouteElement} from "../index.js";
+import { app } from "../helper.js";
+import { getCurrent, goToRoute, HTMLAppRouteElement } from "../index.js";
 
 export const onunload = async (prev, next) => {
   console.log(`[browse] unloading ${prev.file} for ${next.file}!`);
@@ -18,11 +18,19 @@ function generateSearchParams() {
 
   const params = new URLSearchParams();
   params.set(
-      "has",
-      hasInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
+    "has",
+    hasInput.value
+      .split(/,\s*/g)
+      .filter((str) => str !== "")
+      .join(","),
+  );
   params.set(
-      "wants",
-      wantsInput.value.split(/,\s*/g).filter((str) => str !== "").join(","));
+    "wants",
+    wantsInput.value
+      .split(/,\s*/g)
+      .filter((str) => str !== "")
+      .join(","),
+  );
 
   return params;
 }
@@ -42,10 +50,10 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
   const users = await api.users.withSkills(page, skillsHad, skillsWant);
 
   return {
-    users : users,
-    getNextPage : async () =>
-        await getUsersPaginated(page + 1, skillsHad, skillsWant),
-    hasNextPage : users.length > 0,
+    users: users,
+    getNextPage: async () =>
+      await getUsersPaginated(page + 1, skillsHad, skillsWant),
+    hasNextPage: users.length > 0,
   };
 }
 
@@ -133,7 +141,7 @@ function createUserCard(user) {
   interests.className = "skills";
 
   interests.innerText =
-      "Interests: " + (user.skillsWanted.length == 0 ? "None" : "");
+    "Interests: " + (user.skillsWanted.length == 0 ? "None" : "");
 
   for (const interest of user.skillsWanted) {
     const skill = new HTMLAppRouteElement();
@@ -163,8 +171,11 @@ function createUserCard(user) {
  */
 async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
   const browseContainer = document.getElementById("browse");
-  const {users, getNextPage, hasNextPage} =
-      await getUsersPaginated(page, skillsHad, skillsWant);
+  const { users, getNextPage, hasNextPage } = await getUsersPaginated(
+    page,
+    skillsHad,
+    skillsWant,
+  );
 
   for (const user of users) {
     const userCard = createUserCard(user);
@@ -181,7 +192,6 @@ async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
       loadMoreButton.removeEventListener("click", onclick);
       await renderUsers(page + 1, skillsHad, skillsWant);
     });
-
   } else {
     const endOfResults = document.getElementById("load-end");
     endOfResults.classList.toggle("is-hidden");
@@ -260,24 +270,33 @@ export default async (args) => {
 
   // Render search results
   browseContainer.innerHTML = "";
-  renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-              wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+  renderUsers(
+    1,
+    hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+    wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+  );
 
   // Add event listeners for searching users
   hasInput.addEventListener("input", () => {
     browseContainer.innerHTML = "";
     loadMoreButton.classList.add("is-hidden");
     endOfResults.classList.add("is-hidden");
-    renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-                wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+    renderUsers(
+      1,
+      hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+    );
   });
 
   wantsInput.addEventListener("input", () => {
     browseContainer.innerHTML = "";
     loadMoreButton.classList.add("is-hidden");
     endOfResults.classList.add("is-hidden");
-    renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-                wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
+    renderUsers(
+      1,
+      hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+    );
   });
 
   hasInput.addEventListener("keypress", (event) => {
@@ -292,6 +311,7 @@ export default async (args) => {
     }
   });
 
-  button.addEventListener(
-      "click", () => { goToRoute("browse", {}, generateSearchParams()); });
+  button.addEventListener("click", () => {
+    goToRoute("browse", {}, generateSearchParams());
+  });
 };
