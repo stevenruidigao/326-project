@@ -1,10 +1,13 @@
-import { app } from "../helper.js";
+import { app, setTitle } from "../helper.js";
 
-export default async (args, doc) => {
+/**
+ * Show basic home page.
+ * @param {DocumentFragment} doc
+ */
+export default async (_, doc) => {
   app.innerHTML = "";
 
-  app.append(doc.querySelector('#home'));
+  app.append(...doc.childNodes);
 
-  const style = document.querySelector('#route-styles');
-  style.innerText = `#app[data-file="home"] { padding: 0 !important; margin: 0 !important; }`
+  setTitle("Home");
 };

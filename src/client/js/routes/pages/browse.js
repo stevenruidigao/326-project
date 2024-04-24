@@ -1,10 +1,6 @@
 import * as api from "../../api/index.js";
-import { app } from "../helper.js";
+import { app, setTitle } from "../helper.js";
 import { getCurrent, goToRoute, HTMLAppRouteElement } from "../index.js";
-
-export const onunload = async (prev, next) => {
-  console.log(`[browse] unloading ${prev.file} for ${next.file}!`);
-};
 
 /**
  * Generates search parameters based on the values of the "search-has" and
@@ -86,7 +82,7 @@ async function createUserCard(user) {
   // Basic user info (pic, name, username)
   const avatar = await api.users.getAvatar(user);
 
-  console.log(avatar, user);
+  console.debug("[browse]", avatar, user);
 
   const profilePicture = document.createElement("img");
   profilePicture.loading = "lazy";
@@ -213,7 +209,9 @@ async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
 export default async (args) => {
   app.innerHTML = "";
 
-  console.log("** browse loaded with args", args);
+  setTitle("Browse");
+
+  console.debug("** browse loaded with args", args);
 
   // title heading
   const title = document.createElement("h1");

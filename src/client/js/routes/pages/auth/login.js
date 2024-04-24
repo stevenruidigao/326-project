@@ -1,19 +1,31 @@
-import { app } from "../../helper.js";
+import { app, setTitle } from "../../helper.js";
 import { goToRoute } from "../../index.js";
 import { session, users } from "../../../api/index.js";
 import { setupNavbar } from "../../../layout.js";
 import { toggleElement } from "../../helper.js";
 
+/**
+ * Show the errors on the login form. Hide the display if there are none.
+ * @param {Element?} el
+ * @param {string} error
+ * @returns
+ */
 const showError = (el, error) => {
-  if (!el) return console.warn("error display element not found"); // Nowhere to display
+  if (!el)
+    return console.warn("error display element not found"); // Nowhere to display
   else {
-    el.innerText = error
+    el.innerText = error;
     toggleElement(el, "is-hidden", !error);
   }
 };
 
+/**
+ * Add the login elements to #app and setup the form submit event.
+ */
 export default async (args, doc) => {
   app.innerHTML = "";
+
+  setTitle("Login");
 
   const loggedInUser = await session.current();
 
@@ -22,8 +34,6 @@ export default async (args, doc) => {
     return;
   }
 
-  console.log("** login loaded with args", args);
-  
   const login = doc.querySelector("#login"); // Don't need to use cloneNode?
   const form = doc.querySelector("form");
   const button = doc.querySelector("#login-submit");
@@ -32,18 +42,21 @@ export default async (args, doc) => {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     button.classList.add("is-loading");
-    
+
     const data = new FormData(form);
 
-    users.login({ username: data.get("username"), password: data.get("password") })
-      .then(user => {
-        session.create(user._id).then(_ => goToRoute("dashboard").then(_ => setupNavbar()));
+    users
+      .login({ username: data.get("username"), password: data.get("password") })
+      .then((user) => {
+        session
+          .create(user._id)
+          .then((_) => goToRoute("dashboard").then((_) => setupNavbar()));
       })
-      .catch(err => {console.error(err), showError(error, err)})
+      .catch((err) => {
+        console.error(err), showError(error, err);
+      })
       .finally(() => button.classList.remove("is-loading"));
   });
 
   app.appendChild(login);
-
-  
 };

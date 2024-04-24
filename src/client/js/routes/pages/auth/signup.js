@@ -1,6 +1,6 @@
 import { session, users } from "../../../api/index.js";
 import { setupNavbar } from "../../../layout.js";
-import { app, toggleElement } from "../../helper.js";
+import { app, setTitle, toggleElement } from "../../helper.js";
 import { goToRoute } from "../../index.js";
 
 let errorsEl = null;
@@ -14,6 +14,13 @@ export const showErrors = (errors) => {
   }
 };
 
+/**
+ * Register user & log them in.
+ * If registration fails, shows errors.
+ * If logging in fails, redirects to login page.
+ * @param {object} data
+ * @returns {void}
+ */
 export const register = async (data) => {
   showErrors([]);
 
@@ -39,7 +46,7 @@ export const register = async (data) => {
       err,
     );
 
-    // redirect to login page
+    goToRoute("login");
 
     return;
   }
@@ -47,8 +54,15 @@ export const register = async (data) => {
   return goToRoute("dashboard");
 };
 
-export default async (args, doc) => {
+/**
+ * Add the signup elements to #app and setup the form submit event.
+ * @param _
+ * @param {DocumentFragment} doc
+ */
+export default async (_, doc) => {
   app.innerHTML = "";
+
+  setTitle("Sign Up");
 
   const loggedInUser = await session.current();
 

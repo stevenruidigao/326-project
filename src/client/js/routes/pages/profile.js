@@ -1,8 +1,15 @@
 import { appointments, session, users } from "../../api/index.js";
 import { setupNavbar } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
-import { goToRoute, HTMLAppRouteElement } from "../index.js";
+import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
 
+/**
+ * Load 3 appointments that the user was involved in.
+ * If there are no appointments, hide the appointments section.
+ * @param {DocumentFragment} doc
+ * @param {HTMLElement} profileEl
+ * @param {User} user
+ */
 export const loadAppointments = async (doc, profileEl, user) => {
   const apptsParentEl = profileEl.querySelector("#profile-appointments");
   const apptsGridEl = apptsParentEl.querySelector("#profile-appointments-grid");
@@ -56,13 +63,18 @@ export const loadAppointments = async (doc, profileEl, user) => {
   apptsParentEl.classList.remove("is-skeleton");
 };
 
+/**
+ * Shows the profile edit page for the current logged-in user (at /profile)
+ * or the public page for a user with the given id (at /profile/:id) or username (at /profile/@:username).
+ * @param {{ id?: string }} args
+ * @param {DocumentFragment} doc
+ */
 export default async (args, doc) => {
   // get current logged-in user
   const loggedInUser = await session.current();
 
   if (!args.id && !loggedInUser) {
     goToRoute("login");
-    // TODO go to log-in page
     return;
   }
 
@@ -73,18 +85,25 @@ export default async (args, doc) => {
 
   app.innerHTML = "";
 
-  const user = username
-    ? await users[getMethod](username, { attachments: true, binary: true })
-    : loggedInUser;
+  let user = null;
+
+  try {
+    user = username
+      ? await users[getMethod](username, { attachments: true, binary: true })
+      : loggedInUser;
+  } catch (err) {
+    console.error("An error occurred while loading user profile --", err);
+  }
+
   const isEditingUser = !args.id;
   const isSameUser = loggedInUser?._id === user?._id;
 
   if (!user) {
-    // TODO 404 profile page
+    await load("404");
     return;
   }
 
-  console.log("* profile page user =", user);
+  console.debug("* profile page user =", user);
 
   setTitle(isEditingUser ? "Editing profile" : `@${user.username}`);
 

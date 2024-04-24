@@ -56,10 +56,10 @@ export const routes = {
   user: { path: "/profile/:id", file: "profile", hasHTML: true, hasCSS: true },
 
   login: { path: "/auth/login", file: "auth/login", hasHTML: true },
-  logout: { path: "/auth/logout", file: "logout" },
+  logout: { path: "/auth/logout", file: "auth/logout" },
   signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
 
-  404: { file: "404" },
+  404: { file: "404", hasHTML: true },
 };
 
 /**

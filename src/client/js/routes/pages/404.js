@@ -1,7 +1,13 @@
-import { app } from "../helper.js";
+import { app, setTitle } from "../helper.js";
 
-export default () => {
+/**
+ * Show the 404 page - see src/client/pages/404.html
+ * @param {DocumentFragment} doc
+ */
+export default (_, doc) => {
   app.innerHTML = "";
 
-  console.log("** 404!!");
+  app.append(...doc.childNodes);
+
+  setTitle("404 Not Found");
 };

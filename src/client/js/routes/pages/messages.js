@@ -2,17 +2,28 @@ import * as api from "../../api/index.js";
 import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
-export const onunload = async (prev, next) => {
-  // TODO: when implementing websockets, do not close connection if going from
-  // messages --> messages
+// /**
+//  *
+//  * @param {import("../index.js").RoutePage} prev
+//  * @param {import("../index.js").RoutePage} next
+//  */
+// export const onunload = async (prev, next) => {
+//   // TODO: when implementing websockets, do not close connection if going from
+//   // messages --> messages
 
-  if (prev.file === "messages" && next.file === "messages") {
-    console.log(`[messages] not unloading, loading new conversation!`);
-  } else {
-    console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
-  }
-};
+//   if (prev.file === "messages" && next.file === "messages") {
+//     console.log(`[messages] not unloading, loading new conversation!`);
+//   } else {
+//     console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
+//   }
+// };
 
+/**
+ * @param {Message} msg
+ * @param {string} fromId
+ * @param {string} toId
+ * @returns
+ */
 const sendMessage = async (msg, fromId, toId) => {
   return api.messages.create({
     text: msg,
@@ -21,7 +32,13 @@ const sendMessage = async (msg, fromId, toId) => {
   });
 };
 
-// NOTE: code taken from bulma.io documentation
+/**
+ * Setup Bulma modals for the messages page.
+ * Due to the scuffed logic in this page, we need to make sure to not
+ * add event listeners multiple times.
+ *
+ * NOTE: code adapted from bulma.io documentation
+ */
 const setupBulmaModals = () => {
   const SETUP_KEY = "modal_setup";
 
@@ -122,6 +139,10 @@ const setupBulmaModals = () => {
   }
 };
 
+/**
+ * @param {{ id?: string }} args user ID to load messages with
+ * @param {DocumentFragment} doc
+ */
 export default async (args, doc) => {
   const isFullRender = routes.getPrevious()?.file !== "messages";
   let conversationOtherUser = null;
@@ -166,6 +187,7 @@ export default async (args, doc) => {
   let conversations = await fetchSortedMessages();
 
   const reFetchMessages = async () => {
+    console.debug("[messages] refetching messages");
     conversations = await fetchSortedMessages();
   };
 
@@ -187,10 +209,14 @@ export default async (args, doc) => {
   const columnContainer = app.querySelector("#messages-container");
   const previewContainer = app.querySelector("#message-list");
 
-  const renderSidebar = async () => {
+  /**
+   * Render the sidebar only (list of conversations with users & preview of last message)
+   * @param {boolean} refetch
+   */
+  const renderSidebar = async (refetch = false) => {
     console.log("[messages] rendering sidebar");
 
-    await reFetchMessages();
+    if (refetch) await reFetchMessages();
 
     // sort the keys of conversations by most recent message to display most
     // recent conversations at top
@@ -300,13 +326,10 @@ export default async (args, doc) => {
       return parsedApptData;
     };
 
-    console.log("create appt moda", createApptModal);
-
     // TODO: should i do some form validation? or leave it up to the backend?
     // add event listener to create appointment
     const createAppointmentForm =
       createApptModal.querySelector("#form-create-appt");
-    console.log("create appt form", createAppointmentForm);
     createAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
       console.log("[messages] prevented create form submit event!");
@@ -328,7 +351,6 @@ export default async (args, doc) => {
 
     // add event listener to edit appointment
     const editAppointmentForm = editApptModal.querySelector("#form-edit-appt");
-    console.log("edit appt form", editAppointmentForm);
     editAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
       console.log("[messages] prevented edit form submit event!");
@@ -467,7 +489,11 @@ export default async (args, doc) => {
     // TODO: add an || check for appointments so that no msgs but yes appts
     // still render
     if (relevantConvos || relevantAppts.length) {
-      console.log("HEHEHEHE", relevantConvos, relevantAppts);
+      console.debug(
+        "conversation convos & appts",
+        relevantConvos,
+        relevantAppts,
+      );
       messageContainerEl.append(
         ...(await Promise.all(zippedElements(relevantConvos, relevantAppts))),
       );
@@ -499,7 +525,7 @@ export default async (args, doc) => {
       // render the new message in the conversation
       messageContainerEl.prepend(await createNewMessageEl(sentMsg));
       // new message requires a rerender of message previews
-      renderSidebar();
+      renderSidebar(true);
     });
 
     // must be called at the end of everything to ensure all necessary elements
