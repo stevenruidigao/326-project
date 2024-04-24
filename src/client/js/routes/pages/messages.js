@@ -4,10 +4,14 @@ import * as routes from "../index.js";
 
 
 export const onunload = async (prev, next) => {
-  // TODO: check if going from messages --> messages, if so, don't unload
+  // TODO: when implementing websockets, do not close connection if going from messages --> messages
 
-  // would get rid of websockets connection when leaving messages
-  console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
+  if (prev.file === "messages" && next.file === "messages") {
+    console.log(`[messages] not unloading, loading new conversation!`);
+  }
+  else {
+    console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
+  }
 };
 
 
@@ -75,7 +79,6 @@ export default async (args, doc) => {
   if (isFullRender) {
     app.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
   }
-  // const sidebarEl = document.getElementById("message-sidebar");
   const previewContainer = document.getElementById("message-list");
   
   const renderSidebar = async () => {
@@ -99,21 +102,13 @@ export default async (args, doc) => {
       const lastMsg = conversations[convoKey][0];
   
       const previewEl = doc.querySelector(".msg-sidebar-preview").cloneNode(true);
-      // FIXME: replace id with "data-userId" attribute
-      previewEl.setAttribute("id", `preview-${otherUserId}`);
   
       // routes link to the right convo, removes the highlight in case it's highlighted
       const linkEl = previewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUserId);
-      // linkEl.classList.remove("selected-chat");
       
-      const usernameEl = linkEl.querySelector("h4");
-      usernameEl.innerText = otherUser.name;
-      
-      const messageEl = linkEl.querySelector("p");
-      // messageEl.classList.add("msg-preview-text");
-      messageEl.innerText = lastMsg.text;
-      
+      linkEl.querySelector("h4").innerText = otherUser.name;
+      linkEl.querySelector("p").innerText = lastMsg.text;
       
       previewContainer.appendChild(previewEl);
     }
@@ -121,24 +116,21 @@ export default async (args, doc) => {
   };
   
   // only needs to rerender if new message is sent/received
-  if (isFullRender)
-    renderSidebar();
+  if (isFullRender) renderSidebar();
   
-  // FIXME: continue rendering stuff here
+  // only render the convo wrapper on a full render
   if (isFullRender) {
     const convoWrapperEl = document.createElement("div");
     convoWrapperEl.setAttribute("id", "conversation-wrapper");
     app.appendChild(convoWrapperEl);
   }
   const convoWrapperEl = document.getElementById("conversation-wrapper");
+  // always clear the conversation wrapper -- rerendering this is not jarring to the user
   convoWrapperEl.innerHTML = "";
 
   // either render a conversation or a blank conversation
   try {
-    // const otherUserId = args.id;
-    
     // check to see if the other user exists, if doesn't error, continue rendering
-    // const otherUser = await api.users.get(otherUserId);
     const otherUser = await api.users.get(args.id);
     
 
@@ -146,47 +138,32 @@ export default async (args, doc) => {
     const convoEl = doc.getElementById("conversation").cloneNode(true);
     convoWrapperEl.appendChild(convoEl);
 
+    // grab the header, message container, and input elements
     const convoHeaderEl = convoEl.querySelector("#convo-header");
     const messageContainerEl = convoEl.querySelector("#message-container");
     const messageInputEl = convoEl.querySelector("#message-form");
 
+    // autofocus on the message input
+    // NOTE: cannot use autofocus attribute in the html since it won't refocus when changing conversations with a click
     messageInputEl.querySelector("input").focus();
 
     convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
 
 
-    
-    const createNewMessageEl = async (msg, isActiveConvo=false, updateSidebar=true) => {
-      // update the sidebar preview with the new message
-      // FIXME: check if this code actually runs correctly (might not be able to be checked until websockets is implemented, may have to just do a manual wait 5 seconds then trigger a message send to see if the preview updates)
-      if (updateSidebar) {
-        // // get the preview element
-        // // FIXME: replace id with "data-userId" attribute in a querySelector
-        // const previewEl = document.getElementById(`preview-${msg.fromId === user._id ? msg.toId : msg.fromId}`);
-        // // get the message element
-        // const messageEl = previewEl.querySelector("a p.msg-preview");
-        // // update the message element
-        // messageEl.innerText = msg.text;
-        renderSidebar();
-      }
+    // returns a new message element to be added to a convo
+    // do not use for new messages that aren't part of the current conversation
+    const createNewMessageEl = async (msg) => {
+      const messageEl = doc.querySelector(".message").cloneNode(true);
 
-      if (isActiveConvo) {
-        // TODO: also render message in the conversation
-
-        // const messageEl = document.createElement("messages-message");
-        const messageEl = doc.querySelector(".message").cloneNode(true);
-
-        const msgName = msg.fromId === user._id ? user.name : otherUser.name;
-        
-        const usernameEl = messageEl.querySelector("h4");
-        usernameEl.innerText = msgName;
-        
-        const messageContentEl = messageEl.querySelector("p");
-        messageContentEl.innerText = msg.text;
-        
-
-        return messageEl;
-      }
+      const msgName = msg.fromId === user._id ? user.name : otherUser.name;
+      
+      const usernameEl = messageEl.querySelector("h4");
+      usernameEl.innerText = msgName;
+      
+      const messageContentEl = messageEl.querySelector("p");
+      messageContentEl.innerText = msg.text;
+      
+      return messageEl;
     };
 
 
@@ -194,7 +171,7 @@ export default async (args, doc) => {
       messageContainerEl.append(...(
         await Promise.all(
           conversations[otherUser._id].map(
-            (msg) => createNewMessageEl(msg, true, false)
+            (msg) => createNewMessageEl(msg)
           )
         )
       ));
@@ -209,25 +186,25 @@ export default async (args, doc) => {
 
 
     // add event listener to send messages
-    // TODO: instead listen to submit event on form
-    // messageInputEl.querySelector("#send-button").addEventListener("click", async (e) => {
     messageInputEl.addEventListener("submit", async (e) => {
+      // we don't want the actual submit event to happen
       e.preventDefault();
+
+      // get message text from the input, if empty, do nothing
       const msgText = messageInputEl.querySelector("#message-box").value;
       if (!msgText) return;
+
+      // send message and clear the input
       const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
-      // clear the message input
       messageInputEl.querySelector("#message-box").value = "";
 
       // render the new message in the conversation
       messageContainerEl.prepend(
-        await createNewMessageEl(sentMsg, true, true)
+        await createNewMessageEl(sentMsg)
       );
+      // new message requires a rerender of message previews
+      renderSidebar();
     });
-
-    // highlight the other user in the side bar (add a class)
-    // const currentPreview = document.getElementById(`preview-${otherUser._id}`);
-    // currentPreview.querySelector("a").classList.add("selected-chat");
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
@@ -236,7 +213,7 @@ export default async (args, doc) => {
       return routes.goToRoute("messages");
     }
 
-    // TODO: render a blank convo (text and/or image saying to select a conversation from the sidebar)
+    // if no arg provided, render a blank conversation
     const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
     convoWrapperEl.appendChild(blankConvoEl);
   }
