@@ -14,20 +14,22 @@ const memo = (cb) => {
   };
 };
 
-export const fetch = memo(async (name) => {
-  const res = await window.fetch(`/pages/${name}.html`);
+export const fetch = memo(async (url) => {
+  const res = await window.fetch(url);
 
   return res.text();
 });
 
 export const fetchDOM = async (name) => {
-  const html = await fetch(name);
+  const html = await fetch(`/pages/${name}.html`);
 
   const template = document.createElement("template");
   template.innerHTML = html;
 
   return template.content;
 };
+
+export const fetchCSS = async (name) => fetch(`/styles/pages/${name}.css`);
 
 export const registerCustomComponents = (name, xml) => {
   console.debug("[pages] registerCustomComponents", name, xml);

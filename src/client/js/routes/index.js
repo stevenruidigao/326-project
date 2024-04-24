@@ -1,5 +1,6 @@
 import mock from "../api/mock/index.js";
 import * as layout from "../layout.js";
+import { app } from "./helper.js";
 
 import * as pages from "./pages.js";
 
@@ -23,6 +24,7 @@ export const routes = {
 };
 
 const loadingEl = document.getElementById("loading");
+const routeStyles = document.createElement("style");
 
 /**
  * @typedef {?
@@ -110,9 +112,10 @@ export const load = async (routeName, args = {}, search) => {
 
   const route = routes[routeName];
 
-  const [routeJS, document] = await Promise.all([
+  const [routeJS, document, css] = await Promise.all([
     import(`./pages/${route.file}.js`),
     route.hasHTML && pages.fetchDOM(route.file),
+    route.hasCSS && pages.fetchCSS(route.file),
     layout.onAppLoad(), // the logic inside only runs once!
   ]);
 
@@ -134,6 +137,12 @@ export const load = async (routeName, args = {}, search) => {
   current?.module?.onunload?.(current, next);
   previous = current;
   current = next;
+
+  app.setAttribute("data-route", current.name);
+  app.setAttribute("data-file", current.file);
+  app.setAttribute("data-path", current.path);
+
+  routeStyles.textContent = css || "";
 
   await init(args, document);
 
@@ -405,6 +414,8 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
  * MOCK ONLY: Waits for mock data before loading first page!
  */
 export default () => {
+  document.head.appendChild(routeStyles);
+
   window.addEventListener("popstate", (ev) => {
     // Navigate to new/old page
     loadPath(ev?.state);
