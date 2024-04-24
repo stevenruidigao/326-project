@@ -11,24 +11,21 @@ const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
 
   const start = (page - 1) * pageSize;
-  const res = await cb({limit : pageSize, skip : start});
+  const res = await cb({ limit: pageSize, skip: start });
 
-  if (res.warning)
-    console.warn(`[PouchDB] ${res.warning}`);
+  if (res.warning) console.warn(`[PouchDB] ${res.warning}`);
 
   const rows = res.rows?.map((r) => r.doc || r);
 
-  const data = [...(rows || res.docs) ];
+  const data = [...(rows || res.docs)];
   const totalPages = Math.ceil(res.total_rows / pageSize);
 
   // Not present for .find() results. See note above function
   if (totalPages) {
     data.pagination = {};
 
-    if (page > 1)
-      data.pagination.prev = Math.min(totalPages, page - 1);
-    if (page < totalPages)
-      data.pagination.next = page + 1;
+    if (page > 1) data.pagination.prev = Math.min(totalPages, page - 1);
+    if (page < totalPages) data.pagination.next = page + 1;
     data.pagination.total = totalPages;
   }
 
@@ -40,39 +37,39 @@ const withPagination = (pageSize) => async (page, cb) => {
 const APPOINTMENTS_PAGE_SIZE = 8;
 const appointmentsPagination = withPagination(APPOINTMENTS_PAGE_SIZE);
 
-const allAppointments = (page = 1) => appointmentsPagination(
-    page,
-    (opts) => mock.appointments.allDocs({
-      include_docs : true,
+const allAppointments = (page = 1) =>
+  appointmentsPagination(page, (opts) =>
+    mock.appointments.allDocs({
+      include_docs: true,
       ...opts,
     }),
-);
+  );
 
 const getAppointment = (id) => mock.appointments.get(id);
 
-const withUserAppointments = (userId, page = 1) => appointmentsPagination(
-    page,
-    (opts) => mock.appointments.find({
-      selector : {$or : [ {teacherId : userId}, {learnerId : userId} ]},
+const withUserAppointments = (userId, page = 1) =>
+  appointmentsPagination(page, (opts) =>
+    mock.appointments.find({
+      selector: { $or: [{ teacherId: userId }, { learnerId: userId }] },
       ...opts,
     }),
-);
+  );
 
-const withTeacherAppointments = (userId, page = 1) => appointmentsPagination(
-    page,
-    (opts) => mock.appointments.find({
-      selector : {teacherId : userId},
+const withTeacherAppointments = (userId, page = 1) =>
+  appointmentsPagination(page, (opts) =>
+    mock.appointments.find({
+      selector: { teacherId: userId },
       ...opts,
     }),
-);
+  );
 
-const withLearnerAppointments = (userId, page = 1) => appointmentsPagination(
-    page,
-    (opts) => mock.appointments.find({
-      selector : {learnerId : userId},
+const withLearnerAppointments = (userId, page = 1) =>
+  appointmentsPagination(page, (opts) =>
+    mock.appointments.find({
+      selector: { learnerId: userId },
       ...opts,
     }),
-);
+  );
 
 /**
  * Returns an id-to-user map of all users involved in the appointments.
@@ -83,10 +80,11 @@ const withLearnerAppointments = (userId, page = 1) => appointmentsPagination(
  */
 const getAppointmentUsersInvolved = async (appts) => {
   const userIds = new Set(
-      appts.map((appt) => appt.teacherId)
-          .concat(appts.map((appt) => appt.learnerId)),
+    appts
+      .map((appt) => appt.teacherId)
+      .concat(appts.map((appt) => appt.learnerId)),
   );
-  const userArray = await Promise.all([...userIds ].map((id) => users.get(id)));
+  const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
 
   return Object.fromEntries(userArray.map((u) => [u._id, u]));
 };
@@ -94,11 +92,12 @@ const getAppointmentUsersInvolved = async (appts) => {
 // modify
 // -> default attrs probably? but those would happen in backend anyways
 // (validation & stuff)
-const createAppointment = (data) => mock.appointments.post({
-  ...data,
-  createdAt : Date.now(),
-  updatedAt : Date.now(),
-});
+const createAppointment = (data) =>
+  mock.appointments.post({
+    ...data,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
 
 const updateAppointment = async (id, data) => {
   const doc = await mock.appointments.get(id);
@@ -109,24 +108,24 @@ const updateAppointment = async (id, data) => {
   return mock.appointments.put({
     ...doc,
     ...data,
-    _id : id,
-    _rev : doc._rev,
-    updatedAt : Date.now(),
+    _id: id,
+    _rev: doc._rev,
+    updatedAt: Date.now(),
   });
 };
 
 export const appointments = {
   // fetch
-  all : allAppointments,
-  get : getAppointment,
-  withUser : withUserAppointments,
-  withTeacher : withTeacherAppointments,
-  withLearner : withLearnerAppointments,
-  getUsersInvolved : getAppointmentUsersInvolved,
+  all: allAppointments,
+  get: getAppointment,
+  withUser: withUserAppointments,
+  withTeacher: withTeacherAppointments,
+  withLearner: withLearnerAppointments,
+  getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
-  create : createAppointment,
-  update : updateAppointment,
+  create: createAppointment,
+  update: updateAppointment,
 };
 
 // ===== MESSAGES =====
@@ -134,46 +133,46 @@ export const appointments = {
 const MESSAGES_PAGE_SIZE = 10;
 const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
-const getAllMessages = () => mock.messages.allDocs({include_docs : true});
+const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
 
-const getAllMessagesInvolvingUser = (userId) => mock.messages.find({
-  selector : {
-    $or : [ {fromId : {$eq : userId}}, {toId : {$eq : userId}} ],
-  },
-  // sort: ["time"],
-});
+const getAllMessagesInvolvingUser = (userId) =>
+  mock.messages.find({
+    selector: {
+      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+    },
+    // sort: ["time"],
+  });
 
 // FIXME: pagination does not correctly give newest messages first
-const getMessagesInvolvingUser =
-    (userId, page = 1) => {
-      console.warn("pagination does not correctly give newest messages first");
-      messagesPagination(
-          page,
-          (opts) => mock.messages.find({
-            selector : {
-              $or : [ {fromId : {$eq : userId}}, {toId : {$eq : userId}} ],
-            },
-            // use_index: ['time', 'fromId', 'toId'],
-            // sort: ['time'],
-            ...opts,
-          }),
-      );
-    }
+const getMessagesInvolvingUser = (userId, page = 1) => {
+  console.warn("pagination does not correctly give newest messages first");
+  messagesPagination(page, (opts) =>
+    mock.messages.find({
+      selector: {
+        $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+      },
+      // use_index: ['time', 'fromId', 'toId'],
+      // sort: ['time'],
+      ...opts,
+    }),
+  );
+};
 
-const createMessage = (data) => mock.messages.post({
-  ...data,
-  time : Date.now(),
-});
+const createMessage = (data) =>
+  mock.messages.post({
+    ...data,
+    time: Date.now(),
+  });
 
 // TODO: should I add functions to get all messages?
 export const messages = {
   // fetch
-  all : getAllMessages,
-  allWithUser : getAllMessagesInvolvingUser,
-  getWithUser : getMessagesInvolvingUser, // paginated
+  all: getAllMessages,
+  allWithUser: getAllMessagesInvolvingUser,
+  getWithUser: getMessagesInvolvingUser, // paginated
 
   // modify
-  create : createMessage,
+  create: createMessage,
 };
 
 // ===== USERS =====
@@ -183,13 +182,13 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  handle password in backend
 
-const loginUser = async ({username, password}) => {
+const loginUser = async ({ username, password }) => {
   const results = await mock.users.find({
-    selector : {
-      username : {$eq : username},
+    selector: {
+      username: { $eq: username },
       // password: { $eq: password }
     },
-    limit : 1
+    limit: 1,
   });
   if (results.docs.length < 1)
     throw new Error("No user found with that username and password");
@@ -197,49 +196,46 @@ const loginUser = async ({username, password}) => {
   return results.docs[0];
 };
 
-const registerUser = async ({name, username, email, password}) => {
+const registerUser = async ({ name, username, email, password }) => {
   const [emailOut, usernameOut] = await Promise.all([
     mock.users.find({
-      selector : {
-        email : {$eq : email},
+      selector: {
+        email: { $eq: email },
       },
-      limit : 1,
+      limit: 1,
     }),
 
     mock.users.find({
-      selector : {
-        username : {$eq : username},
+      selector: {
+        username: { $eq: username },
       },
-      limit : 1,
+      limit: 1,
     }),
   ]);
 
-  if (emailOut.docs.length)
-    throw new Error("User already exists with email");
+  if (emailOut.docs.length) throw new Error("User already exists with email");
   else if (usernameOut.docs.length)
     throw new Error("User already exists with username");
 
-  return mock.users.post({name, username, email});
+  return mock.users.post({ name, username, email });
 };
 
 const getUser = (id, opts = {}) => mock.users.get(id, opts);
 
 const getUserByUsername = (username, opts) =>
-    mock.users
-        .find({
-          selector : {username : {$eq : username}},
-          limit : 1,
-          ...opts,
-        })
-        .then((out) => out.docs[0]);
+  mock.users
+    .find({
+      selector: { username: { $eq: username } },
+      limit: 1,
+      ...opts,
+    })
+    .then((out) => out.docs[0]);
 
 const getUserAvatar = async (user) => {
   const avatar = user._attachments?.avatar;
 
-  if (!avatar)
-    return null;
-  else if (avatar.data)
-    return avatar.data;
+  if (!avatar) return null;
+  else if (avatar.data) return avatar.data;
 
   const attachment = await mock.users.getAttachment(user._id, "avatar");
 
@@ -248,37 +244,35 @@ const getUserAvatar = async (user) => {
   return attachment;
 };
 
-const allUsers = (page = 1) => userPagination(
-    page,
-    (opts) => mock.users.allDocs({
-      include_docs : true,
+const allUsers = (page = 1) =>
+  userPagination(page, (opts) =>
+    mock.users.allDocs({
+      include_docs: true,
       ...opts,
     }),
-);
+  );
 
 // Get users that have ANY of the skills listed AND any of the skills wanted
 const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
-    userPagination(
-        page,
-        (opts) => mock.users.find({
-          selector : {
-            $and : [
-              skillsHad.length && {
-                $or : skillsHad.map((skill) => ({
-                                      skills : {$elemMatch : {$eq : skill}},
-                                    })),
-              },
-              skillsWant.length && {
-                $or : skillsWant.map(
-                    (skill) => ({
-                      skillsWanted : {$elemMatch : {$eq : skill}},
-                    })),
-              },
-            ].filter(Boolean),
+  userPagination(page, (opts) =>
+    mock.users.find({
+      selector: {
+        $and: [
+          skillsHad.length && {
+            $or: skillsHad.map((skill) => ({
+              skills: { $elemMatch: { $eq: skill } },
+            })),
           },
-          ...opts,
-        }),
-    );
+          skillsWant.length && {
+            $or: skillsWant.map((skill) => ({
+              skillsWanted: { $elemMatch: { $eq: skill } },
+            })),
+          },
+        ].filter(Boolean),
+      },
+      ...opts,
+    }),
+  );
 
 /**
  * NOTICE: 'data' replaces ALL data the user holds aside from `_id`, `_rev`, and
@@ -295,21 +289,21 @@ const updateUser = async (id, data) => {
   // prevent replacing id & rev
   return mock.users.put({
     ...data,
-    _id : id,
-    _rev : doc._rev,
-    updatedAt : Date.now(),
+    _id: id,
+    _rev: doc._rev,
+    updatedAt: Date.now(),
   });
 };
 
 export const users = {
-  login : loginUser,
-  register : registerUser,
-  get : getUser,
-  getByUsername : getUserByUsername,
-  getAvatar : getUserAvatar,
-  all : allUsers,
-  withSkills : allUsersWithSkills,
-  update : updateUser,
+  login: loginUser,
+  register: registerUser,
+  get: getUser,
+  getByUsername: getUserByUsername,
+  getAvatar: getUserAvatar,
+  all: allUsers,
+  withSkills: allUsersWithSkills,
+  update: updateUser,
 };
 
 // ===== SESSION =====
@@ -319,13 +313,12 @@ let currentUser = undefined;
 
 export const setSessionCurrent = (u) => (currentUser = u);
 export const getSessionCurrent = async () => {
-  if (currentUser !== undefined)
-    return currentUser;
+  if (currentUser !== undefined) return currentUser;
   return setSessionCurrent(await getSessionUser());
 };
 
 export const createSession = async (userId) => {
-  const doc = await mock.session.post({userId});
+  const doc = await mock.session.post({ userId });
 
   console.log("createSession", doc);
 
@@ -340,8 +333,7 @@ export const getSession = async () => {
   if (id) {
     try {
       return await mock.session.get(id);
-    } catch (err) {
-    }
+    } catch (err) {}
   }
 
   return null;
@@ -350,19 +342,18 @@ export const getSession = async () => {
 const getSessionUser = async () => {
   const session = await getSession();
 
-  if (!session?.userId)
-    return null;
+  if (!session?.userId) return null;
 
   // TODO handle error better somehow if user id does not exist?
-  return users.get(session.userId, {attachments : true, binary : true})
-      .catch(() => null);
+  return users
+    .get(session.userId, { attachments: true, binary: true })
+    .catch(() => null);
 };
 
 export const deleteSession = async () => {
   const session = await getSession();
 
-  if (session)
-    await mock.session.remove(session);
+  if (session) await mock.session.remove(session);
 
   await local.set("token", null);
 
@@ -370,11 +361,11 @@ export const deleteSession = async () => {
 };
 
 export const session = {
-  create : createSession,
-  get : getSession,
-  getUser : getSessionUser,
-  delete : deleteSession,
+  create: createSession,
+  get: getSession,
+  getUser: getSessionUser,
+  delete: deleteSession,
 
-  current : getSessionCurrent,
-  setCurrent : setSessionCurrent,
+  current: getSessionCurrent,
+  setCurrent: setSessionCurrent,
 };
