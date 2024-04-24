@@ -5,6 +5,14 @@
     <div id="message-list"></div>
 </div>
 
+<!-- "template" copied for each sidebar preview -->
+<div class="msg-sidebar-preview">
+    <a is="app-route" route="conversation" when-active="is-active">
+        <h4 class="sidebar-username"></h4>
+        <p class="msg-preview"></p>
+    </a>
+</div>
+
 <!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
     <!-- TODO: consider making this header a link to their profile -->
@@ -13,7 +21,7 @@
     </div>
     <div id="message-container"></div>
     <form id="message-form">
-        <input type="text" id="message-box" placeholder="Type a message...">
+        <input type="text" id="message-box" placeholder="Type a message..." autocomplete="off">
         <button type="submit" id="send-button">Send</button>
     </form>
 </div>
@@ -24,20 +32,8 @@
     <h2>No conversation selected</h2>
 </div>
 
-<!-- "template" copied for each sidebar preview -->
-<div class="msg-sidebar-preview">
-    <a is="app-route" route="conversation" when-active="is-active">
-        <h4 class="sidebar-username"></h4>
-        <p class="msg-preview"></p>
-    </a>
-</div>
-
 <!-- template for each individual message rendered in a conversation -->
 <div class="message">
-    <div class="msg-from">
-        <h4></h4>
-    </div>
-    <div class="msg-content">
-        <p></p>
-    </div>
+    <h4 class="msg-from"></h4>
+    <p class="msg-content"></p>
 </div>
