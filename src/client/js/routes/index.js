@@ -356,6 +356,12 @@ export const loadPath = (def) => {
 };
 
 /**
+ * Refresh the current page.
+ * @returns {void}
+ */
+export const refresh = () => loadPath();
+
+/**
  * Custom HTML element extending `<a>` for app routes.
  * - `route` attribute is the name of the route to navigate to
  * - `:arg` attributes are arguments to pass to the route

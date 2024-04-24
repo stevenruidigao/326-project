@@ -25,31 +25,46 @@ const sendMessage = async (msg, fromId, toId) => {
 }
 
 // NOTE: code taken from bulma.io documentation
-const setupBulmaModals = (user) => {
+const setupBulmaModals = () => {
+  const SETUP_KEY = 'modal_setup';
+
   const openModal = async (el, e) => {
 
     console.log("opening modal with event", e);
     if (e.target?.dataset?.apptid) {
+      const loggedInUser = await api.session.current();
       const apptId = e.target.dataset.apptid;
+      const userId = loggedInUser._id;
       const currentAppt = await api.appointments.get(apptId);
 
       console.log("[messages] opening edit appt modal", currentAppt);
 
       el.querySelector("input[name='topic']").value = currentAppt.topic;
       el.querySelector("input[name='url']").value = currentAppt.url;
-      el.querySelector("input[name='time']").value = new Date(currentAppt.time).toISOString().slice(0, 16);
+      
+      // needed due to timezones
+      const dateObj = new Date(currentAppt.time);
+      const date = dateObj.toISOString().slice(0, 10); // obtain date - "YEAR-MONTH-DAY" eg. "2024-04-24"
+      const time = dateObj.toTimeString().slice(0, 5); // obtain time - "HOURS:MINUTES" eg. "13:37"
+      el.querySelector("input[name='time']").value = [date, time].join('T');
 
-      el.querySelector(`input[name='role'][value='${currentAppt.teacherId === user._id ? "teaching" : "learning"}']`).checked = true;
+      el.querySelector(`input[name='role'][value='${currentAppt.teacherId === userId ? "teaching" : "learning"}']`).checked = true;
       el.querySelector(`input[name='type'][value='${currentAppt.type}']`).checked = true;
 
-      el.querySelector(".is-success").setAttribute("data-apptid", apptId);
+      const form = el.querySelector("form");
+      form.dataset.apptid = apptId;
 
       // data-apptid="00cb35de-6fa1-43be-ad43-6686c574e82d"
     }
     
     el.classList.add('is-active')
   };
-  const closeModal = (el) => el.classList.remove('is-active');
+  const closeModal = (el) => {
+    const $form = el.querySelector('form');
+
+    $form?.reset();
+    el.classList.remove('is-active')
+  };
   const closeAllModals = () => {
     (document.querySelectorAll('.modal') || []).forEach((modalEl) => {
       closeModal(modalEl);
@@ -64,32 +79,45 @@ const setupBulmaModals = (user) => {
     const modal = triggerEl.dataset.target;
     const targetEl = document.getElementById(modal);
 
-    triggerEl.addEventListener('click', (e) => {
-      console.log("clicked", );
-      openModal(targetEl, e);
-    });
+    if (!triggerEl.dataset[SETUP_KEY]) {
+      triggerEl.dataset[SETUP_KEY] = true;
+
+      triggerEl.addEventListener('click', (e) => {
+        console.log("clicked", );
+        openModal(targetEl, e);
+      });
+    }
   });
 
   // Add a click event on various child elements to close the parent modal
-  (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach((closeEl) => {
+  (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button[type=reset]') || []).forEach((closeEl) => {
     const $target = closeEl.closest('.modal');
 
-    closeEl.addEventListener('click', () => {
-      closeModal($target);
-    });
-  });
+    if (!closeEl.dataset[SETUP_KEY]) {
+      closeEl.dataset[SETUP_KEY] = true;
 
-  // Add a keyboard event to close all modals
-  document.addEventListener('keydown', (event) => {
-    if(event.key === "Escape") {
-      closeAllModals();
+      closeEl.addEventListener('click', () => {
+        closeModal($target);
+      });
     }
   });
+  
+  if (!document.body.dataset[SETUP_KEY]) {
+    document.body.dataset[SETUP_KEY] = true;
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+      if(event.key === "Escape") {
+        closeAllModals();
+      }
+    });
+  }
 };
 
 
 export default async (args, doc) => {
   const isFullRender = routes.getPrevious()?.file !== "messages";
+  let conversationOtherUser = null;
 
   if (isFullRender) {
     app.innerHTML = "";
@@ -217,16 +245,82 @@ export default async (args, doc) => {
     editApptModal.querySelector(".modal-card-title").innerText = "Edit Appointment";
     editApptModal.querySelector(".is-success").innerText = "Confirm Edits";
 
+    const parseApptFormData = (formData) => {
+      const apptData = Object.fromEntries(formData.entries());
 
+      console.log('parseApptFormData conversationOtherUser', conversationOtherUser);
+
+      const parsedApptData = {
+        teacherId: apptData.role === "teaching" ? user._id : conversationOtherUser._id,
+        learnerId: apptData.role === "learning" ? user._id : conversationOtherUser._id,
+        type: apptData.type,
+        url: apptData.url,
+        topic: apptData.topic,
+        time: new Date(apptData.time).getTime()
+      };
+
+      return parsedApptData;
+    }
+
+    console.log('create appt moda', createApptModal);
+
+    // TODO: should i do some form validation? or leave it up to the backend?
+    // add event listener to create appointment
+    const createAppointmentForm = createApptModal.querySelector("#form-create-appt");
+    console.log("create appt form", createAppointmentForm);
+    createAppointmentForm.addEventListener("submit", async (e) => {
+      // we don't want the actual submit event to happen
+      console.log("[messages] prevented create form submit event!");
+      e.preventDefault();
+
+      if (!conversationOtherUser) return;
+
+      const formData = new FormData(createAppointmentForm);
+
+      const parsedApptData = parseApptFormData(formData);
+
+      console.log("[messages] creating appointment", parsedApptData);
+
+      await api.appointments.create(parsedApptData);
+
+      createAppointmentForm.querySelector('[type=reset]').click(); // close modal!
+      routes.refresh();
+    });
+
+    // add event listener to edit appointment
+    const editAppointmentForm = editApptModal.querySelector("#form-edit-appt");
+    console.log("edit appt form", editAppointmentForm);
+    editAppointmentForm.addEventListener("submit", async (e) => {
+      // we don't want the actual submit event to happen
+      console.log("[messages] prevented edit form submit event!");
+      e.preventDefault();
+
+      const apptId = e.target.dataset.apptid;
+
+      const formData = new FormData(editAppointmentForm);
+
+      const parsedApptData = parseApptFormData(formData);
+
+      await api.appointments.update(apptId, parsedApptData);
+
+      console.log(parsedApptData);
+
+      editAppointmentForm.querySelector('[type=reset]').click(); // close modal!
+      routes.refresh();
+    });
 
     app.append(createApptModal, editApptModal);
   }
+
+
 
   // either render a conversation or a blank conversation
   try {
     // check to see if the other user exists, if doesn't error, continue rendering
     const otherUser = await api.users.get(args.id);
-    
+
+    conversationOtherUser = otherUser;
+    console.log('set conversationOtherUser', conversationOtherUser);
 
     setTitle(`Chat with ${otherUser.name}`);
 
@@ -271,9 +365,6 @@ export default async (args, doc) => {
     relevantAppts.sort((a, b) => b.time - a.time);
 
     console.log("[messages] relevant appts", relevantAppts);
-
-
-
 
     // returns a new message element to be added to a convo
     // do not use for new messages that aren't part of the current conversation
@@ -366,73 +457,13 @@ export default async (args, doc) => {
       renderSidebar();
     });
 
-    const parseApptFormData = (formData) => {
-      const apptData = Object.fromEntries(formData.entries());
-
-      const parsedApptData = {
-        teacherId: apptData.role === "teaching" ? user._id : otherUser._id,
-        learnerId: apptData.role === "learning" ? user._id : otherUser._id,
-        type: apptData.type,
-        url: apptData.url,
-        topic: apptData.topic,
-      };
-
-      const inputTime = apptData.time;
-
-      // convert time to unix timestamp
-      const [date, time] = inputTime.split("T");
-      const [year, month, day] = date.split("-");
-      const [hour, minute] = time.split(":");
-      const timestamp = new Date(year, month, day, hour, minute).getTime();
-
-      parsedApptData.time = timestamp;
-
-      return parsedApptData;
-    }
-
-    // TODO: should i do some form validation? or leave it up to the backend?
-    // add event listener to create appointment
-    const createAppointmentForm = document.getElementById("form-create-appt");
-    console.log("create appt form", createAppointmentForm);
-    createAppointmentForm.addEventListener("submit", (e) => {
-      // we don't want the actual submit event to happen
-      console.log("[messages] prevented create form submit event!");
-      e.preventDefault();
-    });
-    createAppointmentForm.querySelector(".is-success").addEventListener("click", async () => {
-      const formData = new FormData(createAppointmentForm);
-
-      const parsedApptData = parseApptFormData(formData);
-
-      console.log("[messages] creating appointment", parsedApptData);
-
-      await api.appointments.create(parsedApptData);
-    });
-
-    // add event listener to edit appointment
-    const editAppointmentForm = document.getElementById("form-edit-appt");
-    console.log("edit appt form", editAppointmentForm);
-    editAppointmentForm.addEventListener("submit", (e) => {
-      // we don't want the actual submit event to happen
-      console.log("[messages] prevented edit form submit event!");
-      e.preventDefault();
-    });
-    editAppointmentForm.querySelector(".is-success").addEventListener("click", async (e) => {
-      const apptId = e.target.dataset.apptid;
-
-      const formData = new FormData(editAppointmentForm);
-
-      const parsedApptData = parseApptFormData(formData);
-
-      console.log("[messages] editing appointment", parsedApptData);
-
-      await api.appointments.update(apptId, parsedApptData);
-    });
+    // must be called at the end of everything to ensure all necessary elements are rendered
+    setupBulmaModals();
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
     if (args.id) {
-      console.error(`[messages] error fetching conversation with user ${args.id}: ${err}`);
+      console.error(`[messages] error fetching conversation with user ${args.id}:`, err);
       return routes.goToRoute("messages");
     }
 
@@ -441,7 +472,4 @@ export default async (args, doc) => {
     const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
     convoWrapperEl.appendChild(blankConvoEl);
   }
-
-  // must be called at the end of everything to ensure all necessary elements are rendered
-  setupBulmaModals(user);
 };
