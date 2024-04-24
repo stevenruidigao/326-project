@@ -14,10 +14,10 @@ export const routes = {
   search: { path: "/browse/:search", file: "browse", hasHTML: true },
   messages: { path: "/messages", file: "messages", hasHTML: true },
   conversation: { path: "/messages/:id", file: "messages", hasHTML: true },
-  profile: { path: "/profile", file: "profile", hasHTML: true },
-  user: { path: "/profile/:id", file: "profile", hasHTML: true },
-  
-  login: {path: "/auth/login", file: "auth/login", hasHTML: true },
+  profile: { path: "/profile", file: "profile", hasHTML: true, hasCSS: true },
+  user: { path: "/profile/:id", file: "profile", hasHTML: true, hasCSS: true },
+
+  login: { path: "/auth/login", file: "auth/login", hasHTML: true },
   logout: { path: "/auth/logout", file: "logout" },
   signup: { path: "/auth/signup", file: "auth/signup", hasHTML: true },
 

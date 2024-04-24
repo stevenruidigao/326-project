@@ -71,6 +71,23 @@ const withLearnerAppointments = (userId, page = 1) =>
     }),
   );
 
+/**
+ * Returns an id-to-user map of all users involved in the appointments.
+ * Scuffed way to obtain relationship values...
+ * @param {Appointment[]} appts Only requires `teacherId` and `learnerId` properties for each item
+ * @returns {Promise<Object.<string, User>>}
+ */
+const getAppointmentUsersInvolved = async (appts) => {
+  const userIds = new Set(
+    appts
+      .map((appt) => appt.teacherId)
+      .concat(appts.map((appt) => appt.learnerId)),
+  );
+  const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
+
+  return Object.fromEntries(userArray.map((u) => [u._id, u]));
+};
+
 // modify
 // -> default attrs probably? but those would happen in backend anyways
 // (validation & stuff)
@@ -103,6 +120,7 @@ export const appointments = {
   withUser: withUserAppointments,
   withTeacher: withTeacherAppointments,
   withLearner: withLearnerAppointments,
+  getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
   create: createAppointment,

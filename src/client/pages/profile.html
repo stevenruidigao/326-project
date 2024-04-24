@@ -1,4 +1,4 @@
-<div id="profile">
+<div id="profile" class="my-5">
     <h1 class="title">Profile</h1>
 
     <div class="article media">
@@ -19,7 +19,7 @@
                 </p>
 
                 <p class="my-0">
-                    <strong>Knows:</strong>
+                    <strong>Known:</strong>
                     <span class="profile-knows"></span>
                 </p>
 
@@ -28,7 +28,10 @@
                     <span class="profile-interests"></span>
                 </p>
 
-                <a is="app-route" class="profile-edit-button button is-hidden mt-2" route="profile">Edit</a>
+                <div class="buttons">
+                    <a is="app-route" class="profile-edit-button button is-hidden mt-2" route="profile">Edit</a>
+                    <a is="app-route" id="profile-message-button" class="button is-link mt-2 is-hidden" route="conversation">Message</a>
+                </div>
             </div>
 
             <div class="content is-hidden" id="profile-edit">
@@ -80,6 +83,25 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-appointments" class="is-skeleton is-hidden">
+        <h2 class="title is-4">All Appointments</h2>
+        <div class="fixed-grid has-3-cols">
+            <div class="grid" id="profile-appointments-grid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cell profile-appointments-cell">
+    <div class="card profile-appointments-card">
+        <div class="card-content">
+            <div class="content">
+                Discussed <span class="profile-appointments-card-topic"></span> with <span class="profile-appointments-card-user"></span>.
+                <time class="profile-appointments-card-time mt-4 is-block"></time>
             </div>
         </div>
     </div>

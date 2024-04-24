@@ -1,15 +1,62 @@
-import { session, users } from "../../api/index.js";
+import { appointments, session, users } from "../../api/index.js";
 import { setupNavbar } from "../../layout.js";
-import { app, toggleElementAll } from "../helper.js";
-import { goToRoute, load } from "../index.js";
+import { app, setTitle, toggleElementAll } from "../helper.js";
+import { HTMLAppRouteElement, goToRoute } from "../index.js";
+
+export const loadAppointments = async (doc, profileEl, user) => {
+  const apptsParentEl = profileEl.querySelector("#profile-appointments");
+  const apptsGridEl = apptsParentEl.querySelector("#profile-appointments-grid");
+
+  apptsParentEl.classList.remove("is-hidden");
+
+  const userAppointments = (await appointments.withUser(user._id, 1)).slice(
+    0,
+    3,
+  );
+
+  const usersInvolved = await appointments.getUsersInvolved(userAppointments);
+
+  // render appointments
+  for (const appt of userAppointments) {
+    const newApptEl = doc
+      .querySelector(".profile-appointments-cell")
+      .cloneNode(true);
+    newApptEl.querySelector(".profile-appointments-card-topic").innerText =
+      appt.topic;
+
+    const date = new Date(appt.time);
+
+    newApptEl.querySelector(".profile-appointments-card-time").innerText =
+      date.toLocaleDateString();
+    newApptEl
+      .querySelector(".profile-appointments-card-time")
+      .setAttribute("datetime", date.toISOString());
+
+    const otherUser =
+      usersInvolved[
+        appt.teacherId === user._id ? appt.learnerId : appt.teacherId
+      ];
+    const link = new HTMLAppRouteElement();
+    link.route = "user";
+    link.setArg("id", otherUser._id);
+    link.innerText = `@${otherUser.username}`;
+
+    newApptEl
+      .querySelector(".profile-appointments-card-user")
+      .appendChild(link);
+
+    apptsGridEl.appendChild(newApptEl);
+  }
+
+  apptsParentEl.classList.remove("is-skeleton");
+};
 
 export default async (args, doc) => {
-  app.innerHTML = "";
-
   // get current logged-in user
   const loggedInUser = await session.current();
 
   if (!args.id && !loggedInUser) {
+    goToRoute("login");
     // TODO go to log-in page
     return;
   }
@@ -18,6 +65,8 @@ export default async (args, doc) => {
   const isUsername = id?.startsWith("@");
   const getMethod = isUsername ? "getByUsername" : "get";
   const username = isUsername ? id.slice(1) : id;
+
+  app.innerHTML = "";
 
   const user = username
     ? await users[getMethod](username, { attachments: true, binary: true })
@@ -32,7 +81,7 @@ export default async (args, doc) => {
 
   console.log("* profile page user =", user);
 
-  document.title = `${user.username}'s Profile`;
+  setTitle(isEditingUser ? "Editing profile" : `@${user.username}`);
 
   const div = doc.querySelector("#profile");
 
@@ -59,8 +108,6 @@ export default async (args, doc) => {
 
   nameEl[key] = user.name;
   usernameEl[key] = user.username;
-  knowsEl[key] = user.skills.join(", ");
-  interestsEl[key] = user.skillsWanted.join(", ");
 
   const avatar = await users.getAvatar(user);
 
@@ -71,6 +118,9 @@ export default async (args, doc) => {
   if (isEditingUser) {
     idEl.value = "User ID: " + user._id;
     emailEl.value = user.email;
+
+    knowsEl.value = user.skills?.join(", ") ?? "";
+    interestsEl.value = user.skillsWanted?.join(", ") ?? "";
 
     const imageButtons = div.querySelector("#profile-img-buttons");
     const uploadBtn = div.querySelector("#profile-img-upload-btn");
@@ -148,6 +198,35 @@ export default async (args, doc) => {
   } else if (isSameUser) {
     // content is not editing, show button
     content.querySelector(".profile-edit-button").classList.remove("is-hidden");
+  } else {
+    // user is NOT the same as logged in user
+
+    const messageBtn = content.querySelector("#profile-message-button");
+    messageBtn.setAttribute(":id", user._id);
+    messageBtn.classList.remove("is-hidden");
+  }
+
+  // initialize skills links
+  if (!isEditingUser) {
+    const known = user.skills || [];
+    const interests = user.skillsWanted || [];
+
+    const addSkills = (parentEl, searchKey, skills) =>
+      skills.forEach((skill) => {
+        const link = new HTMLAppRouteElement();
+
+        link.route = "browse";
+        link.search = `${searchKey}=${skill}`;
+        link.innerText = skill;
+
+        parentEl.appendChild(link);
+      });
+
+    addSkills(knowsEl, "has", known);
+    addSkills(interestsEl, "wants", interests);
+
+    // obtain sample set of appointments
+    loadAppointments(doc, div, user);
   }
 
   app.appendChild(div);

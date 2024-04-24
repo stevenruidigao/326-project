@@ -1,4 +1,4 @@
-import { session } from "./api/index.js";
+import { session, users } from "./api/index.js";
 import { toggleElement, toggleElementAll } from "./routes/helper.js";
 
 let onLoadPromise = null;
@@ -10,14 +10,25 @@ export const setupNavbar = async () => {
   const user = await session.current();
 
   const userActions = document.querySelector("#navbar-user-actions");
+  const imageContainer = document.querySelector("#navbar-user-image");
+  const image = imageContainer.querySelector("img");
 
   toggleElement("#navbar-guest-actions", "is-hidden", !!user);
   toggleElement(userActions, "is-hidden", !user);
 
   toggleElementAll("#navbar-guest-actions .is-skeleton", "is-skeleton", false);
 
+  imageContainer.classList.toggle("is-hidden", true);
+
   if (user) {
     userActions.querySelector("span").innerText = user.username;
+
+    const avatar = await users.getAvatar(user);
+
+    if (avatar) {
+      image.src = URL.createObjectURL(avatar);
+      imageContainer.classList.remove("is-hidden");
+    }
   }
 };
 
