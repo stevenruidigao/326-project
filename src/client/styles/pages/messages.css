@@ -5,29 +5,27 @@
 }
 
 #message-sidebar {
-    width: 30%;
-    background-color: #333;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     a {
         display: block;
         text-decoration: none;
-        color: white; /* FIXME: figure out what bulma colors to use */
     }
     .msg-preview {
         white-space: nowrap;
-        overflow: hidden;
+        overflow-x: hidden;
         text-overflow: ellipsis;
+        display: inline-block;
+        max-width: calc(100% - 5px); /* avoid horizontal overflow */
     }
+
     .sidebar-username {
-        font-weight: bold;
-        color: yellow; /* FIXME: figure out what bulma colors to use */
-    }
-    /* .selected-chat {
-        background-color: #555;
-    } */
-    .is-active {
-        background-color: #555;
+        font-style: italic;
+
+        &::before {
+            content: "@";
+        }
     }
 }
 #conversation-wrapper {
@@ -36,8 +34,6 @@
 
     display: flex;
     flex-direction: column;
-    width: 70%;
-    background-color: #444;
 
     #conversation {
         #convo-header {
@@ -63,6 +59,36 @@
             background-color: #444;
 
             height: calc(100vh - var(--bulma-navbar-height) - var(--msg-sender-height) - var(--msg-header-height));
+
+            .message {
+                /*
+                    The messages are in reverse order in the DOM, so this gets confusing!
+                    First: when a new user starts speaking *and* sends more than one message, get rid of bottom separation
+                    Second: when a user sends more than one message, get rid of top separation
+                */
+                &[data-user=self] + [data-user=self],
+                &[data-user=other] + [data-user=other] {
+                    margin-bottom: 0;
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                    padding-bottom: 0;
+                }
+
+                &[data-user=self]:has(+ .message[data-user=self]),
+                &[data-user=other]:has(+ .message[data-user=other]) {
+                    margin-top: 0;
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
+
+                    .msg-from {
+                        display: none;
+                    }
+
+                    &:not(:last-of-type) {
+                        padding-top: 0;
+                    }
+                }
+            }
             
     
             /* FIXME: messages styling overriden sometimes by app.css styles and bulma styles */
@@ -74,10 +100,6 @@
                 margin: 5px auto;
     
                 color: #ccc;
-    
-                h4 {
-                    font-weight: bold;
-                }
     
                 &:hover {
                     background-color: #666;
@@ -139,7 +161,7 @@
 }
 
 #app[data-file="messages"] {
-    padding: 0;
+    padding: 0 !important;
     display: flex;
     flex-direction: row;
 

@@ -170,9 +170,17 @@ export default async (args, doc) => {
   // set all previews to not highlighted
   // all previews are links to the conversation with the other user
   if (isFullRender) {
-    app.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
+    const columnContainer = document.createElement("div");
+    columnContainer.className = "columns is-gapless mb-0";
+    columnContainer.id = "messages-container";
+    columnContainer.style.width = '100%';
+
+    columnContainer.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
+    app.appendChild(columnContainer);
   }
-  const previewContainer = document.getElementById("message-list");
+
+  const columnContainer = app.querySelector("#messages-container");
+  const previewContainer = app.querySelector("#message-list");
 
   const renderSidebar = async () => {
     console.log("[messages] rendering sidebar");
@@ -201,8 +209,16 @@ export default async (args, doc) => {
       const linkEl = previewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUserId);
 
-      linkEl.querySelector("h4").innerText = otherUser.name;
-      linkEl.querySelector("p").innerText = lastMsg.text;
+      linkEl.querySelector(".sidebar-name").innerText = otherUser.name;
+      linkEl.querySelector(".msg-timestamp").innerText = new Date(
+        lastMsg.time,
+      ).toLocaleDateString();
+
+      linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
+
+      const avatar = await api.users.getAvatar(otherUser);
+        
+      linkEl.querySelector("img").src = avatar ? URL.createObjectURL(avatar) : '/images/logo.png';
 
       previews.push(previewEl);
 
@@ -220,7 +236,8 @@ export default async (args, doc) => {
   if (isFullRender) {
     const convoWrapperEl = document.createElement("div");
     convoWrapperEl.setAttribute("id", "conversation-wrapper");
-    app.appendChild(convoWrapperEl);
+    convoWrapperEl.className = "column";
+    columnContainer.appendChild(convoWrapperEl);
   }
   const convoWrapperEl = document.getElementById("conversation-wrapper");
   // always clear the conversation wrapper -- rerendering this is not jarring to the user
@@ -381,13 +398,16 @@ export default async (args, doc) => {
     const createNewMessageEl = async (msg) => {
       const messageEl = doc.querySelector(".message").cloneNode(true);
 
-      const msgName = msg.fromId === user._id ? user.name : otherUser.name;
+      const isThisUser = msg.fromId === user._id;
+      const msgName = isThisUser ? user.name : otherUser.name;
 
-      const usernameEl = messageEl.querySelector("h4");
+      const usernameEl = messageEl.querySelector(".msg-from");
       usernameEl.innerText = msgName;
 
-      const messageContentEl = messageEl.querySelector("p");
+      const messageContentEl = messageEl.querySelector(".msg-content");
       messageContentEl.innerText = msg.text;
+
+      messageEl.dataset.user = isThisUser ? "self" : "other";
 
       return messageEl;
     };
@@ -398,7 +418,7 @@ export default async (args, doc) => {
       const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
       const time = new Date(appt.time).toLocaleString();
 
-      apptEl.querySelector("h4.time").innerText = time;
+      apptEl.querySelector(".time").innerText = time;
       apptEl.querySelector("span.role").innerText = apptRole;
       apptEl.querySelector("span.topic").innerText = appt.topic;
       apptEl.querySelector("span.type").innerText = appt.type;
