@@ -52,67 +52,92 @@ async function getUsersPaginated(page=1, skillsHad=[], skillsWant=[]) {
  * @param {Array<string>} user.skillsWanted - An array of skills the user wants.
  * @return {HTMLElement} - The custom HTML element representing the user.
  */
-function createUserEl(user) {
-  const userEl = document.createElement("browse-user");
+function createUserCard(user) {
+  const card = document.createElement("div");
+  card.className = "card user-card";
+
+  const cardContent = document.createElement("div");
+  cardContent.className = "card-content";
+
+  const media = document.createElement("div");
+  media.className = "media";
+
+  const mediaLeft = document.createElement("div");
+  mediaLeft.className = "media-left";
+
+  const figure = document.createElement("figure");
+  figure.className = "image is-48x48";
 
   // Basic user info (pic, name, username)
-  const profilePictureEl = document.createElement("img");
-  profilePictureEl.setAttribute("slot", "profile-picture");
-  profilePictureEl.src = "/images/logo.png";
-  profilePictureEl.className = "profile-picture";
+  const profilePicture = document.createElement("img");
+  profilePicture.src = "/images/logo.png";
+  profilePicture.alt = `${user.name}'s profile picture`;
 
-  const nameEl = document.createElement("span");
-  nameEl.setAttribute("slot", "name");
-  nameEl.innerText = user.name;
-  nameEl.className = "name";
+  figure.appendChild(profilePicture);
 
-  const usernameEl = new HTMLAppRouteElement();
-  usernameEl.setAttribute("slot", "username");
-  usernameEl.setAttribute("route", "profile");
-  usernameEl.setAttribute(":id", user._id);
-  usernameEl.innerText = `@${user.username}`;
-  usernameEl.className = "username";
+  mediaLeft.appendChild(figure);
+  
+  const mediaContent = document.createElement("div");
+  mediaContent.className = "media-content";
+
+  const name = document.createElement("span");
+  name.innerText = user.name;
+  name.className = "title is-5";
+
+  const username = new HTMLAppRouteElement();
+  username.setAttribute("route", "profile");
+  username.setAttribute(":id", user._id);
+  username.innerText = `@${user.username}`;
+  username.className = "username is-6";
+
+  mediaContent.appendChild(name);
+  mediaContent.appendChild(username);
+
+  media.appendChild(mediaLeft);
+  media.appendChild(mediaContent);
+
+  cardContent.appendChild(media);
 
   // Things the user knows
-  const hasSkillsEl = document.createElement("span");
-  hasSkillsEl.setAttribute("slot", "hasSkills");
-  hasSkillsEl.className = "skills";
+  const content = document.createElement("div");
+  content.className = "content";
 
-  hasSkillsEl.innerText = "Has skills: " + (user.skills.length == 0 ? "None" : "");
+  const knows = document.createElement("span");
+  knows.className = "skills";
 
-  for (const skill of user.skills) {
-    const skillEl = new HTMLAppRouteElement();
-    skillEl.setAttribute("route", "browse");
-    skillEl.setAttribute("search", "?has=" + skill);
-    skillEl.innerText = skill;
-    skillEl.className = "skill";
-    hasSkillsEl.appendChild(skillEl);
+  knows.innerText = "Knows: " + (user.skills.length == 0 ? "None" : "");
+
+  for (const known of user.skills) {
+    const skill = new HTMLAppRouteElement();
+    skill.setAttribute("route", "browse");
+    skill.setAttribute("search", "?knows=" + known);
+    skill.innerText = known;
+    skill.className = "skill";
+    knows.appendChild(skill);
   }
+
+  content.appendChild(knows);
 
   // Things the user wants to know
-  const wantsSkillsEl = document.createElement("span");
-  wantsSkillsEl.setAttribute("slot", "wantsSkills");
-  wantsSkillsEl.className = "skills";
+  const interests = document.createElement("span");
+  interests.className = "skills";
 
-  wantsSkillsEl.innerText = "Wants skills: " + (user.skillsWanted.length == 0 ? "None" : "");
+  interests.innerText = "Interests: " + (user.skillsWanted.length == 0 ? "None" : "");
 
-  for (const skill of user.skillsWanted) {
-    const skillEl = new HTMLAppRouteElement();
-    skillEl.setAttribute("route", "browse");
-    skillEl.setAttribute("search", "?wants=" + skill);
-    skillEl.innerText = skill;
-    skillEl.className = "skill";
-    wantsSkillsEl.appendChild(skillEl);
+  for (const interest of user.skillsWanted) {
+    const skill = new HTMLAppRouteElement();
+    skill.setAttribute("route", "browse");
+    skill.setAttribute("search", "?interests=" + interest);
+    skill.innerText = interest;
+    skill.className = "skill";
+    interests.appendChild(skill);
   }
 
-  // Add everything into the user's div
-  userEl.appendChild(profilePictureEl);
-  userEl.appendChild(nameEl);
-  userEl.appendChild(usernameEl);
-  userEl.appendChild(hasSkillsEl);
-  userEl.appendChild(wantsSkillsEl);
+  content.appendChild(interests);
+  cardContent.appendChild(content);
+  card.appendChild(cardContent);
 
-  return userEl;
+  return card;
 }
 
 /**
@@ -123,28 +148,29 @@ function createUserEl(user) {
  * @param {Array<string>} skillsWant - The skills that the users to search for want.
  */
 async function renderUsers(page=1, skillsHad=[], skillsWant=[]) {
-  const browseEl = document.getElementById("browse");
+  const browseContainer = document.getElementById("browse");
   const { users, getNextPage, hasNextPage } = await getUsersPaginated(page, skillsHad, skillsWant);
 
   for (const user of users) {
-    const userEl = createUserEl(user);
-    browseEl.appendChild(userEl);
+    const userCard = createUserCard(user);
+    browseContainer.appendChild(userCard);
   }
 
+  const loadMoreButton = document.getElementById("load-more-button");
+
   if (hasNextPage) {
-    const loadMoreEl = document.getElementById("load-more-button");
-    loadMoreEl.classList.remove("is-hidden");
+    loadMoreButton.classList.remove("is-hidden");
     
-    loadMoreEl.addEventListener("click", async function onclick() {
-      loadMoreEl.classList.add("is-hidden");
-      loadMoreEl.removeEventListener("click", onclick);
+    loadMoreButton.addEventListener("click", async function onclick() {
+      loadMoreButton.classList.add("is-hidden");
+      loadMoreButton.removeEventListener("click", onclick);
       await renderUsers(page + 1, skillsHad, skillsWant);
     });
 
   } else {
-    const endEl = document.getElementById("load-end");
-    endEl.classList.remove("is-hidden");
-    loadMoreEl.classList.add("is-hidden");
+    const endOfResults = document.getElementById("load-end");
+    endOfResults.classList.toggle("is-hidden");
+    loadMoreButton.classList.add("is-hidden");
   }
 }
 
@@ -164,13 +190,13 @@ export default async (args) => {
 
   const hasInput = document.createElement("input");
   hasInput.type = "text";
-  hasInput.placeholder = "Skills you want";
+  hasInput.placeholder = "Skills you want to learn";
   hasInput.className = "input is-light";
   hasInput.id = "search-has";
 
   const wantsInput = document.createElement("input");
   wantsInput.type = "text";
-  wantsInput.placeholder = "Skills you have";
+  wantsInput.placeholder = "Skills you can help others learn";
   wantsInput.className = "input is-light";
   wantsInput.id = "search-wants";
 
@@ -186,23 +212,23 @@ export default async (args) => {
   app.appendChild(searchDiv);
 
   // User info (grid)
-  const browseEl = document.createElement("div");
-  browseEl.id = "browse";
+  const browseContainer = document.createElement("div");
+  browseContainer.id = "browse";
 
-  app.appendChild(browseEl);
+  app.appendChild(browseContainer);
 
   const loadMoreButton = document.createElement("button");
   loadMoreButton.innerText = "Load More";
   loadMoreButton.className = "button is-light is-hidden";
   loadMoreButton.id = "load-more-button";
 
-  const endEl = document.createElement("p");
-  endEl.innerText = "You're at the end of the search results!";
-  endEl.className = "is-hidden";
-  endEl.id = "load-end";
+  const endOfResults = document.createElement("p");
+  endOfResults.innerText = "You're at the end of the search results!";
+  endOfResults.className = "is-hidden";
+  endOfResults.id = "load-end";
 
   app.appendChild(loadMoreButton);
-  app.appendChild(endEl);
+  app.appendChild(endOfResults);
 
   // Get search from provided args (if there are any)
   if (args.search) {
@@ -212,22 +238,26 @@ export default async (args) => {
   const params = getCurrent() ? getCurrent().search : null;
 
   if (params) {
-    hasInput.value = params.get("has");
-    wantsInput.value = params.get("wants");
+    hasInput.value = params.get("knows");
+    wantsInput.value = params.get("interests");
   }
 
   // Render search results
-  browseEl.innerHTML = "";
+  browseContainer.innerHTML = "";
   renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
 
   // Add event listeners for searching users
   hasInput.addEventListener("input", () => {
-    browseEl.innerHTML = "";
+    browseContainer.innerHTML = "";
+    loadMoreButton.classList.add("is-hidden");
+    endOfResults.classList.add("is-hidden");
     renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
   });
 
   wantsInput.addEventListener("input", () => {
-    browseEl.innerHTML = "";
+    browseContainer.innerHTML = "";
+    loadMoreButton.classList.add("is-hidden");
+    endOfResults.classList.add("is-hidden");
     renderUsers(1, hasInput.value.split(/,\s*/g).filter((str) => str !== ""), wantsInput.value.split(/,\s*/g).filter((str) => str !== ""));
   });
 
