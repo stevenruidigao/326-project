@@ -173,7 +173,10 @@ export const convertRouteToPath = (name, args, search) => {
   for (const key of Object.keys(args))
     path = path.replace(`:${key}`, args[key]);
 
-  if (search) path += "?" + search.toString();
+  if (search) {
+    search.sort?.();
+    path += "?" + search.toString();
+  }
 
   return path;
 };
@@ -249,6 +252,9 @@ export const goToRoute = (name, args, search) => {
 
   // change page location & load page afterwards
   const path = convertRouteToPath(name, args, search);
+
+  // sort params to ensure consistency
+  search?.sort?.();
 
   const data = { route: name, data: args, search: search?.toString() };
 
