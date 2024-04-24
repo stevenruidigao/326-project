@@ -3,28 +3,7 @@ body {
     font-family: sans-serif;
 }
 
-.message {
-    display: flex;
-    height: 80px;
-    gap: 10px;
-    border: lightgrey solid 1px;
-    padding: 5px;
-}
 
-.message img, .message image {
-    width: auto;
-    height: 100%;
-    overflow: hidden;
-    object-fit: contain;
-}
-
-.message div {
-    width: 100%;
-}
-
-.message div h2, .message div p {
-    margin: 10px 0;
-}
 
 .user-card {
     margin-bottom: var(--bulma-block-spacing);

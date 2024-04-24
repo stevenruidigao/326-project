@@ -5,6 +5,7 @@ import * as routes from "../index.js";
 
 export const onunload = async (prev, next) => {
   // TODO: check if going from messages --> messages, if so, don't unload
+
   // would get rid of websockets connection when leaving messages
   console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
 };
@@ -21,7 +22,12 @@ const sendMessage = async (msg, fromId, toId) => {
 
 
 export default async (args, doc) => {
-  app.innerHTML = "";
+  const isFullRender = routes.getPrevious()?.file !== "messages"
+
+  if (isFullRender) {
+    app.innerHTML = "";
+  }
+
 
   console.log("** messages loaded with args", args);
 
@@ -34,78 +40,106 @@ export default async (args, doc) => {
     return routes.goToRoute("home");
   }
 
-  
-  const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
-  
-  // group messages by user
-  const conversations = allUserMessages.reduce((acc, msg) => {
-    const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = [];
-    }
-    acc[otherUserId].push(msg);
-    return acc;
-  }, {});
+  const fetchSortedMessages = async () => {
+    const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+    
+    // group messages by user
+    const conversations = allUserMessages.reduce((acc, msg) => {
+      const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+      if (!acc[otherUserId]) {
+        acc[otherUserId] = [];
+      }
+      acc[otherUserId].push(msg);
+      return acc;
+    }, {});
 
-  // in-place sort conversations by most recent message
-  for (const convoKey in conversations) {
-    conversations[convoKey].sort((a, b) => b.time - a.time);
+    // in-place sort conversations by most recent message
+    for (const convoKey in conversations) {
+      conversations[convoKey].sort((a, b) => b.time - a.time);
+    }
+
+    console.log("[messages] fetched conversations", conversations);
+
+    return conversations;
   }
 
-  // sort the keys of conversations by most recent message to display most recent conversations at top
-  const orderOfConversations = Object.keys(conversations).sort((a, b) => {
-    const lastMsgA = conversations[a][0];
-    const lastMsgB = conversations[b][0];
-    return lastMsgB.time - lastMsgA.time;
-  });
+  let conversations = await fetchSortedMessages();
 
-  console.log("conversations", conversations);
+  const reFetchMessages = async () => {
+    conversations = await fetchSortedMessages();
+  };
 
   // render the sidebar with all the user's conversations + msg previews
   // set all previews to not highlighted
   // all previews are links to the conversation with the other user
-  const sidebarEl = doc.getElementById("message-sidebar").cloneNode(true);
-  app.appendChild(sidebarEl);
-
+  if (isFullRender) {
+    app.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
+  }
+  // const sidebarEl = document.getElementById("message-sidebar");
   const previewContainer = document.getElementById("message-list");
   
-  for (const convoKey of orderOfConversations) {
-    const otherUserId = convoKey;
-    const otherUser = await api.users.get(otherUserId);
-    const lastMsg = conversations[convoKey][0];
+  const renderSidebar = async () => {
+    previewContainer.innerHTML = "";
 
-    const previewEl = doc.querySelector(".msg-sidebar-preview").cloneNode(true);
-    // FIXME: replace id with "data-userId" attribute
-    previewEl.setAttribute("id", `preview-${otherUserId}`);
+    console.log("[messages] rendering sidebar")
 
-    // routes link to the right convo, removes the highlight in case it's highlighted
-    const linkEl = previewEl.querySelector("a");
-    linkEl.setAttribute(":id", otherUserId);
-    linkEl.classList.remove("selected-chat");
-    
-    const usernameEl = linkEl.querySelector("h4");
-    usernameEl.innerText = otherUser.name;
-    
-    const messageEl = linkEl.querySelector("p");
-    messageEl.classList.add("msg-preview-text");
-    messageEl.innerText = lastMsg.text;
-    
-    
-    previewContainer.appendChild(previewEl);
-  }
+    await reFetchMessages();
+
+    // sort the keys of conversations by most recent message to display most recent conversations at top
+    const orderOfConversations = Object.keys(conversations).sort((a, b) => {
+      const lastMsgA = conversations[a][0];
+      const lastMsgB = conversations[b][0];
+      return lastMsgB.time - lastMsgA.time;
+    });
   
-  const convoWrapperEl = document.createElement("div");
-  convoWrapperEl.setAttribute("id", "conversation-wrapper");
-  app.appendChild(convoWrapperEl);
+    
+    for (const convoKey of orderOfConversations) {
+      const otherUserId = convoKey;
+      const otherUser = await api.users.get(otherUserId);
+      const lastMsg = conversations[convoKey][0];
+  
+      const previewEl = doc.querySelector(".msg-sidebar-preview").cloneNode(true);
+      // FIXME: replace id with "data-userId" attribute
+      previewEl.setAttribute("id", `preview-${otherUserId}`);
+  
+      // routes link to the right convo, removes the highlight in case it's highlighted
+      const linkEl = previewEl.querySelector("a");
+      linkEl.setAttribute(":id", otherUserId);
+      // linkEl.classList.remove("selected-chat");
+      
+      const usernameEl = linkEl.querySelector("h4");
+      usernameEl.innerText = otherUser.name;
+      
+      const messageEl = linkEl.querySelector("p");
+      // messageEl.classList.add("msg-preview-text");
+      messageEl.innerText = lastMsg.text;
+      
+      
+      previewContainer.appendChild(previewEl);
+    }
+
+  };
+  
+  // only needs to rerender if new message is sent/received
+  if (isFullRender)
+    renderSidebar();
+  
+  // FIXME: continue rendering stuff here
+  if (isFullRender) {
+    const convoWrapperEl = document.createElement("div");
+    convoWrapperEl.setAttribute("id", "conversation-wrapper");
+    app.appendChild(convoWrapperEl);
+  }
+  const convoWrapperEl = document.getElementById("conversation-wrapper");
+  convoWrapperEl.innerHTML = "";
 
   // either render a conversation or a blank conversation
   try {
-    // clean up the id of other user (treats garbage id as undefined)
-    // const otherUserId = cleanId(args.id);
-    const otherUserId = args.id;
+    // const otherUserId = args.id;
     
     // check to see if the other user exists, if doesn't error, continue rendering
-    const otherUser = await api.users.get(otherUserId);
+    // const otherUser = await api.users.get(otherUserId);
+    const otherUser = await api.users.get(args.id);
     
 
     // render the frame to hold the conversation
@@ -126,13 +160,14 @@ export default async (args, doc) => {
       // update the sidebar preview with the new message
       // FIXME: check if this code actually runs correctly (might not be able to be checked until websockets is implemented, may have to just do a manual wait 5 seconds then trigger a message send to see if the preview updates)
       if (updateSidebar) {
-        // get the preview element
-        // FIXME: replace id with "data-userId" attribute in a querySelector
-        const previewEl = document.getElementById(`preview-${msg.fromId === user._id ? msg.toId : msg.fromId}`);
-        // get the message element
-        const messageEl = previewEl.querySelector("a p.msg-preview");
-        // update the message element
-        messageEl.innerText = msg.text;
+        // // get the preview element
+        // // FIXME: replace id with "data-userId" attribute in a querySelector
+        // const previewEl = document.getElementById(`preview-${msg.fromId === user._id ? msg.toId : msg.fromId}`);
+        // // get the message element
+        // const messageEl = previewEl.querySelector("a p.msg-preview");
+        // // update the message element
+        // messageEl.innerText = msg.text;
+        renderSidebar();
       }
 
       if (isActiveConvo) {
@@ -155,17 +190,17 @@ export default async (args, doc) => {
     };
 
 
-    if (conversations[otherUserId]) {
+    if (conversations[otherUser._id]) {
       messageContainerEl.append(...(
         await Promise.all(
-          conversations[otherUserId].map(
+          conversations[otherUser._id].map(
             (msg) => createNewMessageEl(msg, true, false)
           )
         )
       ));
     }
     else {
-      console.log(`[messages] no messages found between user ${user._id} and ${otherUserId}`);
+      console.log(`[messages] no messages found between user ${user._id} and ${otherUser._id}`);
       // TODO: else: if no messages found
         // create an empty conversation -- consider adding a ui bit to prompt "start the conversation!"
         // (allow user to send message to other user)
@@ -180,7 +215,7 @@ export default async (args, doc) => {
       e.preventDefault();
       const msgText = messageInputEl.querySelector("#message-box").value;
       if (!msgText) return;
-      const sentMsg = await sendMessage(msgText, user._id, otherUserId);
+      const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
       // clear the message input
       messageInputEl.querySelector("#message-box").value = "";
 
@@ -191,8 +226,8 @@ export default async (args, doc) => {
     });
 
     // highlight the other user in the side bar (add a class)
-    const currentPreview = document.getElementById(`preview-${otherUserId}`);
-    currentPreview.querySelector("a").classList.add("selected-chat");
+    // const currentPreview = document.getElementById(`preview-${otherUser._id}`);
+    // currentPreview.querySelector("a").classList.add("selected-chat");
   }
   catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
