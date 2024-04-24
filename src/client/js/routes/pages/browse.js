@@ -92,7 +92,9 @@ async function createUserCard(user) {
   console.log(avatar, user);
 
   const profilePicture = document.createElement("img");
-  profilePicture.src = avatar ? URL.createObjectURL(avatar) : "/images/logo.png";
+  profilePicture.src = avatar
+    ? URL.createObjectURL(avatar)
+    : "/images/logo.png";
   profilePicture.alt = `${user.name}'s profile picture`;
 
   figure.appendChild(profilePicture);
