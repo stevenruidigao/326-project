@@ -231,7 +231,7 @@ export const convertPathToRoute = (origPath) => {
 /**
  * @param {String} name the name of the route to navigate to, must exist in
  *     routes
- * @param {Object} args arguments to pass to route
+ * @param {Object} args arguments to pass to route  -- pass force=true to force pushState
  * @param {URLSearchParams} search
  * @example goToRoute(user, { id: 5 });
  */
@@ -250,7 +250,9 @@ export const goToRoute = (name, args, search) => {
 
   const data = { route: name, data: args, search: search?.toString() };
 
-  history.pushState(data, "", PATH_PREFIX + path);
+  // only push state is path is not equal AND push state is not being forced
+  if (path !== getPath() && !args.force)
+    history.pushState(data, "", PATH_PREFIX + path);
 
   return load(name, args, search);
 };
