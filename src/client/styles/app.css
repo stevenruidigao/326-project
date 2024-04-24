@@ -3,7 +3,14 @@ body {
     font-family: sans-serif;
 }
 
+#navbar-user-actions a {
+    display: flex;
+    align-items: center;
+}
 
+#navbar-user-image {
+    display: inline-block;
+}
 
 .user-card {
     margin-bottom: var(--bulma-block-spacing);
