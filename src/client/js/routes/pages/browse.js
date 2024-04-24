@@ -17,20 +17,17 @@ function generateSearchParams() {
   const wantsInput = document.getElementById("search-wants");
 
   const params = new URLSearchParams();
-  params.set(
-    "knows",
-    hasInput.value
-      .split(/,\s*/g)
-      .filter((str) => str !== "")
-      .join(","),
-  );
-  params.set(
-    "interests",
-    wantsInput.value
-      .split(/,\s*/g)
-      .filter((str) => str !== "")
-      .join(","),
-  );
+  const knows = hasInput.value
+    .split(/,\s*/g)
+    .filter((str) => str !== "")
+    .join(",");
+  const interests = wantsInput.value
+    .split(/,\s*/g)
+    .filter((str) => str !== "")
+    .join(",");
+
+  if (knows) params.set("knows", knows);
+  if (interests) params.set("interests", interests);
 
   return params;
 }
@@ -217,6 +214,13 @@ export default async (args) => {
   app.innerHTML = "";
 
   console.log("** browse loaded with args", args);
+
+  // title heading
+  const title = document.createElement("h1");
+  title.className = "title";
+  title.innerText = "Browse Users";
+
+  app.appendChild(title);
 
   // Search inputs
   const searchDiv = document.createElement("form");

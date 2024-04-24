@@ -173,7 +173,7 @@ export const convertRouteToPath = (name, args, search) => {
   for (const key of Object.keys(args))
     path = path.replace(`:${key}`, args[key]);
 
-  if (search) {
+  if (search?.size) {
     search.sort?.();
     path += "?" + search.toString();
   }
