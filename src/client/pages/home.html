@@ -1,17 +1,8 @@
-<template id="message">
-    <style>
-        .name {
-            font-weight: bold;
-        }
-    </style>
-    <div class="user">
-        <p>Message from <slot name="name" class="name">???</slot></p>
-
-        <a is="app-route" route="profile">profile</a>
-
-        <p>They have these skills:</p>
-        <pre class="content">
-            <slot name="skills">Unknown content</slot>
-        </pre>
+<div id="home" class="hero is-fullheight-with-navbar is-primary">
+    <div class="hero-body">
+        <div>
+            <h1 class="title">TutorSwap</h1>
+            <h2 class="subtitle mt-4">Find the perfect tutor or swap your tutoring services with others.</h2>
+        </div>
     </div>
-</template>
+</div>

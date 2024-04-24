@@ -60,6 +60,7 @@ const loadingEl = document.getElementById("loading");
  * @type {HTMLStyleElement}
  */
 const routeStyles = document.createElement("style");
+routeStyles.id = 'route-styles';
 
 /**
  * @typedef {?
