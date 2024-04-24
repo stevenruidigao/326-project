@@ -2,19 +2,15 @@ import { app, setTitle } from "../helper.js";
 import * as api from "../../api/index.js";
 import * as routes from "../index.js";
 
-
 export const onunload = async (prev, next) => {
   // TODO: when implementing websockets, do not close connection if going from messages --> messages
 
   if (prev.file === "messages" && next.file === "messages") {
     console.log(`[messages] not unloading, loading new conversation!`);
-  }
-  else {
+  } else {
     console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
   }
 };
-
-
 
 const sendMessage = async (msg, fromId, toId) => {
   return api.messages.create({
@@ -22,14 +18,13 @@ const sendMessage = async (msg, fromId, toId) => {
     fromId,
     toId,
   });
-}
+};
 
 // NOTE: code taken from bulma.io documentation
 const setupBulmaModals = () => {
-  const SETUP_KEY = 'modal_setup';
+  const SETUP_KEY = "modal_setup";
 
   const openModal = async (el, e) => {
-
     console.log("opening modal with event", e);
     if (e.target?.dataset?.apptid) {
       const loggedInUser = await api.session.current();
@@ -41,32 +36,36 @@ const setupBulmaModals = () => {
 
       el.querySelector("input[name='topic']").value = currentAppt.topic;
       el.querySelector("input[name='url']").value = currentAppt.url;
-      
+
       // needed due to timezones
       const dateObj = new Date(currentAppt.time);
       const date = dateObj.toISOString().slice(0, 10); // obtain date - "YEAR-MONTH-DAY" eg. "2024-04-24"
       const time = dateObj.toTimeString().slice(0, 5); // obtain time - "HOURS:MINUTES" eg. "13:37"
-      el.querySelector("input[name='time']").value = [date, time].join('T');
+      el.querySelector("input[name='time']").value = [date, time].join("T");
 
-      el.querySelector(`input[name='role'][value='${currentAppt.teacherId === userId ? "teaching" : "learning"}']`).checked = true;
-      el.querySelector(`input[name='type'][value='${currentAppt.type}']`).checked = true;
+      el.querySelector(
+        `input[name='role'][value='${currentAppt.teacherId === userId ? "teaching" : "learning"}']`,
+      ).checked = true;
+      el.querySelector(
+        `input[name='type'][value='${currentAppt.type}']`,
+      ).checked = true;
 
       const form = el.querySelector("form");
       form.dataset.apptid = apptId;
 
       // data-apptid="00cb35de-6fa1-43be-ad43-6686c574e82d"
     }
-    
-    el.classList.add('is-active')
+
+    el.classList.add("is-active");
   };
   const closeModal = (el) => {
-    const $form = el.querySelector('form');
+    const $form = el.querySelector("form");
 
     $form?.reset();
-    el.classList.remove('is-active')
+    el.classList.remove("is-active");
   };
   const closeAllModals = () => {
-    (document.querySelectorAll('.modal') || []).forEach((modalEl) => {
+    (document.querySelectorAll(".modal") || []).forEach((modalEl) => {
       closeModal(modalEl);
     });
   };
@@ -75,45 +74,50 @@ const setupBulmaModals = () => {
   closeAllModals();
 
   // Add a click event on buttons to open a specific modal
-  (document.querySelectorAll('.js-modal-trigger') || []).forEach((triggerEl) => {
-    const modal = triggerEl.dataset.target;
-    const targetEl = document.getElementById(modal);
+  (document.querySelectorAll(".js-modal-trigger") || []).forEach(
+    (triggerEl) => {
+      const modal = triggerEl.dataset.target;
+      const targetEl = document.getElementById(modal);
 
-    if (!triggerEl.dataset[SETUP_KEY]) {
-      triggerEl.dataset[SETUP_KEY] = true;
+      if (!triggerEl.dataset[SETUP_KEY]) {
+        triggerEl.dataset[SETUP_KEY] = true;
 
-      triggerEl.addEventListener('click', (e) => {
-        console.log("clicked", );
-        openModal(targetEl, e);
-      });
-    }
-  });
+        triggerEl.addEventListener("click", (e) => {
+          console.log("clicked");
+          openModal(targetEl, e);
+        });
+      }
+    },
+  );
 
   // Add a click event on various child elements to close the parent modal
-  (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button[type=reset]') || []).forEach((closeEl) => {
-    const $target = closeEl.closest('.modal');
+  (
+    document.querySelectorAll(
+      ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button[type=reset]",
+    ) || []
+  ).forEach((closeEl) => {
+    const $target = closeEl.closest(".modal");
 
     if (!closeEl.dataset[SETUP_KEY]) {
       closeEl.dataset[SETUP_KEY] = true;
 
-      closeEl.addEventListener('click', () => {
+      closeEl.addEventListener("click", () => {
         closeModal($target);
       });
     }
   });
-  
+
   if (!document.body.dataset[SETUP_KEY]) {
     document.body.dataset[SETUP_KEY] = true;
 
     // Add a keyboard event to close all modals
-    document.addEventListener('keydown', (event) => {
-      if(event.key === "Escape") {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
         closeAllModals();
       }
     });
   }
 };
-
 
 export default async (args, doc) => {
   const isFullRender = routes.getPrevious()?.file !== "messages";
@@ -123,12 +127,10 @@ export default async (args, doc) => {
     app.innerHTML = "";
   }
 
-
   console.log("** messages loaded with args", args);
 
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.getUser();
-
 
   if (!user) {
     console.log("[messages] user not logged in! returning to home");
@@ -137,7 +139,7 @@ export default async (args, doc) => {
 
   const fetchSortedMessages = async () => {
     const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
-    
+
     // group messages by user
     const conversations = allUserMessages.reduce((acc, msg) => {
       const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
@@ -156,7 +158,7 @@ export default async (args, doc) => {
     console.log("[messages] fetched conversations", conversations);
 
     return conversations;
-  }
+  };
 
   let conversations = await fetchSortedMessages();
 
@@ -171,10 +173,9 @@ export default async (args, doc) => {
     app.appendChild(doc.getElementById("message-sidebar").cloneNode(true));
   }
   const previewContainer = document.getElementById("message-list");
-  
-  const renderSidebar = async () => {
 
-    console.log("[messages] rendering sidebar")
+  const renderSidebar = async () => {
+    console.log("[messages] rendering sidebar");
 
     await reFetchMessages();
 
@@ -184,35 +185,37 @@ export default async (args, doc) => {
       const lastMsgB = conversations[b][0];
       return lastMsgB.time - lastMsgA.time;
     });
-  
+
     const previews = [];
-    
+
     for (const convoKey of orderOfConversations) {
       const otherUserId = convoKey;
       const otherUser = await api.users.get(otherUserId);
       const lastMsg = conversations[convoKey][0];
-  
-      const previewEl = doc.querySelector(".msg-sidebar-preview").cloneNode(true);
-  
+
+      const previewEl = doc
+        .querySelector(".msg-sidebar-preview")
+        .cloneNode(true);
+
       // routes link to the right convo, removes the highlight in case it's highlighted
       const linkEl = previewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUserId);
-      
+
       linkEl.querySelector("h4").innerText = otherUser.name;
       linkEl.querySelector("p").innerText = lastMsg.text;
 
       previews.push(previewEl);
-      
+
       // previewContainer.appendChild(previewEl);
     }
 
     previewContainer.innerHTML = "";
     previewContainer.append(...previews);
   };
-  
+
   // only needs to rerender if new message is sent/received
   if (isFullRender) renderSidebar();
-  
+
   // only render the convo wrapper on a full render
   if (isFullRender) {
     const convoWrapperEl = document.createElement("div");
@@ -223,13 +226,13 @@ export default async (args, doc) => {
   // always clear the conversation wrapper -- rerendering this is not jarring to the user
   convoWrapperEl.innerHTML = "";
 
-  // only render all modals html on full render 
+  // only render all modals html on full render
   if (isFullRender) {
     // render all non-template modals
-    app.append(...
-      [...doc.querySelectorAll(".modal")]
+    app.append(
+      ...[...doc.querySelectorAll(".modal")]
         .filter((modalEl) => !modalEl.classList.contains("modal-template"))
-        .map((modalEl) => modalEl.cloneNode(true))
+        .map((modalEl) => modalEl.cloneNode(true)),
     );
 
     // render one create appointment modal from the template
@@ -241,32 +244,41 @@ export default async (args, doc) => {
     const editApptModal = doc.querySelector("#modal-appt").cloneNode(true);
     editApptModal.setAttribute("id", "modal-edit-appt");
 
-    editApptModal.querySelector("#form-create-appt").setAttribute("id", "form-edit-appt");
-    editApptModal.querySelector(".modal-card-title").innerText = "Edit Appointment";
+    editApptModal
+      .querySelector("#form-create-appt")
+      .setAttribute("id", "form-edit-appt");
+    editApptModal.querySelector(".modal-card-title").innerText =
+      "Edit Appointment";
     editApptModal.querySelector(".is-success").innerText = "Confirm Edits";
 
     const parseApptFormData = (formData) => {
       const apptData = Object.fromEntries(formData.entries());
 
-      console.log('parseApptFormData conversationOtherUser', conversationOtherUser);
+      console.log(
+        "parseApptFormData conversationOtherUser",
+        conversationOtherUser,
+      );
 
       const parsedApptData = {
-        teacherId: apptData.role === "teaching" ? user._id : conversationOtherUser._id,
-        learnerId: apptData.role === "learning" ? user._id : conversationOtherUser._id,
+        teacherId:
+          apptData.role === "teaching" ? user._id : conversationOtherUser._id,
+        learnerId:
+          apptData.role === "learning" ? user._id : conversationOtherUser._id,
         type: apptData.type,
         url: apptData.url,
         topic: apptData.topic,
-        time: new Date(apptData.time).getTime()
+        time: new Date(apptData.time).getTime(),
       };
 
       return parsedApptData;
-    }
+    };
 
-    console.log('create appt moda', createApptModal);
+    console.log("create appt moda", createApptModal);
 
     // TODO: should i do some form validation? or leave it up to the backend?
     // add event listener to create appointment
-    const createAppointmentForm = createApptModal.querySelector("#form-create-appt");
+    const createAppointmentForm =
+      createApptModal.querySelector("#form-create-appt");
     console.log("create appt form", createAppointmentForm);
     createAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
@@ -283,7 +295,7 @@ export default async (args, doc) => {
 
       await api.appointments.create(parsedApptData);
 
-      createAppointmentForm.querySelector('[type=reset]').click(); // close modal!
+      createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
       routes.refresh();
     });
 
@@ -305,14 +317,12 @@ export default async (args, doc) => {
 
       console.log(parsedApptData);
 
-      editAppointmentForm.querySelector('[type=reset]').click(); // close modal!
+      editAppointmentForm.querySelector("[type=reset]").click(); // close modal!
       routes.refresh();
     });
 
     app.append(createApptModal, editApptModal);
   }
-
-
 
   // either render a conversation or a blank conversation
   try {
@@ -320,7 +330,7 @@ export default async (args, doc) => {
     const otherUser = await api.users.get(args.id);
 
     conversationOtherUser = otherUser;
-    console.log('set conversationOtherUser', conversationOtherUser);
+    console.log("set conversationOtherUser", conversationOtherUser);
 
     setTitle(`Chat with ${otherUser.name}`);
 
@@ -336,10 +346,9 @@ export default async (args, doc) => {
     // NOTE: cannot use autofocus attribute in the html since it won't refocus when changing conversations with a click
     messageInputEl.querySelector("input").focus();
 
-    
     convoHeaderEl.querySelector("a").setAttribute(":id", otherUser._id);
-    convoHeaderEl.querySelector("h2").innerText = `${otherUser.name} (@${otherUser.username})`;
-
+    convoHeaderEl.querySelector("h2").innerText =
+      `${otherUser.name} (@${otherUser.username})`;
 
     convoWrapperEl.appendChild(convoEl);
 
@@ -353,12 +362,13 @@ export default async (args, doc) => {
       }
       return allAppts;
     };
-    
 
     // get all appointments between user and other user
     const relevantAppts = (await getAllAppts()).filter((appt) => {
-      return (appt.teacherId === user._id && appt.learnerId === otherUser._id)
-          || (appt.teacherId === otherUser._id && appt.learnerId === user._id);
+      return (
+        (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
+        (appt.teacherId === otherUser._id && appt.learnerId === user._id)
+      );
     });
 
     // sort appointments by time in place
@@ -372,13 +382,13 @@ export default async (args, doc) => {
       const messageEl = doc.querySelector(".message").cloneNode(true);
 
       const msgName = msg.fromId === user._id ? user.name : otherUser.name;
-      
+
       const usernameEl = messageEl.querySelector("h4");
       usernameEl.innerText = msgName;
-      
+
       const messageContentEl = messageEl.querySelector("p");
       messageContentEl.innerText = msg.text;
-      
+
       return messageEl;
     };
 
@@ -394,47 +404,46 @@ export default async (args, doc) => {
       apptEl.querySelector("span.type").innerText = appt.type;
       apptEl.querySelector("span.url").innerText = appt.url;
 
-      apptEl.querySelector(".js-modal-trigger").setAttribute("data-apptid", appt._id);
+      apptEl
+        .querySelector(".js-modal-trigger")
+        .setAttribute("data-apptid", appt._id);
 
       return apptEl;
     };
 
     const zippedElements = (convos, appts) => {
       if (!convos) return appts.map(createNewAppointmentEl);
-      
+
       const allMessageBlocks = [...convos, ...appts];
       allMessageBlocks.sort((a, b) => b.time - a.time);
 
       return allMessageBlocks.map((msg) => {
         if (msg.text) {
           return createNewMessageEl(msg);
-        }
-        else {
+        } else {
           return createNewAppointmentEl(msg);
         }
       });
     };
 
-    const relevantConvos = conversations[otherUser._id]
+    const relevantConvos = conversations[otherUser._id];
 
     // TODO: add an || check for appointments so that no msgs but yes appts still render
     if (relevantConvos || relevantAppts.length) {
       console.log("HEHEHEHE", relevantConvos, relevantAppts);
-      messageContainerEl.append(...(
-        await Promise.all(
-          zippedElements(relevantConvos, relevantAppts)
-        )
-      ));
-    }
-    else {
-      console.log(`[messages] no messages found between user ${user._id} and ${otherUser._id}`);
+      messageContainerEl.append(
+        ...(await Promise.all(zippedElements(relevantConvos, relevantAppts))),
+      );
+    } else {
+      console.log(
+        `[messages] no messages found between user ${user._id} and ${otherUser._id}`,
+      );
       // NOTE: I don't think any additional code is necessary for a blank conversation
       // TODO: consider adding a ui bit to prompt "start the conversation!"
-      
-      // TODO: also consider creating a blank conversation in the sidebar
-        // isn't strictly necessary, honestly works as is
-    }
 
+      // TODO: also consider creating a blank conversation in the sidebar
+      // isn't strictly necessary, honestly works as is
+    }
 
     // add event listener to send messages
     messageInputEl.addEventListener("submit", async (e) => {
@@ -450,20 +459,20 @@ export default async (args, doc) => {
       messageInputEl.querySelector("#message-box").value = "";
 
       // render the new message in the conversation
-      messageContainerEl.prepend(
-        await createNewMessageEl(sentMsg)
-      );
+      messageContainerEl.prepend(await createNewMessageEl(sentMsg));
       // new message requires a rerender of message previews
       renderSidebar();
     });
 
     // must be called at the end of everything to ensure all necessary elements are rendered
     setupBulmaModals();
-  }
-  catch (err) {
+  } catch (err) {
     // if there was an arg provided, log error and redirect to blank conversation
     if (args.id) {
-      console.error(`[messages] error fetching conversation with user ${args.id}:`, err);
+      console.error(
+        `[messages] error fetching conversation with user ${args.id}:`,
+        err,
+      );
       return routes.goToRoute("messages");
     }
 
