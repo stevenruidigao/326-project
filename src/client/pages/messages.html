@@ -34,9 +34,19 @@
 </div>
 
 <!-- template for each individual message rendered in a conversation -->
-<div class="message">
+<div class="message message-block">
     <h4 class="msg-from"></h4>
     <p class="msg-content"></p>
+</div>
+<!-- template for each individual appointment to render in a conversation -->
+<div class="appointment message-block">
+    <h4 class="time"></h4>
+    <p class="activity">
+        <span class="role"></span> <span class="topic"></span>
+    </p>
+    <p class="type-container">Meeting <span class="type"></span></p>
+    <p class="url-container">URL: <span class="url"></span></p>
+    <button type="button" id="edit-appt-button" class="js-modal-trigger" data-target="modal-edit-appt" data-apptid="">Edit</button>
 </div>
 
 <!-- create/edit appointment modal -->
