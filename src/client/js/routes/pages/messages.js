@@ -28,7 +28,7 @@ export default async (args, doc) => {
   console.log("user", user);
 
   if (!user) {
-    console.log(`[messages] user not logged in! returning to home`);
+    console.log("[messages] user not logged in! returning to home");
     return routes.goToRoute("home");
   }
 
