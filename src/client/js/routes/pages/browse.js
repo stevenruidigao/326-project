@@ -70,7 +70,7 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
  * @param {Array<string>} user.skillsWanted - An array of skills the user wants.
  * @return {HTMLElement} - The custom HTML element representing the user.
  */
-function createUserCard(user) {
+async function createUserCard(user) {
   const card = document.createElement("div");
   card.className = "card user-card";
 
@@ -87,8 +87,12 @@ function createUserCard(user) {
   figure.className = "image is-48x48";
 
   // Basic user info (pic, name, username)
+  const avatar = await api.users.getAvatar(user);
+
+  console.log(avatar, user);
+
   const profilePicture = document.createElement("img");
-  profilePicture.src = "/images/logo.png";
+  profilePicture.src = avatar ? URL.createObjectURL(avatar) : "/images/logo.png";
   profilePicture.alt = `${user.name}'s profile picture`;
 
   figure.appendChild(profilePicture);
@@ -178,7 +182,7 @@ async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
   );
 
   for (const user of users) {
-    const userCard = createUserCard(user);
+    const userCard = await createUserCard(user);
     browseContainer.appendChild(userCard);
   }
 
