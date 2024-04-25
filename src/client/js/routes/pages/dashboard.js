@@ -1,6 +1,6 @@
 import * as api from "../../api/index.js";
-import {formatRelative, formatTimeVerbose} from "../../dayjs.js";
-import {app} from "../helper.js";
+import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
+import { app } from "../helper.js";
 import * as routes from "../index.js";
 
 const NUM_MSG_PREVIEWS = 3;
@@ -55,46 +55,56 @@ export default async (args, doc) => {
 
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
-                                 .map((userId) => {
-                                   const convo = conversations[userId];
-                                   return convo[0];
-                                 })
-                                 .sort((a, b) => b.time - a.time)
-                                 .slice(0, NUM_MSG_PREVIEWS);
+    .map((userId) => {
+      const convo = conversations[userId];
+      return convo[0];
+    })
+    .sort((a, b) => b.time - a.time)
+    .slice(0, NUM_MSG_PREVIEWS);
 
   console.log("[dashboard] mapped most recent messages", mostRecentMessages);
 
-  const messageContainerEl =
-      doc.querySelector("#message-container").cloneNode(true);
+  const messageContainerEl = doc
+    .querySelector("#message-container")
+    .cloneNode(true);
   const messageListEl = messageContainerEl.querySelector("#message-list");
 
-  messageListEl.append(...await Promise.all(mostRecentMessages.map(async (
-                                                                       msg) => {
-    const otherUser =
-        await api.users.get(msg.fromId === user._id ? msg.toId : msg.fromId);
+  messageListEl.append(
+    ...(await Promise.all(
+      mostRecentMessages.map(async (msg) => {
+        const otherUser = await api.users.get(
+          msg.fromId === user._id ? msg.toId : msg.fromId,
+        );
 
-    const msgPreviewEl = doc.querySelector(".message-preview").cloneNode(true);
+        const msgPreviewEl = doc
+          .querySelector(".message-preview")
+          .cloneNode(true);
 
-    // routes link to the right convo
-    const linkEl = msgPreviewEl.querySelector("a");
-    linkEl.setAttribute(":id", otherUser._id);
+        // routes link to the right convo
+        const linkEl = msgPreviewEl.querySelector("a");
+        linkEl.setAttribute(":id", otherUser._id);
 
-    // linkEl.querySelector(".username").innerText = otherUser.username;
-    linkEl.querySelector(".name").innerText = otherUser.name;
+        // linkEl.querySelector(".username").innerText = otherUser.username;
+        linkEl.querySelector(".name").innerText = otherUser.name;
 
-    linkEl.querySelector(".msg-timestamp").innerText = formatRelative(msg.time);
+        linkEl.querySelector(".msg-timestamp").innerText = formatRelative(
+          msg.time,
+        );
 
-    // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
+        // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
 
-    linkEl.querySelector(".msg-text").innerText = msg.text;
+        linkEl.querySelector(".msg-text").innerText = msg.text;
 
-    const avatar = await api.users.getAvatar(otherUser);
+        const avatar = await api.users.getAvatar(otherUser);
 
-    linkEl.querySelector("img").src =
-        avatar ? URL.createObjectURL(avatar) : "/images/logo.png";
+        linkEl.querySelector("img").src = avatar
+          ? URL.createObjectURL(avatar)
+          : "/images/logo.png";
 
-    return msgPreviewEl;
-  })));
+        return msgPreviewEl;
+      }),
+    )),
+  );
 
   app.append(messageContainerEl);
 
@@ -104,12 +114,12 @@ export default async (args, doc) => {
     const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
     const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
-    const time =
-        `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
+    const time = `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
 
     // console.log(appt.studentId, "funky", appt.teacherId)
     const otherUser = await api.users.get(
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId);
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId,
+    );
 
     apptEl.querySelector(".name").innerText = otherUser.name;
     apptEl.querySelector(".time").innerText = time;
@@ -131,10 +141,9 @@ export default async (args, doc) => {
   // unpaginated get all appointments by calling until no more next
   const getAllApptsWithUser = async () => {
     const allAppts = [];
-    for (let curPage = 1;; curPage++) {
+    for (let curPage = 1; ; curPage++) {
       const response = await api.appointments.withUser(user._id, curPage);
-      if (response.length === 0)
-        break;
+      if (response.length === 0) break;
 
       allAppts.push(...Array.from(response));
     }
@@ -143,20 +152,26 @@ export default async (args, doc) => {
 
   const curTime = Date.now();
   // get all future appointments
-  const futureAppts = (await getAllApptsWithUser())
-                          .filter((appt) => { return curTime < appt.time; });
+  const futureAppts = (await getAllApptsWithUser()).filter((appt) => {
+    return curTime < appt.time;
+  });
 
   // sort appointments by time in place
   futureAppts.sort((a, b) => a.time - b.time);
 
   console.log("[dashboard] relevant appts", futureAppts);
 
-  const apptContainerEl =
-      doc.querySelector("#appointment-container").cloneNode(true);
+  const apptContainerEl = doc
+    .querySelector("#appointment-container")
+    .cloneNode(true);
 
-  apptContainerEl.querySelector("#appointment-list")
-      .append(...await Promise.all(futureAppts.map(
-          async (appt) => { return createNewAppointmentEl(appt); })));
+  apptContainerEl.querySelector("#appointment-list").append(
+    ...(await Promise.all(
+      futureAppts.map(async (appt) => {
+        return createNewAppointmentEl(appt);
+      }),
+    )),
+  );
 
   // const paginationEl = doc.querySelector(".pagination");
 
