@@ -113,16 +113,23 @@ export default async (args, doc) => {
     const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
     const time = new Date(appt.time).toLocaleString();
 
+    // console.log(appt.studentId, "funky", appt.teacherId)
+    const otherUser = await api.users.get(appt.teacherId === user._id ? appt.learnerId : appt.teacherId);
+
+    apptEl.querySelector(".name").innerText = otherUser.name;
     apptEl.querySelector(".time").innerText = time;
     apptEl.querySelector("span.role").innerText = apptRole;
     apptEl.querySelector("span.topic").innerText = appt.topic;
     apptEl.querySelector("span.type").innerText = appt.type;
-    apptEl.querySelector("a.url").innerText = appt.url;
-    apptEl.querySelector("a.url").setAttribute("href", appt.url);
+    if (!appt.url) {
+      apptEl.querySelector(".url-container").remove();
+    }
+    else {
+      apptEl.querySelector("a.url").innerText = appt.url;
+      apptEl.querySelector("a.url").setAttribute("href", appt.url);
+    }
 
-    apptEl
-      .querySelector(".js-modal-trigger")
-      .setAttribute("data-apptid", appt._id);
+    apptEl.querySelector("a").setAttribute(":id", otherUser._id);
 
     return apptEl;
   };

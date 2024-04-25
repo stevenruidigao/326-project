@@ -468,8 +468,13 @@ export default async (args, doc) => {
       apptEl.querySelector("span.role").innerText = apptRole;
       apptEl.querySelector("span.topic").innerText = appt.topic;
       apptEl.querySelector("span.type").innerText = appt.type;
-      apptEl.querySelector("a.url").innerText = appt.url;
-      apptEl.querySelector("a.url").setAttribute("href", appt.url);
+      if (!appt.url) {
+        apptEl.querySelector(".url-container").remove();
+      }
+      else {
+        apptEl.querySelector("a.url").innerText = appt.url;
+        apptEl.querySelector("a.url").setAttribute("href", appt.url);
+      }
 
       apptEl
         .querySelector(".js-modal-trigger")
