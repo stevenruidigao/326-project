@@ -1,8 +1,17 @@
-<!-- message preview container -->
-<div id="message-container" class="menu pt-3">
-    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Recent Messages</p>
-    <ul id="message-list" class="menu-list"></ul>
+<div id="content-container" class="columns">
+    <!-- message preview container -->
+    <div id="message-container" class="column menu pt-3 is-half">
+        <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Recent Messages</p>
+        <ul id="message-list" class="menu-list"></ul>
+    </div>
+
+    <!-- template for each individual message rendered in a conversation -->
+    <div id="appointment-container" class="column">
+        <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Upcoming Appointments</p>
+        <div id="appointment-list"></div>
+    </div>
 </div>
+
 
 <!-- message preview with media object -->
 <li class="message-preview">
@@ -31,22 +40,17 @@
 </li>
 
 
-<!-- template for each individual message rendered in a conversation -->
-<div id="appointment-container">
-    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Upcoming Appointments</p>
-    <div id="appointment-list"></div>
-</div>
 <!-- template for each individual appointment to render in a conversation -->
-<div class="appointment has-background-success-bolder has-text-success-invert">
+<div class="appointment has-text-success-invert">
     <a is="app-route" route="conversation" type="button" class="button is-outlined is-inverted is-small is-pulled-right">Chat</a>
 
     <p class="name is-size-5 has-text-success-soft-invert has-text-weight-bold ">funny</p>
     <p class="time has-text-success-soft-invert has-text-weight-bold"></p>
-    <p class="activity">
+    <p class="activity has-text-success-soft-invert ">
         <span class="role"></span> <span class="topic"></span>
     </p>
-    <p class="type-container">Meeting <span class="type"></span></p>
-    <p class="url-container is-clipped">URL: <a class="url has-text-link"></a></p>
+    <p class="type-container has-text-success-soft-invert ">Meeting <span class="type"></span></p>
+    <p class="url-container is-clipped has-text-success-soft-invert ">URL: <a class="url has-text-link"></a></p>
 </div>
 
 
