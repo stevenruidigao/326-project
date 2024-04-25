@@ -306,6 +306,9 @@ export default async (args, doc) => {
       "Edit Appointment";
     editApptModal.querySelector(".is-success").innerText = "Confirm Edits";
 
+    const editDeleteBtn = editApptModal.querySelector(".is-danger");
+    editDeleteBtn.parentElement.classList.remove("is-hidden");
+
     const parseApptFormData = (formData) => {
       const apptData = Object.fromEntries(formData.entries());
 
@@ -332,30 +335,36 @@ export default async (args, doc) => {
     // add event listener to create appointment
     const createAppointmentForm =
       createApptModal.querySelector("#form-create-appt");
+    const createBtn = createAppointmentForm.querySelector("[type=submit]");
+
     createAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
-      console.log("[messages] prevented create form submit event!");
       e.preventDefault();
 
-      if (!conversationOtherUser) return;
+      createBtn.classList.add("is-loading");
 
-      const formData = new FormData(createAppointmentForm);
+      try {
+        const formData = new FormData(createAppointmentForm);
+        const parsedApptData = parseApptFormData(formData);
 
-      const parsedApptData = parseApptFormData(formData);
+        console.log("[messages] creating appointment", parsedApptData);
 
-      console.log("[messages] creating appointment", parsedApptData);
+        await api.appointments.create(parsedApptData);
 
-      await api.appointments.create(parsedApptData);
+        createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
+        routes.refresh();
+      } catch (err) {
+        // TODO add user-facing error message
+        console.error("[messages] error creating appointment", err);
+      }
 
-      createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
-      routes.refresh();
+      createBtn.classList.remove("is-loading");
     });
 
     // add event listener to edit appointment
     const editAppointmentForm = editApptModal.querySelector("#form-edit-appt");
     editAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
-      console.log("[messages] prevented edit form submit event!");
       e.preventDefault();
 
       const apptId = e.target.dataset.apptid;
@@ -368,8 +377,24 @@ export default async (args, doc) => {
 
       console.log(parsedApptData);
 
-      editAppointmentForm.querySelector("[type=reset]").click(); // close modal!
+      // route refresh to update the conversation & close modals
       routes.refresh();
+    });
+
+    editDeleteBtn.addEventListener("click", async (e) => {
+      editDeleteBtn.classList.add("is-loading");
+
+      try {
+        const apptId = editAppointmentForm.dataset.apptid;
+        await api.appointments.delete(apptId);
+
+        // route refresh to update the conversation & close modals
+        routes.refresh();
+      } catch (err) {
+        console.error("[messages] error deleting appointment", err);
+      }
+
+      editDeleteBtn.classList.remove("is-loading");
     });
 
     app.append(createApptModal, editApptModal);
