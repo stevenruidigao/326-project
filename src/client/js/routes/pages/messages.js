@@ -3,27 +3,30 @@ import dayjs, { formatTimeVerbose } from "../../dayjs.js";
 import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
-// /**
-//  *
-//  * @param {import("../index.js").RoutePage} prev
-//  * @param {import("../index.js").RoutePage} next
-//  */
-// export const onunload = async (prev, next) => {
-//   // TODO: when implementing websockets, do not close connection if going from
-//   // messages --> messages
+/**
+ * Runs when page is unloaded. Currently does nothing.
+ * 
+ * @param {import("../index.js").RoutePage} prev
+ * @param {import("../index.js").RoutePage} next
+ */
+export const onunload = async (prev, next) => {
+  // TODO: when implementing websockets, do not close connection if going from
+  // messages --> messages
 
-//   if (prev.file === "messages" && next.file === "messages") {
-//     console.log(`[messages] not unloading, loading new conversation!`);
-//   } else {
-//     console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
-//   }
-// };
+  if (prev.file === "messages" && next.file === "messages") {
+    console.log(`[messages] not unloading, loading new conversation!`);
+  } else {
+    console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
+  }
+};
 
 /**
- * @param {Message} msg
- * @param {string} fromId
- * @param {string} toId
- * @returns
+ * Sends a message from one user to another.
+ * 
+ * @param {Message} msg - The message to send.
+ * @param {string} fromId - The ID of the user sending the message.
+ * @param {string} toId - The ID of the user receiving the message.
+ * @returns {Promise<Message>}
  */
 const sendMessage = async (msg, fromId, toId) => {
   return api.messages.create({
