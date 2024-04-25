@@ -1,20 +1,11 @@
-<div id="content-container" class="columns">
-    <!-- message preview container -->
-    <div id="message-container" class="column menu pt-3 is-half">
-        <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Recent Messages</p>
-        <ul id="message-list" class="menu-list"></ul>
-    </div>
-
-    <!-- template for each individual message rendered in a conversation -->
-    <div id="appointment-container" class="column">
-        <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Upcoming Appointments</p>
-        <div id="appointment-list"></div>
-    </div>
+<!-- message preview container -->
+<div id="message-container" class="menu pt-3">
+    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Recent Messages</p>
+    <ul id="message-list" class="menu-list columns"></ul>
 </div>
 
-
 <!-- message preview with media object -->
-<li class="message-preview">
+<li class="message-preview column is-one-third">
     <a is="app-route" route="conversation" when-active="is-active" class="is-radiusless">
         <article class="media">
             <figure class="media-left">
@@ -40,8 +31,15 @@
 </li>
 
 
+<!-- template for each individual message rendered in a conversation -->
+<div id="appointment-container">
+    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Upcoming Appointments</p>
+    <div class="fixed-grid has-1-cols has-2-cols-tablet has-3-cols-desktop">
+        <div id="appointment-list" class="grid"></div>
+    </div>
+</div>
 <!-- template for each individual appointment to render in a conversation -->
-<div class="appointment has-text-success-invert">
+<div class="appointment cell has-background-success-bolder has-text-success-invert">
     <a is="app-route" route="conversation" type="button" class="button is-outlined is-inverted is-small is-pulled-right">Chat</a>
 
     <p class="name is-size-5 has-text-success-soft-invert has-text-weight-bold ">funny</p>
