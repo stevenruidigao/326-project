@@ -240,8 +240,7 @@ export default async (args, doc) => {
         .querySelector(".msg-sidebar-preview")
         .cloneNode(true);
 
-      // routes link to the right convo, removes the highlight in case it's
-      // highlighted
+      // routes link to the right convo
       const linkEl = previewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUserId);
 
