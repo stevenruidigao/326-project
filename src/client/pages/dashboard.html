@@ -1,0 +1,31 @@
+<!-- message preview container -->
+<div id="message-container" class="menu pt-3 column is-one-quarter">
+    <p class="has-text-weight-semibold px-2 my-2 subtitle has-text-primary-bold">Recent Messages</p>
+    <ul id="message-list" class="menu-list"></ul>
+</div>
+
+
+<!-- message preview with media object -->
+<li class="msg-sidebar-preview">
+    <a is="app-route" route="conversation" when-active="is-active" class="is-radiusless">
+        <article class="media">
+            <figure class="media-left">
+                <p class="image is-64x64">
+                    <!-- TODO: replace with pfp -->
+                    <img src="https://bulma.io/assets/images/placeholders/128x128.png" />
+                </p>
+            </figure>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong class="name">John Smith</strong> <small class="username">@johnsmith</small> <small class="timesince">31m</small>
+                        <br />
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ornare
+                        magna eros, eu pellentesque tortor vestibulum ut. Maecenas non massa
+                        sem. Etiam finibus odio quis feugiat facilisis.
+                    </p>
+                </div>
+            </div>
+        </article>
+    </a>
+</li>
