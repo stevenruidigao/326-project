@@ -8,7 +8,7 @@ const APPT_PAGE_SIZE = 8;
 
 export const onunload = async (prev, next) => {
   // TODO: when websockets are implemented, close the connection here
-  
+
   console.log(`[dashboard] unloading ${prev.file} for ${next.file}!`);
 };
 
@@ -52,50 +52,59 @@ export default async (args, doc) => {
   // console.log("[dashboard] fetched most recent messages", mostRecentMessages);
 
   // map conversations to their most recent message
-  const mostRecentMessages = Object.keys(conversations).map((userId) => {
-    const convo = conversations[userId];
-    return convo[0];
-  })
-  .sort((a, b) => b.time - a.time)
-  .slice(0, NUM_MSG_PREVIEWS);
+  const mostRecentMessages = Object.keys(conversations)
+    .map((userId) => {
+      const convo = conversations[userId];
+      return convo[0];
+    })
+    .sort((a, b) => b.time - a.time)
+    .slice(0, NUM_MSG_PREVIEWS);
 
   console.log("[dashboard] mapped most recent messages", mostRecentMessages);
 
-  const messageContainerEl = doc.querySelector("#message-container").cloneNode(true);
+  const messageContainerEl = doc
+    .querySelector("#message-container")
+    .cloneNode(true);
   const messageListEl = messageContainerEl.querySelector("#message-list");
 
-  messageListEl.append(...
-    await Promise.all(mostRecentMessages.map(async (msg) => {
-      const otherUser = await api.users.get(msg.fromId === user._id ? msg.toId : msg.fromId);
-      
-      const msgPreviewEl = doc.querySelector(".message-preview").cloneNode(true);
+  messageListEl.append(
+    ...(await Promise.all(
+      mostRecentMessages.map(async (msg) => {
+        const otherUser = await api.users.get(
+          msg.fromId === user._id ? msg.toId : msg.fromId,
+        );
 
+        const msgPreviewEl = doc
+          .querySelector(".message-preview")
+          .cloneNode(true);
 
-      // routes link to the right convo
-      const linkEl = msgPreviewEl.querySelector("a");
-      linkEl.setAttribute(":id", otherUser._id);
+        // routes link to the right convo
+        const linkEl = msgPreviewEl.querySelector("a");
+        linkEl.setAttribute(":id", otherUser._id);
 
-      // linkEl.querySelector(".username").innerText = otherUser.username;
-      linkEl.querySelector(".name").innerText = otherUser.name;
+        // linkEl.querySelector(".username").innerText = otherUser.username;
+        linkEl.querySelector(".name").innerText = otherUser.name;
 
-      linkEl.querySelector(".msg-timestamp").innerText = formatRelative(msg.time);
+        linkEl.querySelector(".msg-timestamp").innerText = formatRelative(
+          msg.time,
+        );
 
-      // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
+        // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
 
-      linkEl.querySelector(".msg-text").innerText = msg.text;
+        linkEl.querySelector(".msg-text").innerText = msg.text;
 
-      const avatar = await api.users.getAvatar(otherUser);
+        const avatar = await api.users.getAvatar(otherUser);
 
-      linkEl.querySelector("img").src = avatar
-        ? URL.createObjectURL(avatar)
-        : "/images/logo.png";
+        linkEl.querySelector("img").src = avatar
+          ? URL.createObjectURL(avatar)
+          : "/images/logo.png";
 
-      return msgPreviewEl;
-    }
-  )));
+        return msgPreviewEl;
+      }),
+    )),
+  );
 
   app.append(messageContainerEl);
-
 
   // TODO: show all upcoming appointments?
 
@@ -106,7 +115,9 @@ export default async (args, doc) => {
     const time = `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
 
     // console.log(appt.studentId, "funky", appt.teacherId)
-    const otherUser = await api.users.get(appt.teacherId === user._id ? appt.learnerId : appt.teacherId);
+    const otherUser = await api.users.get(
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId,
+    );
 
     apptEl.querySelector(".name").innerText = otherUser.name;
     apptEl.querySelector(".time").innerText = time;
@@ -115,8 +126,7 @@ export default async (args, doc) => {
     apptEl.querySelector("span.type").innerText = appt.type;
     if (!appt.url) {
       apptEl.querySelector(".url-container").remove();
-    }
-    else {
+    } else {
       apptEl.querySelector("a.url").innerText = appt.url;
       apptEl.querySelector("a.url").setAttribute("href", appt.url);
     }
@@ -125,7 +135,6 @@ export default async (args, doc) => {
 
     return apptEl;
   };
-
 
   // unpaginated get all appointments by calling until no more next
   const getAllApptsWithUser = async () => {
@@ -150,17 +159,20 @@ export default async (args, doc) => {
 
   console.log("[dashboard] relevant appts", futureAppts);
 
-  const apptContainerEl = doc.querySelector("#appointment-container").cloneNode(true);
+  const apptContainerEl = doc
+    .querySelector("#appointment-container")
+    .cloneNode(true);
 
-  apptContainerEl.querySelector("#appointment-list").append(...
-    await Promise.all(futureAppts.map(async (appt) => {
-      return createNewAppointmentEl(appt);
-    }
-  )));
+  apptContainerEl.querySelector("#appointment-list").append(
+    ...(await Promise.all(
+      futureAppts.map(async (appt) => {
+        return createNewAppointmentEl(appt);
+      }),
+    )),
+  );
 
   // const paginationEl = doc.querySelector(".pagination");
 
   app.append(apptContainerEl);
   // app.append(paginationEl);
-
 };

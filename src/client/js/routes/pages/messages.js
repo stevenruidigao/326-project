@@ -470,8 +470,7 @@ export default async (args, doc) => {
       apptEl.querySelector("span.type").innerText = appt.type;
       if (!appt.url) {
         apptEl.querySelector(".url-container").remove();
-      }
-      else {
+      } else {
         apptEl.querySelector("a.url").innerText = appt.url;
         apptEl.querySelector("a.url").setAttribute("href", appt.url);
       }
