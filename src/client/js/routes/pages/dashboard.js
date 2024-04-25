@@ -3,6 +3,7 @@ import * as api from "../../api/index.js";
 import * as routes from "../index.js";
 
 const NUM_MSG_PREVIEWS = 3;
+const APPT_PAGE_SIZE = 8;
 
 export const onunload = async (prev, next) => {
   // TODO: when websockets are implemented, close the connection here
@@ -23,7 +24,8 @@ export default async (args, doc) => {
     return routes.goToRoute("home");
   }
 
-  // TODO: show latest messages? don't have unread messages so can't show unreads
+  // show latest messages
+  // TODO: if unread messages are implemented, show those here instead
 
   // get all conversations
   const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
@@ -105,6 +107,26 @@ export default async (args, doc) => {
 
   // TODO: show all upcoming appointments?
 
+  const createNewAppointmentEl = async (appt) => {
+    const apptEl = doc.querySelector(".appointment").cloneNode(true);
+
+    const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
+    const time = new Date(appt.time).toLocaleString();
+
+    apptEl.querySelector(".time").innerText = time;
+    apptEl.querySelector("span.role").innerText = apptRole;
+    apptEl.querySelector("span.topic").innerText = appt.topic;
+    apptEl.querySelector("span.type").innerText = appt.type;
+    apptEl.querySelector("a.url").innerText = appt.url;
+    apptEl.querySelector("a.url").setAttribute("href", appt.url);
+
+    apptEl
+      .querySelector(".js-modal-trigger")
+      .setAttribute("data-apptid", appt._id);
+
+    return apptEl;
+  };
+
 
   // unpaginated get all appointments by calling until no more next
   const getAllApptsWithUser = async () => {
@@ -125,9 +147,21 @@ export default async (args, doc) => {
   });
 
   // sort appointments by time in place
-  futureAppts.sort((a, b) => b.time - a.time);
+  futureAppts.sort((a, b) => a.time - b.time);
 
   console.log("[dashboard] relevant appts", futureAppts);
 
+  const apptContainerEl = doc.querySelector("#appointment-container").cloneNode(true);
+
+  apptContainerEl.append(...
+    await Promise.all(futureAppts.map(async (appt) => {
+      return createNewAppointmentEl(appt);
+    }
+  )));
+
+  // const paginationEl = doc.querySelector(".pagination");
+
+  app.append(apptContainerEl);
+  // app.append(paginationEl);
 
 };
