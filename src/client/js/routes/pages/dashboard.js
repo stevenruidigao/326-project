@@ -60,7 +60,9 @@ export default async (args, doc) => {
 
   console.log("[dashboard] mapped most recent messages", mostRecentMessages);
 
-  const messageContainerEl = doc.querySelector("#message-container").cloneNode(true);
+  const contentContainerEl = doc.querySelector("#content-container").cloneNode(true);
+
+  const messageContainerEl = contentContainerEl.querySelector("#message-container");
   const messageListEl = messageContainerEl.querySelector("#message-list");
 
   messageListEl.append(...
@@ -102,7 +104,7 @@ export default async (args, doc) => {
     }
   )));
 
-  app.append(messageContainerEl);
+  // app.append(messageContainerEl);
 
 
   // TODO: show all upcoming appointments?
@@ -158,7 +160,7 @@ export default async (args, doc) => {
 
   console.log("[dashboard] relevant appts", futureAppts);
 
-  const apptContainerEl = doc.querySelector("#appointment-container").cloneNode(true);
+  const apptContainerEl = contentContainerEl.querySelector("#appointment-container");
 
   apptContainerEl.append(...
     await Promise.all(futureAppts.map(async (appt) => {
@@ -168,7 +170,7 @@ export default async (args, doc) => {
 
   // const paginationEl = doc.querySelector(".pagination");
 
-  app.append(apptContainerEl);
+  app.append(contentContainerEl);
   // app.append(paginationEl);
 
 };
