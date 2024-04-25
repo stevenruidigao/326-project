@@ -1,4 +1,9 @@
 import { appointments, session, users } from "../../api/index.js";
+import dayjs, {
+  formatRelative,
+  formatTime,
+  formatTimeVerbose,
+} from "../../dayjs.js";
 import { setupNavbar } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
 import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
@@ -36,13 +41,12 @@ export const loadAppointments = async (doc, profileEl, user) => {
     newApptEl.querySelector(".profile-appointments-card-topic").innerText =
       appt.topic;
 
-    const date = new Date(appt.time);
+    const timeEl = newApptEl.querySelector(".profile-appointments-card-time");
+    const date = dayjs(appt.time);
 
-    newApptEl.querySelector(".profile-appointments-card-time").innerText =
-      date.toLocaleDateString();
-    newApptEl
-      .querySelector(".profile-appointments-card-time")
-      .setAttribute("datetime", date.toISOString());
+    timeEl.innerText = formatRelative(date);
+    timeEl.title = formatTime(appt.time);
+    timeEl.dateTime = date.toISOString();
 
     const otherUser =
       usersInvolved[

@@ -15,6 +15,11 @@
         z-index: 9;
     }
 
+    /* center user avatar */
+    .media-left {
+        align-self: center;
+    }
+
     /* prevent overflow of the sidebar. apparently allows flex child to not be bigger than parent */
     .media .media-content {
         min-width: 0;
@@ -38,6 +43,12 @@
         &::before {
             content: "@";
         }
+    }
+
+    .sidebar-preview-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
     }
 }
 #conversation-wrapper {

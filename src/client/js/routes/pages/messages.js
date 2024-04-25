@@ -1,4 +1,5 @@
 import * as api from "../../api/index.js";
+import dayjs, { formatTimeVerbose } from "../../dayjs.js";
 import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
@@ -56,10 +57,9 @@ const setupBulmaModals = () => {
       el.querySelector("input[name='url']").value = currentAppt.url;
 
       // needed due to timezones
-      const dateObj = new Date(currentAppt.time);
-      const date = dateObj.toISOString().slice(0, 10); // obtain date - "YEAR-MONTH-DAY" eg. "2024-04-24"
-      const time = dateObj.toTimeString().slice(0, 5); // obtain time - "HOURS:MINUTES" eg. "13:37"
-      el.querySelector("input[name='time']").value = [date, time].join("T");
+      const date = dayjs(currentAppt.time);
+      el.querySelector("input[name='time']").value =
+        date.format("YYYY-MM-DDTHH:mm");
 
       el.querySelector(
         `input[name='role'][value='${
@@ -138,12 +138,17 @@ const setupBulmaModals = () => {
 };
 
 /**
+ * The other user in the conversation
+ * @type {User?}
+ */
+let conversationOtherUser = null;
+
+/**
  * @param {{ id?: string }} args user ID to load messages with
  * @param {DocumentFragment} doc
  */
 export default async (args, doc) => {
   const isFullRender = routes.getPrevious()?.file !== "messages";
-  let conversationOtherUser = null;
 
   if (isFullRender) {
     app.innerHTML = "";
@@ -241,9 +246,9 @@ export default async (args, doc) => {
       linkEl.setAttribute(":id", otherUserId);
 
       linkEl.querySelector(".sidebar-name").innerText = otherUser.name;
-      linkEl.querySelector(".msg-timestamp").innerText = new Date(
+      linkEl.querySelector(".msg-timestamp").innerText = dayjs(
         lastMsg.time,
-      ).toLocaleDateString();
+      ).fromNow();
 
       linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
 
@@ -318,7 +323,7 @@ export default async (args, doc) => {
         type: apptData.type,
         url: apptData.url,
         topic: apptData.topic,
-        time: new Date(apptData.time).getTime(),
+        time: dayjs(apptData.time).valueOf(),
       };
 
       return parsedApptData;
@@ -370,6 +375,8 @@ export default async (args, doc) => {
 
     app.append(createApptModal, editApptModal);
   }
+
+  conversationOtherUser = null;
 
   // either render a conversation or a blank conversation
   try {
@@ -440,8 +447,9 @@ export default async (args, doc) => {
       messageContentEl.innerText = msg.text;
 
       const timeEl = messageEl.querySelector(".msg-time");
-      timeEl.innerText = new Date(msg.time).toLocaleString();
+      timeEl.innerText = dayjs(msg.time).fromNow();
       timeEl.timestamp = msg.time;
+      timeEl.title = formatTimeVerbose(msg.time);
 
       messageEl.dataset.user = isThisUser ? "self" : "other";
 
@@ -452,9 +460,12 @@ export default async (args, doc) => {
       const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
       const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
-      const time = new Date(appt.time).toLocaleString();
+      const apptTime = dayjs(appt.time);
+      const fullTime = apptTime.format("MMMM D, YYYY [at] h:mm A");
 
-      apptEl.querySelector(".time").innerText = time;
+      apptEl.querySelector(".time").innerText =
+        `${fullTime} - ${apptTime.fromNow()}`;
+      apptEl.querySelector(".time").title = apptTime.toDate().toLocaleString();
       apptEl.querySelector("span.role").innerText = apptRole;
       apptEl.querySelector("span.topic").innerText = appt.topic;
       apptEl.querySelector("span.type").innerText = appt.type;
