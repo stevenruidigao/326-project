@@ -72,11 +72,21 @@ export default async (args, doc) => {
       const linkEl = msgPreviewEl.querySelector("a");
       linkEl.setAttribute(":id", otherUser._id);
 
-      linkEl.querySelector(".username").innerText = otherUser.username;
+      // linkEl.querySelector(".username").innerText = otherUser.username;
       linkEl.querySelector(".name").innerText = otherUser.name;
-      linkEl.querySelector(".msg-timestamp").innerText = new Date(
-        msg.time,
-      ).toLocaleDateString();
+
+      const msgDate = new Date(msg.time);
+      const nowDate = new Date();
+      const diff = nowDate - msgDate;
+
+      if (diff < 1000 * 60 * 60 * 24) {
+        linkEl.querySelector(".msg-timestamp").innerText = msgDate.toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
+      }
+      else {
+        linkEl.querySelector(".msg-timestamp").innerText = msgDate.toLocaleDateString();
+      }
+
+      // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
 
       linkEl.querySelector(".msg-text").innerText = msg.text;
 
@@ -94,5 +104,30 @@ export default async (args, doc) => {
 
 
   // TODO: show all upcoming appointments?
+
+
+  // unpaginated get all appointments by calling until no more next
+  const getAllApptsWithUser = async () => {
+    const allAppts = [];
+    for (let curPage = 1; ; curPage++) {
+      const response = await api.appointments.withUser(user._id, curPage);
+      if (response.length === 0) break;
+
+      allAppts.push(...Array.from(response));
+    }
+    return allAppts;
+  };
+
+  const curTime = Date.now();
+  // get all future appointments
+  const futureAppts = (await getAllApptsWithUser()).filter((appt) => {
+    return curTime < appt.time;
+  });
+
+  // sort appointments by time in place
+  futureAppts.sort((a, b) => b.time - a.time);
+
+  console.log("[dashboard] relevant appts", futureAppts);
+
 
 };
