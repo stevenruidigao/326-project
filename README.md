@@ -32,7 +32,7 @@ Once logged in:
 - the **dashboard** page serves to show recent messages & upcoming appointments you may have scheduled - whether that be to teach someone else or learn yourself
 - the **browse** page allows you to find users based on what skills you are looking for to teach and/or learn
 - the **messages** page shows all existing conversations with other users, alongside appointments between you and whoever you're talking to
-  - in addition, you may create and edit appointments from this page
+  - in addition, you may create, edit, and delete appointments from this page
 - the **profile** page allows you to edit your settings and skills, and upload a custom profile picture
 
 ### Directory Structure
