@@ -431,8 +431,13 @@ export default async (args, doc) => {
 
     console.log("[messages] relevant appts", relevantAppts);
 
-    // returns a new message element to be added to a convo
-    // do not use for new messages that aren't part of the current conversation
+    /**
+     * Creates and returns a new message element with the given message data
+     * NOTE: do not call this function for recieved new messages that aren't part of this conversation
+     *
+     * @param {Message} msg - The message data to render.
+     * @returns {Promise<Element>} - A promise that resolves to the new message element.
+     */
     const createNewMessageEl = async (msg) => {
       const messageEl = doc.querySelector(".message").cloneNode(true);
 
@@ -455,6 +460,12 @@ export default async (args, doc) => {
       return messageEl;
     };
 
+    /**
+   * Creates and returns a new appointment element with the given appointment data
+   *
+   * @param {Appointment} appt - The appointment data to render.
+   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+   */
     const createNewAppointmentEl = async (appt) => {
       const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
