@@ -38,13 +38,15 @@
 </div>
 <!-- template for each individual appointment to render in a conversation -->
 <div class="appointment has-background-success-bolder has-text-success-invert">
-    <button type="button" id="edit-appt-button" class="js-modal-trigger button is-outlined is-inverted is-small is-pulled-right" data-target="modal-edit-appt" data-apptid="">Edit</button>
+    <a is="app-route" route="conversation" type="button" class="button is-outlined is-inverted is-small is-pulled-right">Chat</a>
+
+    <p class="name is-size-5 has-text-success-soft-invert has-text-weight-bold ">funny</p>
     <p class="time has-text-success-soft-invert has-text-weight-bold"></p>
     <p class="activity">
         <span class="role"></span> <span class="topic"></span>
     </p>
     <p class="type-container">Meeting <span class="type"></span></p>
-    <p class="url-container">URL: <a class="url has-text-link"></a></p>
+    <p class="url-container is-clipped">URL: <a class="url has-text-link"></a></p>
 </div>
 
 
