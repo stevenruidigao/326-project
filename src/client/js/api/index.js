@@ -173,6 +173,18 @@ const updateAppointment = async (id, data) => {
   });
 };
 
+/**
+ * Delete an appointment
+ * @param {string} id
+ * @returns {Promise<PouchDBResponse>}
+ * @throws {Error} if appointment does not exist
+ */
+const deleteAppointment = async (id) => {
+  const doc = await mock.appointments.get(id);
+
+  return mock.appointments.remove(doc);
+};
+
 export const appointments = {
   // fetch
   all: allAppointments,
@@ -185,6 +197,7 @@ export const appointments = {
   // modify
   create: createAppointment,
   update: updateAppointment,
+  delete: deleteAppointment,
 };
 
 // ===== MESSAGES =====

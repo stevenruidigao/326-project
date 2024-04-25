@@ -32,7 +32,7 @@ Once logged in:
 - the **dashboard** page serves to show recent messages & upcoming appointments you may have scheduled - whether that be to teach someone else or learn yourself
 - the **browse** page allows you to find users based on what skills you are looking for to teach and/or learn
 - the **messages** page shows all existing conversations with other users, alongside appointments between you and whoever you're talking to
-  - in addition, you may create and edit appointments from this page
+  - in addition, you may create, edit, and delete appointments from this page
 - the **profile** page allows you to edit your settings and skills, and upload a custom profile picture
 
 ### Directory Structure
@@ -50,6 +50,7 @@ The directory structure is divided primarily into the API and routes. _All furth
     - the HTML is loaded as a `DocumentFragment` for the JS to take advantage of, so that we can work with regular HTML (mostly) while adding dynamic elements
     - the HTML may also contain `<template>`s, but we found that they don't meet our needs as originally thought
   - registers a custom component `<a is="app-route">` to route links internally
+  - see [CONTRIBUTING.md](./CONTRIBUTING.md) for more info
 - `index.html` - contains the boilerplate that every page uses
 - `pages/*.html` - page-specific content that the JS modifies before adding to the page (if at all)
 - `styles` - the app's CSS
