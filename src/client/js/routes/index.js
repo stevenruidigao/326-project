@@ -38,8 +38,8 @@ export const PATH_PREFIX_REGEX = new RegExp(`^${PATH_PREFIX}`);
 export const routes = {
   home: { path: "/", file: "home", hasHTML: true },
   dashboard: { path: "/dashboard", file: "dashboard" },
-  browse: { path: "/browse", file: "browse" },
-  search: { path: "/browse/:search", file: "browse" },
+  browse: { path: "/browse", file: "browse", hasCSS: true },
+  search: { path: "/browse/:search", file: "browse", hasCSS: true },
   messages: {
     path: "/messages",
     file: "messages",

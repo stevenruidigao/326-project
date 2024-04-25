@@ -1,0 +1,24 @@
+.user-card {
+    margin-bottom: var(--bulma-block-spacing);
+}
+
+.username {
+    display: block;
+}
+
+.skills {
+    display: block;
+}
+
+.skill ~ .skill:before {
+    content: ", ";
+}
+
+#search-div {
+    display: flex;
+    width: 100%;
+    /* height: 2em; */
+    justify-content: center;
+    margin: 10px 0;
+    gap: 10px;
+}

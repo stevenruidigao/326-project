@@ -72,7 +72,7 @@
              * also handles displaying new messages but not scrolling if the user is looking at old messages */
             display: flex;
             flex-direction: column-reverse;
-            overflow-y: scroll;
+            overflow-y: auto;
 
             padding: 5px 10px;
 

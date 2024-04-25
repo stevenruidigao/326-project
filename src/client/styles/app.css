@@ -12,22 +12,6 @@ body {
     display: inline-block;
 }
 
-.user-card {
-    margin-bottom: var(--bulma-block-spacing);
-}
-
-.username {
-    display: block;
-}
-
-.skills {
-    display: block;
-}
-
-.skill ~ .skill:before {
-    content: ", ";
-}
-
 #loading {
     position: fixed;
     top: 0;
@@ -55,15 +39,6 @@ body {
     .loader {
         --bulma-border: var(--bulma-primary-bold);
     }
-}
-
-#search-div {
-    display: flex;
-    width: 100%;
-    /* height: 2em; */
-    justify-content: center;
-    margin: 10px 0;
-    gap: 10px;
 }
 
 #app {
