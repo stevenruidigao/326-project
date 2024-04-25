@@ -1,6 +1,7 @@
 import { app } from "../helper.js";
 import * as api from "../../api/index.js";
 import * as routes from "../index.js";
+import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
 
 const NUM_MSG_PREVIEWS = 3;
 const APPT_PAGE_SIZE = 8;
@@ -77,16 +78,7 @@ export default async (args, doc) => {
       // linkEl.querySelector(".username").innerText = otherUser.username;
       linkEl.querySelector(".name").innerText = otherUser.name;
 
-      const msgDate = new Date(msg.time);
-      const nowDate = new Date();
-      const diff = nowDate - msgDate;
-
-      if (diff < 1000 * 60 * 60 * 24) {
-        linkEl.querySelector(".msg-timestamp").innerText = msgDate.toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'});
-      }
-      else {
-        linkEl.querySelector(".msg-timestamp").innerText = msgDate.toLocaleDateString();
-      }
+      linkEl.querySelector(".msg-timestamp").innerText = formatRelative(msg.time);
 
       // linkEl.querySelector(".msg-timestamp").innerText = .toLocaleDateString();
 
@@ -111,7 +103,7 @@ export default async (args, doc) => {
     const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
     const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
-    const time = new Date(appt.time).toLocaleString();
+    const time = `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
 
     // console.log(appt.studentId, "funky", appt.teacherId)
     const otherUser = await api.users.get(appt.teacherId === user._id ? appt.learnerId : appt.teacherId);

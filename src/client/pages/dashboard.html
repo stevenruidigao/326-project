@@ -11,16 +11,17 @@
             <figure class="media-left">
                 <p class="image is-64x64">
                     <!-- TODO: replace with pfp -->
-                    <img src="/images/logo.png" />
+                    <img src="/images/logo.png" alt="profile picture">
                 </p>
             </figure>
             <div class="media-content">
                 <div class="content">
+                    <p class="is-flex is-justify-content-space-between is-align-items-baseline">
+                        <span class="name has-text-weight-semibold">John Smith</span>
+                        <br>
+                        <small class="msg-timestamp has-text-small">31m</small>
+                    </p>
                     <p>
-                        <span class="name">John Smith</span>
-                        <br />
-                        <small class="msg-timestamp">31m</small>
-                        <br />
                         <!-- TODO: consider maybe limiting how big it can be and force a ... if tooo long? -->
                         <span class="msg-text"></span>
                     </p>
@@ -40,19 +41,19 @@
 </div>
 <!-- template for each individual appointment to render in a conversation -->
 <div class="appointment cell has-background-success-bolder has-text-success-invert">
-    <a is="app-route" route="conversation" type="button" class="button is-outlined is-inverted is-pulled-right">Chat</a>
+    <a is="app-route" route="conversation" class="button is-outlined is-inverted is-pulled-right">Chat</a>
 
-    <p class="name is-size-5 has-text-success-soft-invert has-text-weight-bold ">funny</p>
-    <p class="time has-text-success-soft-invert has-text-weight-bold"></p>
-    <p class="activity has-text-success-soft-invert ">
+    <p class="name is-size-5 has-text-weight-bold">funny</p>
+    <p class="time has-text-weight-bold"></p>
+    <p class="activity">
         <span class="role"></span> <span class="topic"></span>
     </p>
-    <p class="type-container has-text-success-soft-invert ">Meeting <span class="type"></span></p>
-    <p class="url-container is-clipped has-text-success-soft-invert ">URL: <a class="url has-text-link"></a></p>
+    <p class="type-container">Meeting <span class="type"></span></p>
+    <p class="url-container is-clipped">URL: <a class="url has-text-link" href="">-</a></p>
 </div>
 
 
-<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+<nav class="pagination is-centered" aria-label="pagination">
     <a href="#" class="pagination-previous">Previous</a>
     <a href="#" class="pagination-next">Next page</a>
     <ul class="pagination-list">
