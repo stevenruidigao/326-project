@@ -72,8 +72,6 @@ const setupBulmaModals = () => {
 
       const form = el.querySelector("form");
       form.dataset.apptid = apptId;
-
-      // data-apptid="00cb35de-6fa1-43be-ad43-6686c574e82d"
     }
 
     el.classList.add("is-active");
@@ -460,7 +458,8 @@ export default async (args, doc) => {
       apptEl.querySelector("span.role").innerText = apptRole;
       apptEl.querySelector("span.topic").innerText = appt.topic;
       apptEl.querySelector("span.type").innerText = appt.type;
-      apptEl.querySelector("span.url").innerText = appt.url;
+      apptEl.querySelector("a.url").innerText = appt.url;
+      apptEl.querySelector("a.url").setAttribute("href", appt.url);
 
       apptEl
         .querySelector(".js-modal-trigger")
