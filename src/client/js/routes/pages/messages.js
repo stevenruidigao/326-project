@@ -5,7 +5,7 @@ import * as routes from "../index.js";
 
 /**
  * Runs when page is unloaded. Currently does nothing.
- * 
+ *
  * @param {import("../index.js").RoutePage} prev
  * @param {import("../index.js").RoutePage} next
  */
@@ -22,7 +22,7 @@ export const onunload = async (prev, next) => {
 
 /**
  * Sends a message from one user to another.
- * 
+ *
  * @param {Message} msg - The message to send.
  * @param {string} fromId - The ID of the user sending the message.
  * @param {string} toId - The ID of the user receiving the message.
@@ -489,11 +489,11 @@ export default async (args, doc) => {
     };
 
     /**
-   * Creates and returns a new appointment element with the given appointment data
-   *
-   * @param {Appointment} appt - The appointment data to render.
-   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
-   */
+     * Creates and returns a new appointment element with the given appointment data
+     *
+     * @param {Appointment} appt - The appointment data to render.
+     * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+     */
     const createNewAppointmentEl = async (appt) => {
       const apptEl = doc.querySelector(".appointment").cloneNode(true);
 

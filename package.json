@@ -46,11 +46,17 @@
     "milestone-02": "http-server src/client -p 3000 -c-1 -s -o",
     "validate-html": "html-validate src/**/*.html",
     "prettier": "prettier src --write --html-whitespace-sensitivity ignore",
+    "start": "node src/server",
     "submit": "git archive HEAD -o submission.zip"
   },
   "devDependencies": {
     "html-validate": "^8.18.0",
     "http-server": "^14.1.1",
     "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "morgan": "^1.10.0"
   }
 }

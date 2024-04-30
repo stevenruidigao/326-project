@@ -6,7 +6,6 @@ import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
 const NUM_MSG_PREVIEWS = 3;
 const APPT_PAGE_SIZE = 8;
 
-
 // TODO: consider using the `onunload` when websockets are implemented to close the connection here
 
 /**
@@ -48,7 +47,6 @@ export default async (args, doc) => {
     conversations[convoKey].sort((a, b) => b.time - a.time);
   }
 
-
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
     .map((userId) => {
@@ -84,7 +82,6 @@ export default async (args, doc) => {
         linkEl.querySelector(".msg-timestamp").innerText = formatRelative(
           msg.time,
         );
-
 
         linkEl.querySelector(".msg-text").innerText = msg.text;
 
@@ -162,7 +159,6 @@ export default async (args, doc) => {
   // sort appointments by time in place
   futureAppts.sort((a, b) => a.time - b.time);
 
-
   const apptContainerEl = doc
     .querySelector("#appointment-container")
     .cloneNode(true);
@@ -174,7 +170,6 @@ export default async (args, doc) => {
       }),
     )),
   );
-
 
   app.append(apptContainerEl);
 };
