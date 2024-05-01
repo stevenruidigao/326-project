@@ -3,6 +3,7 @@ import LocalStrategy from "passport-local";
 import { hash, verify } from "argon2";
 
 import session from "express-session";
+import asyncHandler from "express-async-handler";
 // import PouchDBStore from "session-pouchdb-store";
 
 import * as users from "./db/users.js";
@@ -82,52 +83,57 @@ export const configure = (app) => {
     })(req, res, next);
   });
 
-  app.post("/signup", async (req, res) => {
-    const { name, username, email, password } = req.body;
+  app.post(
+    "/signup",
+    asyncHandler(async (req, res) => {
+      const { name, username, email, password } = req.body;
 
-    const sendError = (message, status = 400) =>
-      res.status(status).json({ message });
+      const sendError = (message, status = 400) =>
+        res.status(status).json({ message });
 
-    //  validate input
-    for (const key of ["username", "email", "password", "name"]) {
-      if (req.body[key]?.trim()) continue;
+      //  validate input
+      for (const key of ["username", "email", "password", "name"]) {
+        if (req.body[key]?.trim()) continue;
 
-      return sendError(`The ${key} is required`);
-    }
-
-    try {
-      const [emailOut, usernameOut] = await Promise.all([
-        users.getByUsername(username),
-        users.getByEmail(email),
-      ]);
-
-      if (emailOut || usernameOut) {
-        return sendError(`${emailOut ? "Email" : "Username"} is already taken`);
+        return sendError(`The ${key} is required`);
       }
 
-      const hashedPassword = await hash(password);
+      try {
+        const [emailOut, usernameOut] = await Promise.all([
+          users.getByUsername(username),
+          users.getByEmail(email),
+        ]);
 
-      const user = await users.create({
-        name,
-        username,
-        email,
-        password: hashedPassword,
-      });
-
-      req.login(user, (error) => {
-        console.error(error);
-
-        if (error) {
-          return sendError("Error logging in", 500);
+        if (emailOut || usernameOut) {
+          return sendError(
+            `${emailOut ? "Email" : "Username"} is already taken`,
+          );
         }
 
-        res.json(users.serialize(user, user._id));
-      });
-    } catch (error) {
-      console.error("Error signing up:", error);
-      sendError(error.message, 500);
-    }
-  });
+        const hashedPassword = await hash(password);
+
+        const user = await users.create({
+          name,
+          username,
+          email,
+          password: hashedPassword,
+        });
+
+        req.login(user, (error) => {
+          console.error(error);
+
+          if (error) {
+            return sendError("Error logging in", 500);
+          }
+
+          res.json(users.serialize(user, user._id));
+        });
+      } catch (error) {
+        console.error("Error signing up:", error);
+        sendError(error.message, 500);
+      }
+    }),
+  );
 
   app.post("/logout", (req, res) => {
     req.logout((err) => {

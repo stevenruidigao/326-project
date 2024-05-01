@@ -322,25 +322,17 @@ const logoutUser = () => sendAPIReq("POST", "/logout");
 /**
  * Obtain user by ID
  * @param {string} id
- * @param {PouchDBOptions} opts
  * @returns {Promise<User>}
  */
-const getUser = (id, opts = {}) => mock.users.get(id, opts);
+const getUser = (id) => sendAPIReq("GET", `/api/users/${id}`);
 
 /**
  * Obtain user by username
  * @param {string} username
- * @param {PouchDBOptions} opts
- * @returns
+ * @returns {Promise<User>}
  */
-const getUserByUsername = (username, opts) =>
-  mock.users
-    .find({
-      selector: { username: { $eq: username } },
-      limit: 1,
-      ...opts,
-    })
-    .then((out) => out.docs[0]);
+const getUserByUsername = (username) =>
+  sendAPIReq("GET", `/api/users/@${username}`);
 
 /**
  * Obtain user's avatar image
