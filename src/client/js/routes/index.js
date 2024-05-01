@@ -469,7 +469,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     const search = this.search;
     this.#search = search ? new URLSearchParams(search) : null;
 
-    const path = convertRouteToPath(this.route, args, search);
+    const path = convertRouteToPath(this.route, args, this.#search);
 
     this.#args = args;
     this.href = path ? PATH_PREFIX + path : "";
