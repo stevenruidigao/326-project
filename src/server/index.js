@@ -1,8 +1,11 @@
+import "dotenv/config";
+
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import logger from "morgan";
 
+import { configure as authConfigure } from "./auth.js";
 import api from "./api/index.js";
 
 const app = express();
@@ -22,6 +25,8 @@ app.use(express.static(path.resolve(__dirname, "../client")));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+authConfigure(app);
 
 app.use("/api", api);
 

@@ -278,53 +278,46 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  handle password in backend
 
+const sendAPIReq = async (method, path, body, opts = {}) => {
+  const res = await fetch(path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : null,
+    ...opts,
+  });
+
+  if (!res.ok && !opts.noThrow) {
+    const { message } = await res.json();
+
+    throw new Error(message);
+  }
+
+  return await res.json();
+};
+
 /**
  * Obtain user given credentials. Throws error if no user found.
  * @param {{ username: string, password: string }} args
  * @returns {Promise<User>}
  */
-const loginUser = async ({ username, password }) => {
-  const results = await mock.users.find({
-    selector: {
-      username: { $eq: username },
-      // password: { $eq: password }
-    },
-    limit: 1,
-  });
-  if (results.docs.length < 1)
-    throw new Error("No user found with that username and password");
-  console.log(results); //
-  return results.docs[0];
-};
+const loginUser = ({ username, password }) =>
+  sendAPIReq("POST", "/login", { username, password });
 
 /**
  * Register user given credentials. Throws error if user already exists with email or username.
  * @param {{ name: string, username: string, email: string, password: string }} param0
  * @returns {Promise<PouchDBResponse>}
  */
-const registerUser = async ({ name, username, email, password }) => {
-  const [emailOut, usernameOut] = await Promise.all([
-    mock.users.find({
-      selector: {
-        email: { $eq: email },
-      },
-      limit: 1,
-    }),
+const registerUser = ({ name, username, email, password }) =>
+  sendAPIReq("POST", "/signup", { name, username, email, password });
 
-    mock.users.find({
-      selector: {
-        username: { $eq: username },
-      },
-      limit: 1,
-    }),
-  ]);
-
-  if (emailOut.docs.length) throw new Error("User already exists with email");
-  else if (usernameOut.docs.length)
-    throw new Error("User already exists with username");
-
-  return mock.users.post({ name, username, email });
-};
+/**
+ * Logout user
+ * @returns {Promise<void>}
+ */
+const logoutUser = () => sendAPIReq("POST", "/logout");
 
 /**
  * Obtain user by ID
@@ -434,6 +427,8 @@ const updateUser = async (id, data) => {
 export const users = {
   login: loginUser,
   register: registerUser,
+  logout: logoutUser,
+
   get: getUser,
   getByUsername: getUserByUsername,
   getAvatar: getUserAvatar,
@@ -460,38 +455,16 @@ const setSessionCurrent = (u) => (currentUser = u);
  */
 const getSessionCurrent = async () => {
   if (currentUser !== undefined) return currentUser;
-  return setSessionCurrent(await getSessionUser());
-};
 
-/**
- * MOCK ONLY: Creates session for user id (i.e. logged in state)
- * @param {number} userId
- * @returns {Promise<void>}
- */
-const createSession = async (userId) => {
-  const doc = await mock.session.post({ userId });
+  // avoid fetching while already fetching
+  setSessionCurrent(null);
 
-  console.log("createSession", doc);
-
-  await local.set("token", doc.id);
-
-  setSessionCurrent();
-};
-
-/**
- * Get current session data (if exists), uses token stored
- * @returns {Promise<Session?>}
- */
-const getSession = async () => {
-  const id = await local.get("token");
-
-  if (id) {
-    try {
-      return await mock.session.get(id);
-    } catch (err) {}
+  try {
+    return setSessionCurrent(await getSessionUser());
+  } catch (err) {
+    setSessionCurrent(undefined);
+    throw err;
   }
-
-  return null;
 };
 
 /**
@@ -499,35 +472,16 @@ const getSession = async () => {
  * @returns {Promise<User?>}
  */
 const getSessionUser = async () => {
-  const session = await getSession();
+  const res = await sendAPIReq("GET", "/api/me", undefined, { noThrow: true });
 
-  if (!session?.userId) return null;
+  if (res.status === 401) return null;
+  else if (res.status) throw new Error(res.message);
 
-  // TODO handle error better somehow if user id does not exist?
-  return users
-    .get(session.userId, { attachments: true, binary: true })
-    .catch(() => null);
-};
-
-/**
- * Delete current session (i.e. log out)
- * @returns {Promise<void>}
- */
-const deleteSession = async () => {
-  const session = await getSession();
-
-  if (session) await mock.session.remove(session);
-
-  await local.set("token", null);
-
-  setSessionCurrent(null);
+  return res;
 };
 
 export const session = {
-  create: createSession,
-  get: getSession,
   getUser: getSessionUser,
-  delete: deleteSession,
 
   current: getSessionCurrent,
   setCurrent: setSessionCurrent,

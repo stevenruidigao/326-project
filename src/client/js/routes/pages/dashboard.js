@@ -19,7 +19,7 @@ export default async (args, doc) => {
   console.log("** dashboard loaded with args", args);
 
   // get user id if logged in, otherwise redirect to home
-  const user = await api.session.getUser();
+  const user = await api.session.current();
 
   if (!user) {
     console.log(`[dashboard] user not logged in! returning to home`);

@@ -27,31 +27,21 @@ export const register = async (data) => {
   let id = null;
 
   try {
-    const res = await users.register(data);
+    const user = await users.register(data);
 
-    id = res.id;
+    session.setCurrent(user);
+
+    goToRoute("dashboard");
+    setupNavbar();
   } catch (err) {
     console.error("An error occurred during registration --", err);
+
+    if (err === "Error logging in") return goToRoute("login");
 
     showErrors([err]);
 
     return;
   }
-
-  try {
-    await session.create(id);
-  } catch (err) {
-    console.error(
-      "An error occurred logging you in. User was created! --",
-      err,
-    );
-
-    goToRoute("login");
-
-    return;
-  }
-
-  return goToRoute("dashboard");
 };
 
 /**

@@ -43,15 +43,18 @@ export default async (args, doc) => {
     e.preventDefault();
     button.classList.add("is-loading");
 
+    showError(error); // clear error display
+
     const data = new FormData(form);
 
     users
       .login({ username: data.get("username"), password: data.get("password") })
       .then((user) => {
-        session
-          .create(user._id)
-          .then((_) => goToRoute("dashboard").then((_) => setupNavbar()));
+        session.setCurrent(user);
+
+        return goToRoute("dashboard");
       })
+      .then((_) => setupNavbar())
       .catch((err) => {
         console.error(err), showError(error, err);
       })

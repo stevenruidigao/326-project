@@ -1,5 +1,5 @@
 import * as routes from "../../index.js";
-import { session } from "../../../api/index.js";
+import { session, users } from "../../../api/index.js";
 import { setupNavbar } from "../../../layout.js";
 import { setTitle } from "../../helper.js";
 
@@ -13,8 +13,8 @@ export default async () => {
   const user = await session.current();
 
   if (user) {
-    await session.delete();
-
+    await users.logout();
+    session.setCurrent(null);
     await setupNavbar();
   }
 
