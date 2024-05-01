@@ -21,6 +21,11 @@ const LocalPouchDB = PouchDB.defaults({
 export const createDB = (name) => new LocalPouchDB(`./${name}`);
 
 /**
+ * @typedef {{ data: T[], pagination: { prev?: number, current: number, next?: number, total?: number }}} PaginatedArray<T>
+ * @template {any} T
+ */
+
+/**
  * Pagination helper function for PouchDB queries. The callback function
  * should utilize the `opts` object to pass to the query function.
  *
@@ -28,9 +33,10 @@ export const createDB = (name) => new LocalPouchDB(`./${name}`);
  * data) so we don't know when pagination ends until we reach a page with no
  * rows. Those queries will have to likely implement a "show more"
  * button/infinite scrolling on the frontend
+ * @template {Record} T
  * @param {number} pageSize
  * @returns {(page: number, cb: (opts: { limit: number, skip: number }) => Promise<any>) =>
- *  Promise<PaginatedArray>}
+ *  Promise<PaginatedArray<T>>}
  */
 export const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
@@ -59,4 +65,23 @@ export const withPagination = (pageSize) => async (page, cb) => {
   if (totalPages) pagination.total = totalPages;
 
   return { data, pagination };
+};
+
+/**
+ *
+ * @template T
+ * @param {(doc: T) => object} serializer
+ * @returns {(res: T | T[] | PaginatedArray, userId?: string) => object | object[] | PaginatedArray
+ */
+export const withSerializer = (serializer) => (res, userId) => {
+  const serialize = (doc) => serializer(doc, userId);
+
+  if (!res) return null;
+  else if (Array.isArray(res)) return res.map(serialize);
+  else if (res.data) return { ...res, data: res.data.map(serialize) };
+  else if (res._id) return serialize(res);
+
+  throw new Error(
+    `Unknown response type for serializer:  ${JSON.stringify(res)}`,
+  );
 };

@@ -1,17 +1,50 @@
-import { createDB, withPagination } from "./index.js";
+import { createDB, withPagination, withSerializer } from "./index.js";
 
 const db = createDB("users");
 
-const USERS_PAGE_SIZE = 5;
-const userPagination = withPagination(USERS_PAGE_SIZE);
-
 /**
- * @typedef {Object} User
+ * @typedef {{ _id: string }} User
+ *
  * TODO
  */
 
+// * @param {User | User[] | PaginatedArray<User>} res Data to serialize
+// * @param {string?} userId ID of logged in user
+
+/**
+ * Serialize a user for sending to the client
+ *
+ * @type {ReturnType<typeof withSerializer<User>>}
+ */
+export const serialize = withSerializer((user, loggedInId) => {
+  const data = {
+    _id: user._id,
+    username: user.username,
+    name: user.name,
+    known: user.known || [],
+    interests: user.interests || [],
+  };
+
+  // if logged in
+  if (user._id === loggedInId) {
+    data.email = user.email;
+  }
+
+  return data;
+});
+
+export const VALID_KEYS = ["name", "username", "email", "known", "interests"];
+
+const USERS_PAGE_SIZE = 5;
+
+/**
+ * @type {ReturnType<typeof withPagination<User>>}
+ */
+const userPagination = withPagination(USERS_PAGE_SIZE);
+
 /**
  * TODO
+ *
  * @param {string} username
  * @returns {Promise<User?>}
  */
@@ -63,6 +96,39 @@ export const getById = async (id) => {
 };
 
 /**
+ * Get users that have ANY of the skills listed AND any of the skills wanted.
+ * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
+ * since this query does not allow for an index to be used.
+ * @param {number} page
+ * @param {string[]} skillsHad
+ * @param {string[]} skillsWant
+ * @returns {Promise<PaginatedArray<User>>}
+ */
+export const allWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
+  // TODO probably fix logic
+  userPagination(page, (opts) =>
+    db.find({
+      selector: {
+        $and: [
+          skillsHad.length && {
+            $or: skillsHad.map((skill) => ({
+              known: { $elemMatch: { $eq: skill } },
+            })),
+          },
+          skillsWant.length && {
+            $or: skillsWant.map((skill) => ({
+              interests: { $elemMatch: { $eq: skill } },
+            })),
+          },
+        ].filter(Boolean),
+      },
+      ...opts,
+    }),
+  );
+
+// modify
+
+/**
  * TODO
  * @param {User} user
  * @returns {Promise<User>}
@@ -74,61 +140,19 @@ export const create = async (user) => {
 };
 
 /**
- * Get users that have ANY of the skills listed AND any of the skills wanted.
- * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
- * since this query does not allow for an index to be used.
- * @param {number} page
- * @param {string[]} skillsHad
- * @param {string[]} skillsWant
- * @returns
- */
-export const allWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
-  // TODO probably fix logic
-  userPagination(page, (opts) =>
-    db.find({
-      selector: {
-        $and: [
-          skillsHad.length && {
-            $or: skillsHad.map((skill) => ({
-              skills: { $elemMatch: { $eq: skill } },
-            })),
-          },
-          skillsWant.length && {
-            $or: skillsWant.map((skill) => ({
-              skillsWanted: { $elemMatch: { $eq: skill } },
-            })),
-          },
-        ].filter(Boolean),
-      },
-      ...opts,
-    }),
-  );
-
-/**
- * Serialize a user for sending to the client
+ * TODO
  *
- * @param {User} user
- * @param {string} loggedInId
+ * @param {string} id User ID
+ * @param {Omit<User, "id">} data
  * @returns {Promise<User>}
  */
-export const serialize = (user, loggedInId) => {
-  const data = {
-    _id: user._id,
-    username: user.username,
-    known: user.known || [],
-    interests: user.interests || [],
-  };
+export const update = async (id, data) => {
+  const result = await db.put({
+    ...data,
+    _id: id,
+  });
 
-  // if logged in
-  if (user._id === loggedInId) {
-    data.username = user.username;
-    data.email = user.email;
-    data.name = user.name;
-  }
-
-  return data;
+  return { ...data, _id: id, _rev: result.rev };
 };
-
-// TODO more
 
 export default db;

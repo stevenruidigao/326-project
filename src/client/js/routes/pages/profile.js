@@ -147,8 +147,8 @@ export default async (args, doc) => {
     idEl.value = "User ID: " + user._id;
     emailEl.value = user.email;
 
-    knowsEl.value = user.skills?.join(", ") ?? "";
-    interestsEl.value = user.skillsWanted?.join(", ") ?? "";
+    knowsEl.value = user.known?.join(", ") ?? "";
+    interestsEl.value = user.interests?.join(", ") ?? "";
 
     const imageButtons = div.querySelector("#profile-img-buttons");
     const uploadBtn = div.querySelector("#profile-img-upload-btn");
@@ -207,8 +207,8 @@ export default async (args, doc) => {
 
       const data = Object.fromEntries(formData.entries());
 
-      data.skills = data.skills?.split(/,\s+/) || [];
-      data.skillsWanted = data.skillsWanted?.split(/,\s+/) || [];
+      data.known = data.known?.split(/,\s+/) || [];
+      data.interests = data.interests?.split(/,\s+/) || [];
 
       users
         .update(user._id, {
@@ -234,13 +234,13 @@ export default async (args, doc) => {
     messageBtn.classList.remove("is-hidden");
   }
 
-  // initialize skills links
+  // initialize known links
   if (!isEditingUser) {
-    const known = user.skills || [];
-    const interests = user.skillsWanted || [];
+    const known = user.known || [];
+    const interests = user.interests || [];
 
-    const addSkills = (parentEl, searchKey, skills) =>
-      skills.forEach((skill) => {
+    const addSkills = (parentEl, searchKey, known) =>
+      known.forEach((skill) => {
         const link = new HTMLAppRouteElement();
 
         link.route = "browse";

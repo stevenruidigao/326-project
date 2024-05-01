@@ -273,6 +273,10 @@ export const messages = {
 
 // ===== USERS =====
 
+/**
+ * @typedef {import("../../../server/db/users.js").User} User
+ */
+
 const USERS_PAGE_SIZE = 5;
 const userPagination = withPagination(USERS_PAGE_SIZE);
 
@@ -353,19 +357,6 @@ const getUserAvatar = async (user) => {
 };
 
 /**
- * Paginate through all users
- * @param {number} page
- * @returns {Promise<PaginatedArray<User>>}
- */
-const allUsers = (page = 1) =>
-  userPagination(page, (opts) =>
-    mock.users.allDocs({
-      include_docs: true,
-      ...opts,
-    }),
-  );
-
-/**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
  * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
  * since this query does not allow for an index to be used.
@@ -374,47 +365,22 @@ const allUsers = (page = 1) =>
  * @param {string[]} skillsWant
  * @returns
  */
-const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
-  userPagination(page, (opts) =>
-    mock.users.find({
-      selector: {
-        $and: [
-          skillsHad.length && {
-            $or: skillsHad.map((skill) => ({
-              skills: { $elemMatch: { $eq: skill } },
-            })),
-          },
-          skillsWant.length && {
-            $or: skillsWant.map((skill) => ({
-              skillsWanted: { $elemMatch: { $eq: skill } },
-            })),
-          },
-        ].filter(Boolean),
-      },
-      ...opts,
-    }),
-  );
+const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) => {
+  const search = new URLSearchParams({
+    page,
+    known: skillsHad.join(","),
+    interests: skillsWant.join(","),
+  });
+
+  return sendAPIReq("GET", `/api/users?${search}`);
+};
 
 /**
- * NOTICE: 'data' replaces ALL data the user holds aside from `_id`, `_rev`, and
- * `updatedAt`! Pass the final modified document.
  * @param {string} id
- * @param {object} data
- * @returns
+ * @param {object} data Data to update
+ * @returns {User}
  */
-const updateUser = async (id, data) => {
-  const doc = await mock.users.get(id);
-
-  // keep unchanged data in doc
-  // replace changed data
-  // prevent replacing id & rev
-  return mock.users.put({
-    ...data,
-    _id: id,
-    _rev: doc._rev,
-    updatedAt: Date.now(),
-  });
-};
+const updateUser = (id, data) => sendAPIReq("PUT", `/api/users/${id}`, data);
 
 export const users = {
   login: loginUser,
@@ -424,7 +390,6 @@ export const users = {
   get: getUser,
   getByUsername: getUserByUsername,
   getAvatar: getUserAvatar,
-  all: allUsers,
   withSkills: allUsersWithSkills,
   update: updateUser,
 };
