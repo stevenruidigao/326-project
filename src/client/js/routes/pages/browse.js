@@ -80,7 +80,7 @@ async function createUserCard(user) {
   figure.className = "image is-48x48 is-square";
 
   // Basic user info (pic, name, username)
-  console.debug("[browse]", avatar, user);
+  console.debug("[browse]", user);
 
   const profilePicture = document.createElement("img");
   profilePicture.loading = "lazy";
