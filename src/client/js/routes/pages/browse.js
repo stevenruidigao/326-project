@@ -46,7 +46,7 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
     users: users.data,
     getNextPage: async () =>
       await getUsersPaginated(users.pagination.next, skillsHad, skillsWant),
-    hasNextPage: !!users.pagination.next,
+    hasNextPage: Boolean(users.pagination.next),
   };
 }
 
