@@ -159,8 +159,7 @@ export default async (args, doc) => {
 
       imageEl.src = `${user.avatarUrl}?${Date.now()}`;
 
-      await session.setCurrent();
-      await session.current();
+      session.setCurrent(user);
 
       setupNavbar();
 

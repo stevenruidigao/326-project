@@ -147,7 +147,7 @@ router.put(
       const file = files.avatar?.[0];
 
       return (file ? readFile(file.filepath) : Promise.resolve())
-        .then((buffer) => users.updateAvatar(req.user._id, buffer))
+        .then((buffer) => users.updateAvatar(req.user, file?.mimetype, buffer))
         .then((updatedUser) => {
           return res.json(users.serialize(updatedUser, req.user._id));
         })

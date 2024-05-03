@@ -17,14 +17,16 @@ const db = createDB("users");
  * @type {ReturnType<typeof withSerializer<User>>}
  */
 export const serialize = withSerializer((user, loggedInId) => {
+  const avatar = user._attachments?.avatar;
+
   const data = {
     _id: user._id,
     username: user.username,
     name: user.name,
     known: user.known || [],
     interests: user.interests || [],
-    avatarUrl: user._attachments?.avatar
-      ? `/api/users/${user._id}/avatar`
+    avatarUrl: avatar
+      ? `/api/users/${user._id}/avatar?${avatar.digest}`
       : "/images/logo.png",
   };
 
@@ -177,15 +179,17 @@ export const update = async (id, data) => {
 
 /**
  * TODO
- * @param {string} id
+ * @param {User} user
+ * @param {string} [mimetype]
+ * @param {Blob | Buffer} [avatar]
  * @returns {Promise<void>}
  */
-export const updateAvatar = async (id, avatar) => {
-  const user = await db.get(id);
+export const updateAvatar = async (user, mimetype, avatar) => {
+  if (!user) throw new Error("User not found");
 
   if (!avatar) {
     if (user._attachments?.avatar) {
-      const result = await db.removeAttachment(id, "avatar", user._rev);
+      const result = await db.removeAttachment(user._id, "avatar", user._rev);
 
       user._rev = result.rev;
       delete user._attachments.avatar;
@@ -194,15 +198,9 @@ export const updateAvatar = async (id, avatar) => {
     return user;
   }
 
-  const result = await db.putAttachment(
-    id,
-    "avatar",
-    user._rev,
-    avatar,
-    "image/png",
-  );
+  await db.putAttachment(user._id, "avatar", user._rev, avatar, mimetype);
 
-  return { ...user, _rev: result.rev };
+  return db.get(user._id);
 };
 
 export default db;
