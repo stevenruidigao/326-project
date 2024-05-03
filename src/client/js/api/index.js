@@ -345,15 +345,15 @@ const getUserByUsername = (username) =>
  * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
  * since this query does not allow for an index to be used.
  * @param {number} page
- * @param {string[]} skillsHad
- * @param {string[]} skillsWant
+ * @param {string[]} known
+ * @param {string[]} interests
  * @returns
  */
-const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) => {
+const allUsersWithSkills = (page = 1, known = [], interests = []) => {
   const search = new URLSearchParams({
     page,
-    known: skillsHad.join(","),
-    interests: skillsWant.join(","),
+    known: known.join(","),
+    interests: interests.join(","),
   });
 
   return sendAPIReq("GET", `/api/users?${search}`);
