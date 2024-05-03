@@ -85,11 +85,7 @@ export default async (args, doc) => {
 
         linkEl.querySelector(".msg-text").innerText = msg.text;
 
-        const avatar = await api.users.getAvatar(otherUser);
-
-        linkEl.querySelector("img").src = avatar
-          ? URL.createObjectURL(avatar)
-          : "/images/logo.png";
+        linkEl.querySelector("img").src = otherUser.avatarUrl;
 
         return msgPreviewEl;
       }),

@@ -283,12 +283,14 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 // TODO  handle password in backend
 
 const sendAPIReq = async (method, path, body, opts = {}) => {
+  if (body && !(body instanceof FormData)) body = JSON.stringify(body);
+
   const res = await fetch(path, {
     method,
     headers: {
       "Content-Type": "application/json",
     },
-    body: body ? JSON.stringify(body) : null,
+    body: body || null,
     ...opts,
   });
 
@@ -339,24 +341,6 @@ const getUserByUsername = (username) =>
   sendAPIReq("GET", `/api/users/@${username}`);
 
 /**
- * Obtain user's avatar image
- * @param {User} user
- * @returns {Promise<Blob>}
- */
-const getUserAvatar = async (user) => {
-  const avatar = user._attachments?.avatar;
-
-  if (!avatar) return null;
-  else if (avatar.data) return avatar.data;
-
-  const attachment = await mock.users.getAttachment(user._id, "avatar");
-
-  avatar.data = attachment;
-
-  return attachment;
-};
-
-/**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
  * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
  * since this query does not allow for an index to be used.
@@ -382,6 +366,15 @@ const allUsersWithSkills = (page = 1, skillsHad = [], skillsWant = []) => {
  */
 const updateUser = (id, data) => sendAPIReq("PUT", `/api/users/${id}`, data);
 
+const updateUserAvatar = (id, avatar) => {
+  const formData = new FormData();
+  formData.append("avatar", avatar);
+
+  return sendAPIReq("PUT", `/api/users/${id}/avatar`, formData, {
+    headers: {}, // remove 'Content-Type' header
+  });
+};
+
 export const users = {
   login: loginUser,
   register: registerUser,
@@ -389,9 +382,10 @@ export const users = {
 
   get: getUser,
   getByUsername: getUserByUsername,
-  getAvatar: getUserAvatar,
   withSkills: allUsersWithSkills,
+
   update: updateUser,
+  updateAvatar: updateUserAvatar,
 };
 
 // ===== SESSION =====

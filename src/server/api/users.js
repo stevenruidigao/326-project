@@ -1,9 +1,10 @@
 import { Router } from "express";
+import formidable from "formidable";
+import { readFile } from "fs/promises";
 
 import * as users from "../db/users.js";
 import { APIError, requiresAuth } from "./helpers.js";
 import asyncHandler from "express-async-handler";
-import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
@@ -37,6 +38,25 @@ router.get(
 );
 
 router.get(
+  "/users/:id/avatar",
+  asyncHandler(async (req, res, next) => {
+    const id = req.params.id;
+    const user = await findUser(id);
+
+    users
+      .getAvatar(user)
+      .then((avatar) => {
+        if (!avatar) {
+          throw new APIError("Avatar not found", 404);
+        }
+
+        res.type("image/png").send(avatar);
+      })
+      .catch(next);
+  }),
+);
+
+router.get(
   "/users",
   asyncHandler(async (req, res) => {
     let { page, known, interests } = req.query;
@@ -53,16 +73,29 @@ router.get(
   }),
 );
 
+/**
+ * TODO
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const canOnlyEditSameUser = asyncHandler(async (req, res, next) => {
+  const id = req.params.id;
+  const loggedInId = req.user._id;
+  const user = await findUser(id);
+
+  if (!user || user._id !== loggedInId) throw new APIError("Unauthorized", 401);
+
+  next();
+});
+
 router.put(
   "/users/:id",
   requiresAuth,
+  canOnlyEditSameUser,
   asyncHandler(async (req, res, next) => {
-    const id = req.params.id;
-    const loggedInId = req.user._id;
-    const user = await findUser(id);
-
-    if (!user || user._id !== loggedInId)
-      throw new APIError("Unauthorized", 401);
+    const user = req.user;
 
     // TODO perform validation?
 
@@ -91,6 +124,36 @@ router.put(
 
     res.json(users.serialize(updatedUser, loggedInId));
   }),
+);
+
+router.put(
+  "/users/:id/avatar",
+  requiresAuth,
+  canOnlyEditSameUser,
+  (req, res, next) => {
+    const form = formidable({
+      maxFiles: 1,
+    });
+
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        console.error(`PUT ${req.path} error:`, err);
+        throw new APIError("Invalid form data", 400);
+      }
+
+      /**
+       * @type {import("formidable/PersistentFile.js") | undefined}
+       */
+      const file = files.avatar?.[0];
+
+      return (file ? readFile(file.filepath) : Promise.resolve())
+        .then((buffer) => users.updateAvatar(req.user._id, buffer))
+        .then((updatedUser) => {
+          return res.json(users.serialize(updatedUser, req.user._id));
+        })
+        .catch(next);
+    });
+  },
 );
 
 export default router;

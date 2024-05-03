@@ -23,12 +23,8 @@ export const setupNavbar = async () => {
   if (user) {
     userActions.querySelector("span").innerText = user.username;
 
-    const avatar = await users.getAvatar(user);
-
-    if (avatar) {
-      image.src = URL.createObjectURL(avatar);
-      imageContainer.classList.remove("is-hidden");
-    }
+    image.src = user.avatarUrl;
+    imageContainer.classList.remove("is-hidden");
   }
 };
 

@@ -253,12 +253,7 @@ export default async (args, doc) => {
       ).fromNow();
 
       linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
-
-      const avatar = await api.users.getAvatar(otherUser);
-
-      linkEl.querySelector("img").src = avatar
-        ? URL.createObjectURL(avatar)
-        : "/images/logo.png";
+      linkEl.querySelector("img").src = otherUser.avatarUrl;
 
       previews.push(previewEl);
 

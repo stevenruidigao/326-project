@@ -23,6 +23,9 @@ export const serialize = withSerializer((user, loggedInId) => {
     name: user.name,
     known: user.known || [],
     interests: user.interests || [],
+    avatarUrl: user._attachments?.avatar
+      ? `/api/users/${user._id}/avatar`
+      : "/images/logo.png",
   };
 
   // if logged in
@@ -73,6 +76,23 @@ export const getByEmail = async (email) => {
   });
 
   return result.docs[0];
+};
+
+/**
+ * @param {string} id
+ * @returns {Promise<Blob | Buffer>}
+ */
+export const getAvatar = async (user) => {
+  const avatar = user._attachments?.avatar;
+
+  if (!avatar) return null;
+  else if (avatar.data) return avatar.data;
+
+  const attachment = await db.getAttachment(user._id, "avatar");
+
+  avatar.data = attachment;
+
+  return attachment;
 };
 
 /**
@@ -153,6 +173,36 @@ export const update = async (id, data) => {
   });
 
   return { ...data, _id: id, _rev: result.rev };
+};
+
+/**
+ * TODO
+ * @param {string} id
+ * @returns {Promise<void>}
+ */
+export const updateAvatar = async (id, avatar) => {
+  const user = await db.get(id);
+
+  if (!avatar) {
+    if (user._attachments?.avatar) {
+      const result = await db.removeAttachment(id, "avatar", user._rev);
+
+      user._rev = result.rev;
+      delete user._attachments.avatar;
+    }
+
+    return user;
+  }
+
+  const result = await db.putAttachment(
+    id,
+    "avatar",
+    user._rev,
+    avatar,
+    "image/png",
+  );
+
+  return { ...user, _rev: result.rev };
 };
 
 export default db;
