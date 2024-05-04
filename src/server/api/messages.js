@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as messages from "../db/messages.js";
+import * as users from "../db/users.js";
 import { APIError, requiresAuth } from "./helpers.js";
 import asyncHandler from "express-async-handler";
 import { withSerializer } from "../db/index.js";

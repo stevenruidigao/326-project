@@ -8,6 +8,20 @@ const db = createDB("users");
  * TODO
  */
 
+
+/**
+ * Finds a user by their id or their username (if it starts with an @)
+ * 
+ * @param {string} identifier 
+ * @returns {Promise<User?>}
+ */
+export const findUser = (identifier) => {
+  const method = identifier.startsWith("@") ? getByUsername : getById;
+  const id = identifier.replace(/^@/, "");
+
+  return method(id);
+};
+
 // * @param {User | User[] | PaginatedArray<User>} res Data to serialize
 // * @param {string?} userId ID of logged in user
 

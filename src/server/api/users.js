@@ -7,12 +7,7 @@ import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
-const findUser = (identifier) => {
-  const method = identifier.startsWith("@") ? "getByUsername" : "getById";
-  const id = identifier.replace(/^@/, "");
 
-  return users[method](id);
-};
 
 router.get("/me", requiresAuth, (req, res) => {
   res.json(users.serialize(req.user, req.user._id));
@@ -26,7 +21,7 @@ router.get(
   "/users/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
-    const user = await findUser(id);
+    const user = await users.findUser(id);
 
     if (!user) {
       throw new APIError("User not found", 404);
@@ -59,7 +54,7 @@ router.put(
   asyncHandler(async (req, res, next) => {
     const id = req.params.id;
     const loggedInId = req.user._id;
-    const user = await findUser(id);
+    const user = await users.findUser(id);
 
     if (!user || user._id !== loggedInId)
       throw new APIError("Unauthorized", 401);
