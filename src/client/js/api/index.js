@@ -203,8 +203,19 @@ export const appointments = {
 
 // ===== MESSAGES =====
 
+/**
+ * @typedef {import("../../../server/db/messages.js").Message} Message
+ */
+
 const MESSAGES_PAGE_SIZE = 10;
 const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
+
+/**
+ * TODO: fix the return type
+ * @returns
+ */
+const getAllConvosWithSelf = () =>
+  sendAPIReq("GET", `/api/messages`);
 
 /**
  * Get all messages in the database
@@ -265,6 +276,7 @@ const createMessage = (data) => {
 export const messages = {
   // fetch
   all: getAllMessages,
+  allMyConvos: getAllConvosWithSelf, // returns conversations
   allWithUser: getAllMessagesInvolvingUser,
   getWithUser: getMessagesInvolvingUser, // paginated
 

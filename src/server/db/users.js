@@ -8,11 +8,10 @@ const db = createDB("users");
  * TODO
  */
 
-
 /**
  * Finds a user by their id or their username (if it starts with an @)
- * 
- * @param {string} identifier 
+ *
+ * @param {string} identifier
  * @returns {Promise<User?>}
  */
 export const findUser = (identifier) => {

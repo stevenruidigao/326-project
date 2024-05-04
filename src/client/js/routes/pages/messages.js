@@ -168,34 +168,42 @@ export default async (args, doc) => {
     return routes.goToRoute("home");
   }
 
-  const fetchSortedMessages = async () => {
-    const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+  // const fetchSortedMessages = async () => {
+  //   const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
-    // group messages by user
-    const conversations = allUserMessages.reduce((acc, msg) => {
-      const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-      if (!acc[otherUserId]) {
-        acc[otherUserId] = [];
-      }
-      acc[otherUserId].push(msg);
-      return acc;
-    }, {});
+  //   // group messages by user
+  //   const conversations = allUserMessages.reduce((acc, msg) => {
+  //     const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+  //     if (!acc[otherUserId]) {
+  //       acc[otherUserId] = [];
+  //     }
+  //     acc[otherUserId].push(msg);
+  //     return acc;
+  //   }, {});
 
-    // in-place sort conversations by most recent message
-    for (const convoKey in conversations) {
-      conversations[convoKey].sort((a, b) => b.time - a.time);
-    }
+  //   // in-place sort conversations by most recent message
+  //   for (const convoKey in conversations) {
+  //     conversations[convoKey].sort((a, b) => b.time - a.time);
+  //   }
 
-    console.log("[messages] fetched conversations", conversations);
+  //   console.log("[messages] fetched conversations", conversations);
 
-    return conversations;
-  };
+  //   return conversations;
+  // };
 
-  let conversations = await fetchSortedMessages();
+  // let conversations = await fetchSortedMessages();
+
+  let conversations = await api.messages.allMyConvos();
+  console.log("[messages] fetched conversations", conversations);
+
+  // const reFetchMessages = async () => {
+  //   console.debug("[messages] refetching messages");
+  //   conversations = await fetchSortedMessages();
+  // };
 
   const reFetchMessages = async () => {
     console.debug("[messages] refetching messages");
-    conversations = await fetchSortedMessages();
+    conversations = await api.messages.allMyConvos()
   };
 
   // render the sidebar with all the user's conversations + msg previews

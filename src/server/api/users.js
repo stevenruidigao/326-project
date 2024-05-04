@@ -7,8 +7,6 @@ import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
-
-
 router.get("/me", requiresAuth, (req, res) => {
   res.json(users.serialize(req.user, req.user._id));
 });
