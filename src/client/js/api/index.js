@@ -180,6 +180,7 @@ const updateAppointment = async (id, data) => {
  * @throws {Error} if appointment does not exist
  */
 const deleteAppointment = async (id) => {
+  // TODO: use a DELETE request here
   const doc = await mock.appointments.get(id);
 
   return mock.appointments.remove(doc);
@@ -298,7 +299,7 @@ const sendAPIReq = async (method, path, body, opts = {}) => {
     throw new Error(message);
   }
 
-  return await res.json();
+  return res.json();
 };
 
 /**

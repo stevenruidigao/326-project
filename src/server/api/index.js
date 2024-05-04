@@ -2,12 +2,14 @@ import express from "express";
 import * as users from "../db/users.js";
 
 import userRouter from "./users.js";
+import messageRouter from "./messages.js";
 
 const router = express.Router();
 
 // API routes
 
 router.use(userRouter);
+router.use(messageRouter);
 
 // API  404 handler
 router.use((req, res) => res.status(404).json({ message: "Not Found" }));

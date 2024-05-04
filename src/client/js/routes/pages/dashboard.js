@@ -21,6 +21,7 @@ export default async (args, doc) => {
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.current();
 
+  // FIXME: redirect to login page instead of home
   if (!user) {
     console.log(`[dashboard] user not logged in! returning to home`);
     return routes.goToRoute("home");

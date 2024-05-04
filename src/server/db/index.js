@@ -71,7 +71,7 @@ export const withPagination = (pageSize) => async (page, cb) => {
  *
  * @template T
  * @param {(doc: T) => object} serializer
- * @returns {(res: T | T[] | PaginatedArray, userId?: string) => object | object[] | PaginatedArray
+ * @returns {(res: T | T[] | PaginatedArray, userId?: string) => object | object[] | PaginatedArray}
  */
 export const withSerializer = (serializer) => (res, userId) => {
   const serialize = (doc) => serializer(doc, userId);
