@@ -159,15 +159,12 @@ export default async (args, doc) => {
     app.innerHTML = "";
   }
 
-  console.log("** messages loaded with args", args);
-
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.getUser();
 
-  // FIXME: redirect to login page instead of home
   if (!user) {
-    console.log("[messages] user not logged in! returning to home");
-    return routes.goToRoute("home");
+    console.debug("[messages] user not logged in! returning to home");
+    return routes.goToRoute("login");
   }
 
   // const fetchSortedMessages = async () => {
@@ -196,7 +193,7 @@ export default async (args, doc) => {
   // let conversations = await fetchSortedMessages();
 
   let conversations = await api.messages.allMyConvos();
-  console.log("[messages] fetched conversations", conversations);
+  console.debug("[messages] fetched conversations", conversations);
 
   // const reFetchMessages = async () => {
   //   console.debug("[messages] refetching messages");
@@ -332,10 +329,7 @@ export default async (args, doc) => {
       );
 
       const parsedApptData = {
-        teacherId:
-          apptData.role === "teaching" ? user._id : conversationOtherUser._id,
-        learnerId:
-          apptData.role === "learning" ? user._id : conversationOtherUser._id,
+        role: apptData.role,
         type: apptData.type,
         url: apptData.url,
         topic: apptData.topic,
@@ -363,7 +357,10 @@ export default async (args, doc) => {
 
         console.log("[messages] creating appointment", parsedApptData);
 
-        await api.appointments.create(parsedApptData);
+        await api.appointments.create(
+          conversationOtherUser._id,
+          parsedApptData,
+        );
 
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();

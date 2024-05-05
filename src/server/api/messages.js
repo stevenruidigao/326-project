@@ -29,7 +29,7 @@ router.get(
     );
 
     const conversations = allMessages.reduce((acc, msg) => {
-      const otherUserId = msg.fromId === curId._id ? msg.toId : msg.fromId;
+      const otherUserId = msg.fromId === curId ? msg.toId : msg.fromId;
       if (!acc[otherUserId]) {
         acc[otherUserId] = [];
       }

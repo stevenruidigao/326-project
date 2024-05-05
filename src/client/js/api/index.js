@@ -124,11 +124,12 @@ const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 
 /**
  * Create a new appointment
+ * @param {string} targetUserId
  * @param {Appointment} data
  * @returns {Promise<PouchDBResponse>}
  */
-const createAppointment = (data) =>
-  sendAPIReq("POST", "/api/appointments/create", data);
+const createAppointment = (targetUserId, data) =>
+  sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data);
 
 /**
  * Update an appointment's data

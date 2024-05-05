@@ -13,7 +13,7 @@ import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
  * If there are no appointments, hide the appointments section.
  * @param {DocumentFragment} doc
  * @param {HTMLElement} profileEl
- * @param {User} user
+ * @param {import("../../../../server/db/users.js").User} user
  */
 export const loadAppointments = async (doc, profileEl, user) => {
   const apptsParentEl = profileEl.querySelector("#profile-appointments");
@@ -22,7 +22,7 @@ export const loadAppointments = async (doc, profileEl, user) => {
   apptsParentEl.classList.remove("is-hidden");
 
   const appts = await appointments.withUser(user._id);
-  const userAppointments = appts.apppointments.slice(0, 3);
+  const userAppointments = appts.appointments.slice(0, 3);
 
   // const userAppointments = (await appointments.withUser(user._id)).slice(
   //   0,

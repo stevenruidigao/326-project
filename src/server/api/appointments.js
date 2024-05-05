@@ -19,8 +19,8 @@ router.get(
   "/appointments/:id",
   requiresAuth,
   asyncHandler(async (req, res) => {
-    const appointment = await appointments.getAppointment(req.params.id);
-    res.json(appointment);
+    const docs = await appointments.getAppointment(req.params.id);
+    res.json(docs);
   }),
 );
 
@@ -32,8 +32,8 @@ router.get(
   requiresAuth,
   asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const appointments = await appointments.getAllAppointmentsForUser(userId);
-    res.json(appointments.sort(futureToPast));
+    const docs = await appointments.getAllAppointmentsForUser(userId);
+    res.json(docs.sort(futureToPast));
   }),
 );
 
@@ -46,22 +46,24 @@ router.get(
   // requiresAuth,
   asyncHandler(async (req, res) => {
     const userId = req.params.id;
-    const appointments = await appointments.getAllAppointmentsForUser(userId);
-    appointments.sort(futureToPast);
+    const docs = await appointments.getAllAppointmentsForUser(userId);
+    docs.sort(futureToPast);
 
     const userIds = new Set(
-      appts
+      docs
         .map((appt) => appt.teacherId)
-        .concat(appts.map((appt) => appt.learnerId)),
+        .concat(docs.map((appt) => appt.learnerId)),
     );
     const userArray = await Promise.all(
       [...userIds].map((id) => users.get(id)),
     );
 
-    const idToUserMap = Object.fromEntries(userArray.map((u) => [u._id, u]));
+    const idToUserMap = Object.fromEntries(
+      userArray.map((u) => [u._id, serialize(u)]),
+    );
 
     res.json({
-      appointments: appointments,
+      appointments: docs,
       idToUserMap: idToUserMap,
     });
   }),
@@ -70,20 +72,24 @@ router.get(
 // ===== CREATE / UPDATE / DELETE =====
 
 router.post(
-  "/appointments/create",
+  "/users/:id/appointments",
   requiresAuth,
   asyncHandler(async (req, res) => {
-    const apptData = req.body;
-    const userId = req.user._id;
+    const otherUser = await users.findUser(req.params.id);
+
+    if (!otherUser) {
+      throw new APIError("User not found", 404);
+    } else if (otherUser._id === req.user._id) {
+      throw new APIError("Cannot create appointment with yourself", 400);
+    }
+
+    const { role, ...apptData } = req.body;
+    apptData.teacherId = role === "teaching" ? req.user._id : otherUser._id;
+    apptData.learnerId = role === "learning" ? req.user._id : otherUser._id;
 
     // TODO also filter out bad fields from the request body
 
-    // check if the user is a part of the event
-    if (!(apptData.fromId === userId || apptData.toId === userId)) {
-      throw new APIError(403, "You can't create someone else's appointment");
-    }
-
-    const appointment = await appointments.createAppointment(apptData, userId);
+    const appointment = await appointments.createAppointment(apptData);
     res.json(appointment);
   }),
 );
@@ -92,14 +98,29 @@ router.put(
   "/appointments/:id",
   requiresAuth,
   asyncHandler(async (req, res) => {
-    const apptId = req.params.id;
-    const apptData = req.body;
+    const appt = await appointments.getAppointment(req.params.id);
+
+    const { role, ...apptData } = req.body;
     const userId = req.user._id;
+
+    if (!["teaching", "learning"].includes(role)) {
+      throw new APIError("Invalid role in appointment", 400);
+    }
+
+    const oldRole = appt.learnerId === userId ? "learning" : "teaching";
+
+    // swap role only if needed
+    [apptData.learnerId, apptData.teacherId] =
+      role === oldRole
+        ? [appt.learnerId, appt.teacherId]
+        : [appt.teacherId, appt.learnerId];
+
+    delete apptData.role;
 
     // TODO also filter out bad fields from the request body
 
     const appointment = await appointments.updateAppointment(
-      apptId,
+      appt._id,
       apptData,
       userId,
     );
