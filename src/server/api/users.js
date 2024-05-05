@@ -34,7 +34,7 @@ router.get(
   "/users/:id/avatar",
   asyncHandler(async (req, res, next) => {
     const id = req.params.id;
-    const user = await findUser(id);
+    const user = await users.findUser(id);
 
     users
       .getAvatar(user)
@@ -76,7 +76,7 @@ router.get(
 const canOnlyEditSameUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
   const loggedInId = req.user._id;
-  const user = await findUser(id);
+  const user = await users.findUser(id);
 
   if (!user || user._id !== loggedInId) throw new APIError("Unauthorized", 401);
 
