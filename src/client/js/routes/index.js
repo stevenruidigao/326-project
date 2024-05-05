@@ -1,4 +1,3 @@
-import mock from "../api/mock/index.js";
 import * as layout from "../layout.js";
 
 import { app } from "./helper.js";

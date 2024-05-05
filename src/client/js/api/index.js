@@ -1,6 +1,3 @@
-import * as local from "./local.js";
-import * as mock from "./mock/index.js";
-
 /**
  * @typedef {T[] & { pagination?: { prev?: number, next?: number, total?: number }}} PaginatedArray<T>
  * @template {any} T
@@ -77,51 +74,6 @@ const withUserAppointments = (userId) =>
  */
 const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 
-// /**
-//  * Obtain all appointments with a specific user as teacher.
-//  * NOTE: Paginated, not sorted!
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Appointment>>}
-//  */
-// const withTeacherAppointments = (userId, page = 1) =>
-//   appointmentsPagination(page, (opts) =>
-//     mock.appointments.find({
-//       selector: { teacherId: userId },
-//       ...opts,
-//     }),
-//   );
-
-// /**
-//  * Obtain all appointments with a specific user as learner.
-//  * NOTE: Paginated, not sorted!
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Appointment>>}
-//  */
-// const withLearnerAppointments = (userId, page = 1) =>
-//   appointmentsPagination(page, (opts) =>
-//     mock.appointments.find({
-//       selector: { learnerId: userId },
-//       ...opts,
-//     }),
-//   );
-
-// // FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
-// /**
-//  * Returns an id-to-user map of all users involved in the appointments.
-//  * Scuffed way to obtain relationship values...
-//  * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
-//  *     properties for each item
-//  * @returns {Promise<Object.<string, User>>}
-//  */
-// const getAppointmentUsersInvolved = async (appts) => {
-// };
-
-// modify
-// -> default attrs probably? but those would happen in backend anyways
-// (validation & stuff)
-
 /**
  * Create a new appointment
  * @param {string} targetUserId
@@ -155,7 +107,6 @@ export const appointments = {
   get: getAppointment,
   withUser: withUserAppointments,
   myAppointmentsWithUser: myAppointmentsWithUser,
-  // getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
   create: createAppointment,
@@ -169,54 +120,12 @@ export const appointments = {
  * @typedef {import("../../../server/db/messages.js").Message} Message
  */
 
-// const MESSAGES_PAGE_SIZE = 10;
-// const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
 /**
  * TODO: fix the return type
- * @returns
+ * @returns {Promise<Record<string, Message[]>>} maps user IDs to their conversation with the current user
  */
 const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
-
-// /**
-//  * Get all messages in the database
-//  * @returns {Promise<PaginatedArray<Message>>}
-//  */
-// const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
-
-// /**
-//  * Get all messages involving a specific user
-//  * @param {string} userId
-//  * @returns {Promise<{ docs: Message[] }>}
-//  */
-// const getAllMessagesInvolvingUser = (userId) =>
-//   mock.messages.find({
-//     selector: {
-//       $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-//     },
-//     // sort: ["time"],
-//   });
-
-// /**
-//  * Get messages involving a specific user, paginated.
-//  * FIXME: pagination does not correctly give newest messages first
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Message>>}
-//  */
-// const getMessagesInvolvingUser = (userId, page = 1) => {
-//   console.warn("pagination does not correctly give newest messages first");
-//   messagesPagination(page, (opts) =>
-//     mock.messages.find({
-//       selector: {
-//         $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-//       },
-//       // use_index: ['time', 'fromId', 'toId'],
-//       // sort: ['time'],
-//       ...opts,
-//     }),
-//   );
-// };
 
 /**
  * TODO: should `createMessage` return anything? just the status of the operation?
@@ -230,37 +139,10 @@ const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
 const sendMessage = (toId, msg) =>
   sendAPIReq("POST", `/api/users/${toId}/message`, { msg });
 
-// /**
-//  * TODO: should `createMessage` return anything? just the status of the operation?
-//  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
-//  *
-//  * Create new message.
-//  * NOTE: Should not include & not return ID!
-//  * @param {Message} data
-//  * @returns {Promise<Message>}
-//  */
-// const createMessage = () =>
-// sendAPIReq("POST", `/api/messages`);
-
-// const createMessage = (data) => {
-//   const newMsg = {
-//     ...data,
-//     time: Date.now(),
-//   };
-//   mock.messages.post(newMsg);
-//   return newMsg;
-// };
-
 // TODO: should I add functions to get all messages?
 export const messages = {
-  // fetch
-  // all: getAllMessages,
   allMyConvos: getAllConvosWithSelf, // returns conversations
-  // allWithUser: getAllMessagesInvolvingUser,
-  // getWithUser: getMessagesInvolvingUser, // paginated
 
-  // modify
-  // create: createMessage,
   send: sendMessage,
 };
 
