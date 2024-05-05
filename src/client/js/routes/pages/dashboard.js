@@ -155,9 +155,11 @@ export default async (args, doc) => {
 
   // get all future appointments
   const curTime = Date.now();
-  const futureAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
-    return curTime < appt.time;
-  });
+  const futureAppts = (await api.appointments.allMyAppointments()).filter(
+    (appt) => {
+      return curTime < appt.time;
+    },
+  );
 
   // sort appointments by time in place
   // futureAppts.sort((a, b) => a.time - b.time);

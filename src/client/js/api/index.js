@@ -60,13 +60,15 @@ const allAppointments = () => sendAPIReq("GET", "/api/appointments");
 /**
  * uses `allAppointments` but filters for a specific other user
  */
-const myAppointmentsWithUser = (userId) => allAppointments().then((appts) =>
-  appts.filter((appt) => appt.teacherId === userId || appt.learnerId === userId),
-);
+const myAppointmentsWithUser = (userId) =>
+  allAppointments().then((appts) =>
+    appts.filter(
+      (appt) => appt.teacherId === userId || appt.learnerId === userId,
+    ),
+  );
 
-
-const withUserAppointments = (userId) => sendAPIReq("GET", `/api/users/${userId}/appointments`);
-
+const withUserAppointments = (userId) =>
+  sendAPIReq("GET", `/api/users/${userId}/appointments`);
 
 /**
  * Obtain a specific appointment by ID
@@ -74,7 +76,6 @@ const withUserAppointments = (userId) => sendAPIReq("GET", `/api/users/${userId}
  * @returns {Promise<Appointment>}
  */
 const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
-
 
 // /**
 //  * Obtain all appointments with a specific user as teacher.
@@ -135,7 +136,7 @@ const createAppointment = (data) =>
  * @param {Appointment} data
  * @returns {Promise<PouchDBResponse>}
  */
-const updateAppointment = async (id, data) => 
+const updateAppointment = async (id, data) =>
   sendAPIReq("PUT", `/api/appointments/${id}`, data);
 
 /**
@@ -146,7 +147,6 @@ const updateAppointment = async (id, data) =>
  */
 const deleteAppointment = async (id) =>
   sendAPIReq("DELETE", `/api/appointments/${id}`);
-
 
 export const appointments = {
   // fetch
@@ -162,7 +162,6 @@ export const appointments = {
   delete: deleteAppointment,
 };
 
-
 // ===== MESSAGES =====
 
 /**
@@ -176,8 +175,7 @@ export const appointments = {
  * TODO: fix the return type
  * @returns
  */
-const getAllConvosWithSelf = () =>
-  sendAPIReq("GET", `/api/messages`);
+const getAllConvosWithSelf = () => sendAPIReq("GET", `/api/messages`);
 
 // /**
 //  * Get all messages in the database
@@ -222,7 +220,7 @@ const getAllConvosWithSelf = () =>
 /**
  * TODO: should `createMessage` return anything? just the status of the operation?
  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
- * 
+ *
  * Create new message.
  * NOTE: Should not include & not return ID!
  * @param {Message} data
@@ -234,7 +232,7 @@ const sendMessage = (toId, msg) =>
 // /**
 //  * TODO: should `createMessage` return anything? just the status of the operation?
 //  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
-//  * 
+//  *
 //  * Create new message.
 //  * NOTE: Should not include & not return ID!
 //  * @param {Message} data

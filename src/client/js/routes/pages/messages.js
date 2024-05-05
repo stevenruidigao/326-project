@@ -205,7 +205,7 @@ export default async (args, doc) => {
 
   const reFetchMessages = async () => {
     console.debug("[messages] refetching messages");
-    conversations = await api.messages.allMyConvos()
+    conversations = await api.messages.allMyConvos();
   };
 
   // render the sidebar with all the user's conversations + msg previews
@@ -458,7 +458,9 @@ export default async (args, doc) => {
     // };
 
     // get all appointments between user and other user
-    const relevantAppts = await api.appointments.myAppointmentsWithUser(otherUser._id);
+    const relevantAppts = await api.appointments.myAppointmentsWithUser(
+      otherUser._id,
+    );
     // const relevantAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
     //   return (
     //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||

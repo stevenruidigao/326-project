@@ -12,7 +12,6 @@ const router = Router();
 
 const futureToPast = (a, b) => a.time - b.time;
 
-
 /**
  * Gets a specific appointment by ID
  */
@@ -48,17 +47,18 @@ router.get(
   asyncHandler(async (req, res) => {
     const userId = req.params.id;
     const appointments = await appointments.getAllAppointmentsForUser(userId);
-    appointments.sort(futureToPast)
-    
+    appointments.sort(futureToPast);
+
     const userIds = new Set(
       appts
         .map((appt) => appt.teacherId)
         .concat(appts.map((appt) => appt.learnerId)),
     );
-    const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
+    const userArray = await Promise.all(
+      [...userIds].map((id) => users.get(id)),
+    );
 
     const idToUserMap = Object.fromEntries(userArray.map((u) => [u._id, u]));
-
 
     res.json({
       appointments: appointments,
@@ -66,8 +66,6 @@ router.get(
     });
   }),
 );
-
-
 
 // ===== CREATE / UPDATE / DELETE =====
 
@@ -80,12 +78,10 @@ router.post(
 
     // TODO also filter out bad fields from the request body
 
-
     // check if the user is a part of the event
     if (!(apptData.fromId === userId || apptData.toId === userId)) {
       throw new APIError(403, "You can't create someone else's appointment");
     }
-
 
     const appointment = await appointments.createAppointment(apptData, userId);
     res.json(appointment);
@@ -102,7 +98,11 @@ router.put(
 
     // TODO also filter out bad fields from the request body
 
-    const appointment = await appointments.updateAppointment(apptId, apptData, userId);
+    const appointment = await appointments.updateAppointment(
+      apptId,
+      apptData,
+      userId,
+    );
     res.json(appointment);
   }),
 );
@@ -114,10 +114,12 @@ router.delete(
   "/appointments/:id",
   requiresAuth,
   asyncHandler(async (req, res) => {
-    const appointment = await appointments.deleteAppointment(req.params.id, req.user._id);
+    const appointment = await appointments.deleteAppointment(
+      req.params.id,
+      req.user._id,
+    );
     res.json(appointment);
   }),
 );
-
 
 export default router;

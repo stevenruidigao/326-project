@@ -12,7 +12,6 @@ const router = Router();
  * @typedef {import("../db/messages.js").Message} Message
  */
 
-
 // const MESSAGES_PAGE_SIZE = 10;
 // const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
@@ -75,7 +74,7 @@ router.post(
       toId: toUser._id,
       text,
       time: Date.now(),
-    }
+    };
 
     // don't return the created message in case it has sensitive info
     await messages.createMessage(newMsg);
