@@ -4,6 +4,7 @@ import { hash, verify } from "argon2";
 
 import session from "express-session";
 import asyncHandler from "express-async-handler";
+import FileStore from "session-file-store";
 // import PouchDBStore from "session-pouchdb-store";
 
 import * as users from "./db/users.js";
@@ -54,6 +55,7 @@ export const configure = (app) => {
       saveUninitialized: false,
       //   FIXME PACKAGE ERRORS. LIKELY BROKEN
       //   store: new PouchDBStore(sessions),
+      store: new (FileStore(session)),
       cookie: {
         secure: app.get("env") === "production",
         sameSite: "strict",

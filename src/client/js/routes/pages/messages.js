@@ -22,6 +22,7 @@ export const onunload = async (prev, next) => {
 
 /**
  * Sends a message from one user to another.
+ * FIXME: move to API + consider making another method that handles "creating messages" separately so that we can use "create message" to render new things but only "send message" sends an API request to make a new message
  *
  * @param {Message} msg - The message to send.
  * @param {string} fromId - The ID of the user sending the message.
@@ -29,11 +30,12 @@ export const onunload = async (prev, next) => {
  * @returns {Promise<Message>}
  */
 const sendMessage = async (msg, fromId, toId) => {
-  return api.messages.create({
-    text: msg,
-    fromId,
-    toId,
-  });
+  return api.messages.send(toId, msg);
+  // return api.messages.create({
+  //   text: msg,
+  //   fromId,
+  //   toId,
+  // });
 };
 
 /**
@@ -157,44 +159,50 @@ export default async (args, doc) => {
     app.innerHTML = "";
   }
 
-  console.log("** messages loaded with args", args);
-
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.getUser();
 
   if (!user) {
-    console.log("[messages] user not logged in! returning to home");
-    return routes.goToRoute("home");
+    console.debug("[messages] user not logged in! returning to home");
+    return routes.goToRoute("login");
   }
 
-  const fetchSortedMessages = async () => {
-    const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+  // const fetchSortedMessages = async () => {
+  //   const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
-    // group messages by user
-    const conversations = allUserMessages.reduce((acc, msg) => {
-      const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-      if (!acc[otherUserId]) {
-        acc[otherUserId] = [];
-      }
-      acc[otherUserId].push(msg);
-      return acc;
-    }, {});
+  //   // group messages by user
+  //   const conversations = allUserMessages.reduce((acc, msg) => {
+  //     const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+  //     if (!acc[otherUserId]) {
+  //       acc[otherUserId] = [];
+  //     }
+  //     acc[otherUserId].push(msg);
+  //     return acc;
+  //   }, {});
 
-    // in-place sort conversations by most recent message
-    for (const convoKey in conversations) {
-      conversations[convoKey].sort((a, b) => b.time - a.time);
-    }
+  //   // in-place sort conversations by most recent message
+  //   for (const convoKey in conversations) {
+  //     conversations[convoKey].sort((a, b) => b.time - a.time);
+  //   }
 
-    console.log("[messages] fetched conversations", conversations);
+  //   console.log("[messages] fetched conversations", conversations);
 
-    return conversations;
-  };
+  //   return conversations;
+  // };
 
-  let conversations = await fetchSortedMessages();
+  // let conversations = await fetchSortedMessages();
+
+  let conversations = await api.messages.allMyConvos();
+  console.debug("[messages] fetched conversations", conversations);
+
+  // const reFetchMessages = async () => {
+  //   console.debug("[messages] refetching messages");
+  //   conversations = await fetchSortedMessages();
+  // };
 
   const reFetchMessages = async () => {
     console.debug("[messages] refetching messages");
-    conversations = await fetchSortedMessages();
+    conversations = await api.messages.allMyConvos();
   };
 
   // render the sidebar with all the user's conversations + msg previews
@@ -316,10 +324,7 @@ export default async (args, doc) => {
       );
 
       const parsedApptData = {
-        teacherId:
-          apptData.role === "teaching" ? user._id : conversationOtherUser._id,
-        learnerId:
-          apptData.role === "learning" ? user._id : conversationOtherUser._id,
+        role: apptData.role,
         type: apptData.type,
         url: apptData.url,
         topic: apptData.topic,
@@ -347,7 +352,10 @@ export default async (args, doc) => {
 
         console.log("[messages] creating appointment", parsedApptData);
 
-        await api.appointments.create(parsedApptData);
+        await api.appointments.create(
+          conversationOtherUser._id,
+          parsedApptData,
+        );
 
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
@@ -439,26 +447,29 @@ export default async (args, doc) => {
     convoWrapperEl.appendChild(convoEl);
 
     // unpaginated get all appointments by calling until no more next
-    const getAllAppts = async () => {
-      const allAppts = [];
-      for (let curPage = 1; ; curPage++) {
-        const response = await api.appointments.all(curPage);
-        allAppts.push(...Array.from(response));
-        if (!response.pagination.next) break;
-      }
-      return allAppts;
-    };
+    // const getAllAppts = async () => {
+    //   const allAppts = [];
+    //   for (let curPage = 1; ; curPage++) {
+    //     const response = await api.appointments.all(curPage);
+    //     allAppts.push(...Array.from(response));
+    //     if (!response.pagination.next) break;
+    //   }
+    //   return allAppts;
+    // };
 
     // get all appointments between user and other user
-    const relevantAppts = (await getAllAppts()).filter((appt) => {
-      return (
-        (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
-        (appt.teacherId === otherUser._id && appt.learnerId === user._id)
-      );
-    });
+    const relevantAppts = await api.appointments.myAppointmentsWithUser(
+      otherUser._id,
+    );
+    // const relevantAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
+    //   return (
+    //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
+    //     (appt.teacherId === otherUser._id && appt.learnerId === user._id)
+    //   );
+    // });
 
     // sort appointments by time in place
-    relevantAppts.sort((a, b) => b.time - a.time);
+    // relevantAppts.sort((a, b) => b.time - a.time);
 
     console.log("[messages] relevant appts", relevantAppts);
 

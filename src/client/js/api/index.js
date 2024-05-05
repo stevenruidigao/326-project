@@ -50,91 +50,73 @@ const withPagination = (pageSize) => async (page, cb) => {
 
 // ===== APPOINTMENTS =====
 
-const APPOINTMENTS_PAGE_SIZE = 8;
-const appointmentsPagination = withPagination(APPOINTMENTS_PAGE_SIZE);
-
 /**
  *
  * @param {number} page
  * @returns {Promise<PaginatedArray<Appointment>>}
  */
-const allAppointments = (page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.allDocs({
-      include_docs: true,
-      ...opts,
-    }),
+const allAppointments = () => sendAPIReq("GET", "/api/appointments");
+
+/**
+ * uses `allAppointments` but filters for a specific other user
+ */
+const myAppointmentsWithUser = (userId) =>
+  allAppointments().then((appts) =>
+    appts.filter(
+      (appt) => appt.teacherId === userId || appt.learnerId === userId,
+    ),
   );
+
+const withUserAppointments = (userId) =>
+  sendAPIReq("GET", `/api/users/${userId}/appointments`);
 
 /**
  * Obtain a specific appointment by ID
  * @param {string} id
  * @returns {Promise<Appointment>}
  */
-const getAppointment = (id) => mock.appointments.get(id);
+const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 
-/**
- * Obtain all appointments involving a specific user.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withUserAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { $or: [{ teacherId: userId }, { learnerId: userId }] },
-      ...opts,
-    }),
-  );
+// /**
+//  * Obtain all appointments with a specific user as teacher.
+//  * NOTE: Paginated, not sorted!
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Appointment>>}
+//  */
+// const withTeacherAppointments = (userId, page = 1) =>
+//   appointmentsPagination(page, (opts) =>
+//     mock.appointments.find({
+//       selector: { teacherId: userId },
+//       ...opts,
+//     }),
+//   );
 
-/**
- * Obtain all appointments with a specific user as teacher.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withTeacherAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { teacherId: userId },
-      ...opts,
-    }),
-  );
+// /**
+//  * Obtain all appointments with a specific user as learner.
+//  * NOTE: Paginated, not sorted!
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Appointment>>}
+//  */
+// const withLearnerAppointments = (userId, page = 1) =>
+//   appointmentsPagination(page, (opts) =>
+//     mock.appointments.find({
+//       selector: { learnerId: userId },
+//       ...opts,
+//     }),
+//   );
 
-/**
- * Obtain all appointments with a specific user as learner.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withLearnerAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { learnerId: userId },
-      ...opts,
-    }),
-  );
-
-/**
- * Returns an id-to-user map of all users involved in the appointments.
- * Scuffed way to obtain relationship values...
- * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
- *     properties for each item
- * @returns {Promise<Object.<string, User>>}
- */
-const getAppointmentUsersInvolved = async (appts) => {
-  const userIds = new Set(
-    appts
-      .map((appt) => appt.teacherId)
-      .concat(appts.map((appt) => appt.learnerId)),
-  );
-  const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
-
-  return Object.fromEntries(userArray.map((u) => [u._id, u]));
-};
+// // FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
+// /**
+//  * Returns an id-to-user map of all users involved in the appointments.
+//  * Scuffed way to obtain relationship values...
+//  * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
+//  *     properties for each item
+//  * @returns {Promise<Object.<string, User>>}
+//  */
+// const getAppointmentUsersInvolved = async (appts) => {
+// };
 
 // modify
 // -> default attrs probably? but those would happen in backend anyways
@@ -142,15 +124,12 @@ const getAppointmentUsersInvolved = async (appts) => {
 
 /**
  * Create a new appointment
+ * @param {string} targetUserId
  * @param {Appointment} data
  * @returns {Promise<PouchDBResponse>}
  */
-const createAppointment = (data) =>
-  mock.appointments.post({
-    ...data,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+const createAppointment = (targetUserId, data) =>
+  sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data);
 
 /**
  * Update an appointment's data
@@ -158,20 +137,8 @@ const createAppointment = (data) =>
  * @param {Appointment} data
  * @returns {Promise<PouchDBResponse>}
  */
-const updateAppointment = async (id, data) => {
-  const doc = await mock.appointments.get(id);
-
-  // keep unchanged data in doc
-  // replace changed data
-  // prevent replacing id & rev
-  return mock.appointments.put({
-    ...doc,
-    ...data,
-    _id: id,
-    _rev: doc._rev,
-    updatedAt: Date.now(),
-  });
-};
+const updateAppointment = async (id, data) =>
+  sendAPIReq("PUT", `/api/appointments/${id}`, data);
 
 /**
  * Delete an appointment
@@ -179,20 +146,16 @@ const updateAppointment = async (id, data) => {
  * @returns {Promise<PouchDBResponse>}
  * @throws {Error} if appointment does not exist
  */
-const deleteAppointment = async (id) => {
-  const doc = await mock.appointments.get(id);
-
-  return mock.appointments.remove(doc);
-};
+const deleteAppointment = async (id) =>
+  sendAPIReq("DELETE", `/api/appointments/${id}`);
 
 export const appointments = {
   // fetch
-  all: allAppointments,
+  allMyAppointments: allAppointments,
   get: getAppointment,
   withUser: withUserAppointments,
-  withTeacher: withTeacherAppointments,
-  withLearner: withLearnerAppointments,
-  getUsersInvolved: getAppointmentUsersInvolved,
+  myAppointmentsWithUser: myAppointmentsWithUser,
+  // getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
   create: createAppointment,
@@ -202,73 +165,103 @@ export const appointments = {
 
 // ===== MESSAGES =====
 
-const MESSAGES_PAGE_SIZE = 10;
-const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
-
 /**
- * Get all messages in the database
- * @returns {Promise<PaginatedArray<Message>>}
+ * @typedef {import("../../../server/db/messages.js").Message} Message
  */
-const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+
+// const MESSAGES_PAGE_SIZE = 10;
+// const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
 /**
- * Get all messages involving a specific user
- * @param {string} userId
- * @returns {Promise<{ docs: Message[] }>}
+ * TODO: fix the return type
+ * @returns
  */
-const getAllMessagesInvolvingUser = (userId) =>
-  mock.messages.find({
-    selector: {
-      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-    },
-    // sort: ["time"],
-  });
+const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
+
+// /**
+//  * Get all messages in the database
+//  * @returns {Promise<PaginatedArray<Message>>}
+//  */
+// const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+
+// /**
+//  * Get all messages involving a specific user
+//  * @param {string} userId
+//  * @returns {Promise<{ docs: Message[] }>}
+//  */
+// const getAllMessagesInvolvingUser = (userId) =>
+//   mock.messages.find({
+//     selector: {
+//       $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+//     },
+//     // sort: ["time"],
+//   });
+
+// /**
+//  * Get messages involving a specific user, paginated.
+//  * FIXME: pagination does not correctly give newest messages first
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Message>>}
+//  */
+// const getMessagesInvolvingUser = (userId, page = 1) => {
+//   console.warn("pagination does not correctly give newest messages first");
+//   messagesPagination(page, (opts) =>
+//     mock.messages.find({
+//       selector: {
+//         $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+//       },
+//       // use_index: ['time', 'fromId', 'toId'],
+//       // sort: ['time'],
+//       ...opts,
+//     }),
+//   );
+// };
 
 /**
- * Get messages involving a specific user, paginated.
- * FIXME: pagination does not correctly give newest messages first
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Message>>}
- */
-const getMessagesInvolvingUser = (userId, page = 1) => {
-  console.warn("pagination does not correctly give newest messages first");
-  messagesPagination(page, (opts) =>
-    mock.messages.find({
-      selector: {
-        $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-      },
-      // use_index: ['time', 'fromId', 'toId'],
-      // sort: ['time'],
-      ...opts,
-    }),
-  );
-};
-
-/**
+ * TODO: should `createMessage` return anything? just the status of the operation?
+ * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+ *
  * Create new message.
  * NOTE: Should not include & not return ID!
  * @param {Message} data
  * @returns {Promise<Message>}
  */
-const createMessage = (data) => {
-  const newMsg = {
-    ...data,
-    time: Date.now(),
-  };
-  mock.messages.post(newMsg);
-  return newMsg;
-};
+const sendMessage = (toId, msg) =>
+  sendAPIReq("POST", `/api/users/${toId}/message`, { msg });
+
+// /**
+//  * TODO: should `createMessage` return anything? just the status of the operation?
+//  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+//  *
+//  * Create new message.
+//  * NOTE: Should not include & not return ID!
+//  * @param {Message} data
+//  * @returns {Promise<Message>}
+//  */
+// const createMessage = () =>
+// sendAPIReq("POST", `/api/messages`);
+
+// const createMessage = (data) => {
+//   const newMsg = {
+//     ...data,
+//     time: Date.now(),
+//   };
+//   mock.messages.post(newMsg);
+//   return newMsg;
+// };
 
 // TODO: should I add functions to get all messages?
 export const messages = {
   // fetch
-  all: getAllMessages,
-  allWithUser: getAllMessagesInvolvingUser,
-  getWithUser: getMessagesInvolvingUser, // paginated
+  // all: getAllMessages,
+  allMyConvos: getAllConvosWithSelf, // returns conversations
+  // allWithUser: getAllMessagesInvolvingUser,
+  // getWithUser: getMessagesInvolvingUser, // paginated
 
   // modify
-  create: createMessage,
+  // create: createMessage,
+  send: sendMessage,
 };
 
 // ===== USERS =====
@@ -300,7 +293,7 @@ const sendAPIReq = async (method, path, body, opts = {}) => {
     throw new Error(message);
   }
 
-  return await res.json();
+  return res.json();
 };
 
 /**

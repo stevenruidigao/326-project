@@ -21,8 +21,9 @@ export default async (args, doc) => {
   // get user id if logged in, otherwise redirect to home
   const user = await api.session.current();
 
+  // FIXME: redirect to login page instead of home
   if (!user) {
-    console.log(`[dashboard] user not logged in! returning to home`);
+    console.log("[dashboard] user not logged in! returning to home");
     return routes.goToRoute("home");
   }
 
@@ -30,22 +31,24 @@ export default async (args, doc) => {
   // NOTE: if unread messages are implemented, show those here instead
 
   // get all conversations
-  const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+  const conversations = await api.messages.allMyConvos();
+  console.log("funny");
+  // const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
   // group messages by user
-  const conversations = allUserMessages.reduce((acc, msg) => {
-    const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = [];
-    }
-    acc[otherUserId].push(msg);
-    return acc;
-  }, {});
+  // const conversations = allUserMessages.reduce((acc, msg) => {
+  //   const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+  //   if (!acc[otherUserId]) {
+  //     acc[otherUserId] = [];
+  //   }
+  //   acc[otherUserId].push(msg);
+  //   return acc;
+  // }, {});
 
   // in-place sort conversations by most recent message, then set it to the most recent message
-  for (const convoKey in conversations) {
-    conversations[convoKey].sort((a, b) => b.time - a.time);
-  }
+  // for (const convoKey in conversations) {
+  //   conversations[convoKey].sort((a, b) => b.time - a.time);
+  // }
 
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
@@ -129,31 +132,33 @@ export default async (args, doc) => {
     return apptEl;
   };
 
-  /**
-   * Fetches all appointments with the current user
-   * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
-   *
-   * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
-   */
-  const getAllApptsWithUser = async () => {
-    const allAppts = [];
-    for (let curPage = 1; ; curPage++) {
-      const response = await api.appointments.withUser(user._id, curPage);
-      if (response.length === 0) break;
+  // /**
+  //  * Fetches all appointments with the current user
+  //  * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
+  //  *
+  //  * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
+  //  */
+  // const getAllApptsWithUser = async () => {
+  //   const allAppts = [];
+  //   for (let curPage = 1; ; curPage++) {
+  //     const response = await api.appointments.withUser(user._id, curPage);
+  //     if (response.length === 0) break;
 
-      allAppts.push(...Array.from(response));
-    }
-    return allAppts;
-  };
+  //     allAppts.push(...Array.from(response));
+  //   }
+  //   return allAppts;
+  // };
 
   // get all future appointments
   const curTime = Date.now();
-  const futureAppts = (await getAllApptsWithUser()).filter((appt) => {
-    return curTime < appt.time;
-  });
+  const futureAppts = (await api.appointments.allMyAppointments()).filter(
+    (appt) => {
+      return curTime < appt.time;
+    },
+  );
 
   // sort appointments by time in place
-  futureAppts.sort((a, b) => a.time - b.time);
+  // futureAppts.sort((a, b) => a.time - b.time);
 
   const apptContainerEl = doc
     .querySelector("#appointment-container")

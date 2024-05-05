@@ -2,3 +2,5 @@ node_modules
 submission.zip
 .env
 _pouch_
+.vscode/settings.json
+/sessions
