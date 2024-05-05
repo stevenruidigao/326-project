@@ -24,9 +24,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const curId = req.user._id;
 
-    const allMessages = await messages.getAllMessagesInvolvingUser(
-      req.params.id,
-    );
+    const allMessages = await messages.getAllMessagesInvolvingUser(curId);
 
     const conversations = allMessages.reduce((acc, msg) => {
       const otherUserId = msg.fromId === curId ? msg.toId : msg.fromId;
