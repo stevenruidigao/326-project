@@ -43,22 +43,22 @@ router.get(
       conversations[convoKey].sort((a, b) => b.time - a.time);
     }
 
-    return conversations;
+    res.json(conversations);
   }),
 );
 
 /**
- * TODO: probably don't return the full message object? exposes an ID? maybe just return a status/nothing?
+ * TODO: probably don't return the full message object? don't expose an ID BUT still need to return the sent message
  * Send a message to a user
  * @param {string} toId
  * @param {string} text
- * @returns TODO
+ * @returns {Promise<Message>} the created message (with no message ID)
  */
 router.post(
-  "/messages",
+  "/users/:id/message",
   requiresAuth,
   asyncHandler(async (req, res) => {
-    const toId = req.body.toId;
+    const toId = req.params.id;
     const text = req.body.msg;
 
     if (!text) {
@@ -70,14 +70,17 @@ router.post(
       throw new APIError("User not found", 404);
     }
 
-    const message = await messages.createMessage({
+    const newMsg = {
       fromId: req.user._id,
       toId: toUser._id,
       text,
       time: Date.now(),
-    });
+    }
 
-    return message;
+    // don't return the created message in case it has sensitive info
+    await messages.createMessage(newMsg);
+
+    res.json(newMsg);
   }),
 );
 

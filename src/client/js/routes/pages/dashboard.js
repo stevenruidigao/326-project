@@ -32,6 +32,7 @@ export default async (args, doc) => {
 
   // get all conversations
   const conversations = await api.messages.allMyConvos();
+  console.log("funny");
   // const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
   // group messages by user

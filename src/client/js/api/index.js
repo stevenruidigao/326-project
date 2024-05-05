@@ -58,20 +58,14 @@ const appointmentsPagination = withPagination(APPOINTMENTS_PAGE_SIZE);
  * @param {number} page
  * @returns {Promise<PaginatedArray<Appointment>>}
  */
-const allAppointments = (page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.allDocs({
-      include_docs: true,
-      ...opts,
-    }),
-  );
+// const allAppointments = 
 
 /**
  * Obtain a specific appointment by ID
  * @param {string} id
  * @returns {Promise<Appointment>}
  */
-const getAppointment = (id) => mock.appointments.get(id);
+const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 
 /**
  * Obtain all appointments involving a specific user.
@@ -88,36 +82,37 @@ const withUserAppointments = (userId, page = 1) =>
     }),
   );
 
-/**
- * Obtain all appointments with a specific user as teacher.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withTeacherAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { teacherId: userId },
-      ...opts,
-    }),
-  );
+// /**
+//  * Obtain all appointments with a specific user as teacher.
+//  * NOTE: Paginated, not sorted!
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Appointment>>}
+//  */
+// const withTeacherAppointments = (userId, page = 1) =>
+//   appointmentsPagination(page, (opts) =>
+//     mock.appointments.find({
+//       selector: { teacherId: userId },
+//       ...opts,
+//     }),
+//   );
 
-/**
- * Obtain all appointments with a specific user as learner.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withLearnerAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { learnerId: userId },
-      ...opts,
-    }),
-  );
+// /**
+//  * Obtain all appointments with a specific user as learner.
+//  * NOTE: Paginated, not sorted!
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Appointment>>}
+//  */
+// const withLearnerAppointments = (userId, page = 1) =>
+//   appointmentsPagination(page, (opts) =>
+//     mock.appointments.find({
+//       selector: { learnerId: userId },
+//       ...opts,
+//     }),
+//   );
 
+// FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
 /**
  * Returns an id-to-user map of all users involved in the appointments.
  * Scuffed way to obtain relationship values...
@@ -146,11 +141,7 @@ const getAppointmentUsersInvolved = async (appts) => {
  * @returns {Promise<PouchDBResponse>}
  */
 const createAppointment = (data) =>
-  mock.appointments.post({
-    ...data,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+  sendAPIReq("POST", "/api/appointments/create", data);
 
 /**
  * Update an appointment's data
@@ -158,20 +149,8 @@ const createAppointment = (data) =>
  * @param {Appointment} data
  * @returns {Promise<PouchDBResponse>}
  */
-const updateAppointment = async (id, data) => {
-  const doc = await mock.appointments.get(id);
-
-  // keep unchanged data in doc
-  // replace changed data
-  // prevent replacing id & rev
-  return mock.appointments.put({
-    ...doc,
-    ...data,
-    _id: id,
-    _rev: doc._rev,
-    updatedAt: Date.now(),
-  });
-};
+const updateAppointment = async (id, data) => 
+  sendAPIReq("PUT", `/api/appointments/${id}`, data);
 
 /**
  * Delete an appointment
@@ -179,20 +158,15 @@ const updateAppointment = async (id, data) => {
  * @returns {Promise<PouchDBResponse>}
  * @throws {Error} if appointment does not exist
  */
-const deleteAppointment = async (id) => {
-  // TODO: use a DELETE request here
-  const doc = await mock.appointments.get(id);
+const deleteAppointment = async (id) =>
+  sendAPIReq("DELETE", `/api/appointments/${id}`);
 
-  return mock.appointments.remove(doc);
-};
 
 export const appointments = {
   // fetch
-  all: allAppointments,
+  allMyAppointments: allAppointments,
   get: getAppointment,
   withUser: withUserAppointments,
-  withTeacher: withTeacherAppointments,
-  withLearner: withLearnerAppointments,
   getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
@@ -200,6 +174,7 @@ export const appointments = {
   update: updateAppointment,
   delete: deleteAppointment,
 };
+
 
 // ===== MESSAGES =====
 
@@ -267,7 +242,7 @@ const getAllConvosWithSelf = () =>
  * @returns {Promise<Message>}
  */
 const sendMessage = (toId, msg) =>
-  sendAPIReq("POST", `/api/messages`, { toId, msg });
+  sendAPIReq("POST", `/api/users/${toId}/message`, { msg });
 
 // /**
 //  * TODO: should `createMessage` return anything? just the status of the operation?
