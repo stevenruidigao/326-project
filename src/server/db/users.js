@@ -95,7 +95,6 @@ export const getByEmail = async (email) => {
  */
 export const getById = async (id) => {
   try {
-    console.debug("[users] getById", id);
     return await db.get(id);
   } catch (error) {
     console.debug("[users] getById error", error);

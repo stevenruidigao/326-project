@@ -55,11 +55,11 @@ router.get(
         .concat(docs.map((appt) => appt.learnerId)),
     );
     const userArray = await Promise.all(
-      [...userIds].map((id) => users.get(id)),
+      [...userIds].map((id) => users.getById(id)),
     );
 
     const idToUserMap = Object.fromEntries(
-      userArray.map((u) => [u._id, serialize(u)]),
+      userArray.map((u) => [u._id, users.serialize(u)]),
     );
 
     res.json({
