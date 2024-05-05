@@ -1,5 +1,5 @@
 import path from "node:path";
-import {fileURLToPath} from "node:url";
+import { fileURLToPath } from "node:url";
 import PouchDBFind from "pouchdb-find";
 // PouchDB
 import PouchDB from "pouchdb-node";
@@ -7,12 +7,12 @@ import PouchDB from "pouchdb-node";
 PouchDB.plugin(PouchDBFind);
 
 const __dirname =
-    import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
+  import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
 
 export const directory = path.resolve(__dirname, "../../../db");
 
 const LocalPouchDB = PouchDB.defaults({
-  prefix : directory,
+  prefix: directory,
 });
 
 // Helper functions
@@ -43,22 +43,20 @@ export const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
 
   const start = (page - 1) * pageSize;
-  const res = await cb({limit : pageSize, skip : start});
+  const res = await cb({ limit: pageSize, skip: start });
 
-  if (res.warning)
-    console.warn(`[PouchDB] ${res.warning}`);
+  if (res.warning) console.warn(`[PouchDB] ${res.warning}`);
 
   const rows = res.rows?.map((r) => r.doc || r);
 
-  const data = [...(rows || res.docs) ];
+  const data = [...(rows || res.docs)];
   const totalPages = Math.ceil(res.total_rows / pageSize);
 
   const pagination = {
-    current : page,
+    current: page,
   };
 
-  if (page > 1)
-    pagination.prev = Math.min(totalPages || Infinity, page - 1);
+  if (page > 1) pagination.prev = Math.min(totalPages || Infinity, page - 1);
 
   // If we know there are more results OR we have a full page, state there is
   // (likely) a next page
@@ -66,10 +64,9 @@ export const withPagination = (pageSize) => async (page, cb) => {
     pagination.next = page + 1;
 
   // Not present for .find() results. See note above function
-  if (totalPages)
-    pagination.total = totalPages;
+  if (totalPages) pagination.total = totalPages;
 
-  return {data, pagination};
+  return { data, pagination };
 };
 
 /**
@@ -82,16 +79,12 @@ export const withPagination = (pageSize) => async (page, cb) => {
 export const withSerializer = (serializer) => (res, userId) => {
   const serialize = (doc) => serializer(doc, userId);
 
-  if (!res)
-    return null;
-  else if (Array.isArray(res))
-    return res.map(serialize);
-  else if (res.data)
-    return {...res, data : res.data.map(serialize)};
-  else if (res._id)
-    return serialize(res);
+  if (!res) return null;
+  else if (Array.isArray(res)) return res.map(serialize);
+  else if (res.data) return { ...res, data: res.data.map(serialize) };
+  else if (res._id) return serialize(res);
 
   throw new Error(
-      `Unknown response type for serializer:  ${JSON.stringify(res)}`,
+    `Unknown response type for serializer:  ${JSON.stringify(res)}`,
   );
 };
