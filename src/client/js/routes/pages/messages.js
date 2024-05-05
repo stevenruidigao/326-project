@@ -22,6 +22,7 @@ export const onunload = async (prev, next) => {
 
 /**
  * Sends a message from one user to another.
+ * FIXME: move to API + consider making another method that handles "creating messages" separately so that we can use "create message" to render new things but only "send message" sends an API request to make a new message
  *
  * @param {Message} msg - The message to send.
  * @param {string} fromId - The ID of the user sending the message.
@@ -29,11 +30,12 @@ export const onunload = async (prev, next) => {
  * @returns {Promise<Message>}
  */
 const sendMessage = async (msg, fromId, toId) => {
-  return api.messages.create({
-    text: msg,
-    fromId,
-    toId,
-  });
+  return api.messages.send(toId, msg);
+  // return api.messages.create({
+  //   text: msg,
+  //   fromId,
+  //   toId,
+  // });
 };
 
 /**

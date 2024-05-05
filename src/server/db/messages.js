@@ -29,6 +29,7 @@ const db = createDB("messages");
 // };
 
 /**
+ * TODO: errors?
  * Get all messages involving a specific user
  * @param {string} userId
  * @returns {Promise<Message[]>}
@@ -41,4 +42,16 @@ export const getAllMessagesInvolvingUser = async (userId) => {
     // sort: ["time"],
   });
   return res.docs;
+};
+
+/**
+ * TODO: errors?
+ * FIXME: what should I return here?
+ * Create a new message
+ * @param {Message} message
+ * @returns {Promise<Message>}
+ */
+export const createMessage = async (message) => {
+  await db.post(message);
+  return message;
 };

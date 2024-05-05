@@ -207,8 +207,8 @@ export const appointments = {
  * @typedef {import("../../../server/db/messages.js").Message} Message
  */
 
-const MESSAGES_PAGE_SIZE = 10;
-const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
+// const MESSAGES_PAGE_SIZE = 10;
+// const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
 /**
  * TODO: fix the return type
@@ -217,71 +217,90 @@ const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 const getAllConvosWithSelf = () =>
   sendAPIReq("GET", `/api/messages`);
 
-/**
- * Get all messages in the database
- * @returns {Promise<PaginatedArray<Message>>}
- */
-const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+// /**
+//  * Get all messages in the database
+//  * @returns {Promise<PaginatedArray<Message>>}
+//  */
+// const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+
+// /**
+//  * Get all messages involving a specific user
+//  * @param {string} userId
+//  * @returns {Promise<{ docs: Message[] }>}
+//  */
+// const getAllMessagesInvolvingUser = (userId) =>
+//   mock.messages.find({
+//     selector: {
+//       $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+//     },
+//     // sort: ["time"],
+//   });
+
+// /**
+//  * Get messages involving a specific user, paginated.
+//  * FIXME: pagination does not correctly give newest messages first
+//  * @param {string} userId
+//  * @param {number} page
+//  * @returns {Promise<PaginatedArray<Message>>}
+//  */
+// const getMessagesInvolvingUser = (userId, page = 1) => {
+//   console.warn("pagination does not correctly give newest messages first");
+//   messagesPagination(page, (opts) =>
+//     mock.messages.find({
+//       selector: {
+//         $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+//       },
+//       // use_index: ['time', 'fromId', 'toId'],
+//       // sort: ['time'],
+//       ...opts,
+//     }),
+//   );
+// };
 
 /**
- * Get all messages involving a specific user
- * @param {string} userId
- * @returns {Promise<{ docs: Message[] }>}
- */
-const getAllMessagesInvolvingUser = (userId) =>
-  mock.messages.find({
-    selector: {
-      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-    },
-    // sort: ["time"],
-  });
-
-/**
- * Get messages involving a specific user, paginated.
- * FIXME: pagination does not correctly give newest messages first
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Message>>}
- */
-const getMessagesInvolvingUser = (userId, page = 1) => {
-  console.warn("pagination does not correctly give newest messages first");
-  messagesPagination(page, (opts) =>
-    mock.messages.find({
-      selector: {
-        $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-      },
-      // use_index: ['time', 'fromId', 'toId'],
-      // sort: ['time'],
-      ...opts,
-    }),
-  );
-};
-
-/**
+ * TODO: should `createMessage` return anything? just the status of the operation?
+ * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+ * 
  * Create new message.
  * NOTE: Should not include & not return ID!
  * @param {Message} data
  * @returns {Promise<Message>}
  */
-const createMessage = (data) => {
-  const newMsg = {
-    ...data,
-    time: Date.now(),
-  };
-  mock.messages.post(newMsg);
-  return newMsg;
-};
+const sendMessage = (toId, msg) =>
+  sendAPIReq("POST", `/api/messages`, { toId, msg });
+
+// /**
+//  * TODO: should `createMessage` return anything? just the status of the operation?
+//  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+//  * 
+//  * Create new message.
+//  * NOTE: Should not include & not return ID!
+//  * @param {Message} data
+//  * @returns {Promise<Message>}
+//  */
+// const createMessage = () =>
+// sendAPIReq("POST", `/api/messages`);
+
+// const createMessage = (data) => {
+//   const newMsg = {
+//     ...data,
+//     time: Date.now(),
+//   };
+//   mock.messages.post(newMsg);
+//   return newMsg;
+// };
 
 // TODO: should I add functions to get all messages?
 export const messages = {
   // fetch
-  all: getAllMessages,
+  // all: getAllMessages,
   allMyConvos: getAllConvosWithSelf, // returns conversations
-  allWithUser: getAllMessagesInvolvingUser,
-  getWithUser: getMessagesInvolvingUser, // paginated
+  // allWithUser: getAllMessagesInvolvingUser,
+  // getWithUser: getMessagesInvolvingUser, // paginated
 
   // modify
-  create: createMessage,
+  // create: createMessage,
+  send: sendMessage,
 };
 
 // ===== USERS =====

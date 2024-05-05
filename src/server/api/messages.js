@@ -8,11 +8,17 @@ import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
-// ===== MESSAGES =====
+/**
+ * @typedef {import("../db/messages.js").Message} Message
+ */
 
-const MESSAGES_PAGE_SIZE = 10;
-const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
 
+// const MESSAGES_PAGE_SIZE = 10;
+// const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
+
+/**
+ * Gets all conversations for the current user
+ */
 router.get(
   "/messages",
   requiresAuth,
@@ -42,58 +48,58 @@ router.get(
 );
 
 /**
- * Get all messages in the database
- * @returns {Promise<PaginatedArray<Message>>}
+ * TODO: probably don't return the full message object? exposes an ID? maybe just return a status/nothing?
+ * Send a message to a user
+ * @param {string} toId
+ * @param {string} text
+ * @returns TODO
  */
-const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+router.post(
+  "/messages",
+  requiresAuth,
+  asyncHandler(async (req, res) => {
+    const toId = req.body.toId;
+    const text = req.body.msg;
 
-/**
- * Get all messages involving a specific user
- * @param {string} userId
- * @returns {Promise<{ docs: Message[] }>}
- */
-const getAllMessagesInvolvingUser = (userId) =>
-  mock.messages.find({
-    selector: {
-      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-    },
-    // sort: ["time"],
-  });
+    if (!text) {
+      throw new APIError("Message text is required", 400);
+    }
 
-/**
- * Get messages involving a specific user, paginated.
- * FIXME: pagination does not correctly give newest messages first
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Message>>}
- */
-const getMessagesInvolvingUser = (userId, page = 1) => {
-  console.warn("pagination does not correctly give newest messages first");
-  messagesPagination(page, (opts) =>
-    mock.messages.find({
-      selector: {
-        $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-      },
-      // use_index: ['time', 'fromId', 'toId'],
-      // sort: ['time'],
-      ...opts,
-    }),
-  );
-};
+    const toUser = await users.findUser(toId);
+    if (!toUser) {
+      throw new APIError("User not found", 404);
+    }
 
-/**
- * Create new message.
- * NOTE: Should not include & not return ID!
- * @param {Message} data
- * @returns {Promise<Message>}
- */
-const createMessage = (data) => {
-  const newMsg = {
-    ...data,
-    time: Date.now(),
-  };
-  mock.messages.post(newMsg);
-  return newMsg;
-};
+    const message = await messages.createMessage({
+      fromId: req.user._id,
+      toId: toUser._id,
+      text,
+      time: Date.now(),
+    });
+
+    return message;
+  }),
+);
+
+// /**
+//  * Get all messages in the database
+//  * @returns {Promise<PaginatedArray<Message>>}
+//  */
+// const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+
+// /**
+//  * Create new message.
+//  * NOTE: Should not include & not return ID!
+//  * @param {Message} data
+//  * @returns {Promise<Message>}
+//  */
+// const createMessage = (data) => {
+//   const newMsg = {
+//     ...data,
+//     time: Date.now(),
+//   };
+//   mock.messages.post(newMsg);
+//   return newMsg;
+// };
 
 export default router;

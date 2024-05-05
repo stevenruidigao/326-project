@@ -31,22 +31,23 @@ export default async (args, doc) => {
   // NOTE: if unread messages are implemented, show those here instead
 
   // get all conversations
-  const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+  const conversations = await api.messages.allMyConvos();
+  // const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
   // group messages by user
-  const conversations = allUserMessages.reduce((acc, msg) => {
-    const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = [];
-    }
-    acc[otherUserId].push(msg);
-    return acc;
-  }, {});
+  // const conversations = allUserMessages.reduce((acc, msg) => {
+  //   const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+  //   if (!acc[otherUserId]) {
+  //     acc[otherUserId] = [];
+  //   }
+  //   acc[otherUserId].push(msg);
+  //   return acc;
+  // }, {});
 
   // in-place sort conversations by most recent message, then set it to the most recent message
-  for (const convoKey in conversations) {
-    conversations[convoKey].sort((a, b) => b.time - a.time);
-  }
+  // for (const convoKey in conversations) {
+  //   conversations[convoKey].sort((a, b) => b.time - a.time);
+  // }
 
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
