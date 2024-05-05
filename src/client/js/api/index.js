@@ -2,13 +2,15 @@ import * as local from "./local.js";
 import * as mock from "./mock/index.js";
 
 /**
- * @typedef {T[] & { pagination?: { prev?: number, next?: number, total?: number }}} PaginatedArray<T>
+ * @typedef {T[] & { pagination?: { prev?: number, next?: number, total?: number
+ * }}} PaginatedArray<T>
  * @template {any} T
  */
 
 /**
  * @typedef {{ id: string, rev: string, ok: boolean }} PouchDBResponse
- * @typedef {{ limit: number, skip: number, attachments: boolean, binary: boolean }} PouchDBOptions
+ * @typedef {{ limit: number, skip: number, attachments: boolean, binary:
+ * boolean }} PouchDBOptions
  */
 
 /**
@@ -20,28 +22,32 @@ import * as mock from "./mock/index.js";
  * rows. Those queries will have to likely implement a "show more"
  * button/infinite scrolling on the frontend
  * @param {number} pageSize
- * @returns {(page: number, cb: (opts: { limit: number, skip: number }) => Promise<any>) =>
+ * @returns {(page: number, cb: (opts: { limit: number, skip: number }) =>
+ *     Promise<any>) =>
  *  Promise<PaginatedArray>}
  */
 const withPagination = (pageSize) => async (page, cb) => {
   page = Math.max(1, page);
 
   const start = (page - 1) * pageSize;
-  const res = await cb({ limit: pageSize, skip: start });
+  const res = await cb({limit : pageSize, skip : start});
 
-  if (res.warning) console.warn(`[PouchDB] ${res.warning}`);
+  if (res.warning)
+    console.warn(`[PouchDB] ${res.warning}`);
 
   const rows = res.rows?.map((r) => r.doc || r);
 
-  const data = [...(rows || res.docs)];
+  const data = [...(rows || res.docs) ];
   const totalPages = Math.ceil(res.total_rows / pageSize);
 
   // Not present for .find() results. See note above function
   if (totalPages) {
     data.pagination = {};
 
-    if (page > 1) data.pagination.prev = Math.min(totalPages, page - 1);
-    if (page < totalPages) data.pagination.next = page + 1;
+    if (page > 1)
+      data.pagination.prev = Math.min(totalPages, page - 1);
+    if (page < totalPages)
+      data.pagination.next = page + 1;
     data.pagination.total = totalPages;
   }
 
@@ -60,15 +66,14 @@ const allAppointments = () => sendAPIReq("GET", "/api/appointments");
 /**
  * uses `allAppointments` but filters for a specific other user
  */
-const myAppointmentsWithUser = (userId) =>
-  allAppointments().then((appts) =>
-    appts.filter(
-      (appt) => appt.teacherId === userId || appt.learnerId === userId,
-    ),
-  );
+const myAppointmentsWithUser = (userId) => allAppointments().then(
+    (appts) => appts.filter(
+        (appt) => appt.teacherId === userId || appt.learnerId === userId,
+        ),
+);
 
 const withUserAppointments = (userId) =>
-  sendAPIReq("GET", `/api/users/${userId}/appointments`);
+    sendAPIReq("GET", `/api/users/${userId}/appointments`);
 
 /**
  * Obtain a specific appointment by ID
@@ -107,7 +112,9 @@ const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 //     }),
 //   );
 
-// // FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
+// // FIXME: turn into api call? or honestly if this doesnt ping db then its
+// fine (it kinda does but might be ok, may want to do this all in the backend
+// tho cuz users.get(id) is a separate API call each time)
 // /**
 //  * Returns an id-to-user map of all users involved in the appointments.
 //  * Scuffed way to obtain relationship values...
@@ -129,7 +136,7 @@ const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
  * @returns {Promise<PouchDBResponse>}
  */
 const createAppointment = (targetUserId, data) =>
-  sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data);
+    sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data);
 
 /**
  * Update an appointment's data
@@ -138,7 +145,7 @@ const createAppointment = (targetUserId, data) =>
  * @returns {Promise<PouchDBResponse>}
  */
 const updateAppointment = async (id, data) =>
-  sendAPIReq("PUT", `/api/appointments/${id}`, data);
+    sendAPIReq("PUT", `/api/appointments/${id}`, data);
 
 /**
  * Delete an appointment
@@ -147,20 +154,20 @@ const updateAppointment = async (id, data) =>
  * @throws {Error} if appointment does not exist
  */
 const deleteAppointment = async (id) =>
-  sendAPIReq("DELETE", `/api/appointments/${id}`);
+    sendAPIReq("DELETE", `/api/appointments/${id}`);
 
 export const appointments = {
   // fetch
-  allMyAppointments: allAppointments,
-  get: getAppointment,
-  withUser: withUserAppointments,
-  myAppointmentsWithUser: myAppointmentsWithUser,
+  allMyAppointments : allAppointments,
+  get : getAppointment,
+  withUser : withUserAppointments,
+  myAppointmentsWithUser : myAppointmentsWithUser,
   // getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
-  create: createAppointment,
-  update: updateAppointment,
-  delete: deleteAppointment,
+  create : createAppointment,
+  update : updateAppointment,
+  delete : deleteAppointment,
 };
 
 // ===== MESSAGES =====
@@ -219,8 +226,11 @@ const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
 // };
 
 /**
- * TODO: should `createMessage` return anything? just the status of the operation?
- * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+ * TODO: should `createMessage` return anything? just the status of the
+ * operation?
+ * TODO: should this be turned into "send message" instead? where you're only
+ * allowed to "create" messages that are "to" someone else "from" the current
+ * user?
  *
  * Create new message.
  * NOTE: Should not include & not return ID!
@@ -228,11 +238,14 @@ const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
  * @returns {Promise<Message>}
  */
 const sendMessage = (toId, msg) =>
-  sendAPIReq("POST", `/api/users/${toId}/message`, { msg });
+    sendAPIReq("POST", `/api/users/${toId}/message`, {msg});
 
 // /**
-//  * TODO: should `createMessage` return anything? just the status of the operation?
-//  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+//  * TODO: should `createMessage` return anything? just the status of the
+//  operation?
+//  * TODO: should this be turned into "send message" instead? where you're only
+//  allowed to "create" messages that are "to" someone else "from" the current
+//  user?
 //  *
 //  * Create new message.
 //  * NOTE: Should not include & not return ID!
@@ -255,13 +268,13 @@ const sendMessage = (toId, msg) =>
 export const messages = {
   // fetch
   // all: getAllMessages,
-  allMyConvos: getAllConvosWithSelf, // returns conversations
+  allMyConvos : getAllConvosWithSelf, // returns conversations
   // allWithUser: getAllMessagesInvolvingUser,
   // getWithUser: getMessagesInvolvingUser, // paginated
 
   // modify
   // create: createMessage,
-  send: sendMessage,
+  send : sendMessage,
 };
 
 // ===== USERS =====
@@ -276,19 +289,20 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
 // TODO  handle password in backend
 
 const sendAPIReq = async (method, path, body, opts = {}) => {
-  if (body && !(body instanceof FormData)) body = JSON.stringify(body);
+  if (body && !(body instanceof FormData))
+    body = JSON.stringify(body);
 
   const res = await fetch(path, {
     method,
-    headers: {
-      "Content-Type": "application/json",
+    headers : {
+      "Content-Type" : "application/json",
     },
-    body: body || null,
+    body : body || null,
     ...opts,
   });
 
   if (!res.ok && !opts.noThrow) {
-    const { message } = await res.json();
+    const {message} = await res.json();
 
     throw new Error(message);
   }
@@ -301,16 +315,18 @@ const sendAPIReq = async (method, path, body, opts = {}) => {
  * @param {{ username: string, password: string }} args
  * @returns {Promise<User>}
  */
-const loginUser = ({ username, password }) =>
-  sendAPIReq("POST", "/login", { username, password });
+const loginUser = ({username, password}) =>
+    sendAPIReq("POST", "/login", {username, password});
 
 /**
- * Register user given credentials. Throws error if user already exists with email or username.
- * @param {{ name: string, username: string, email: string, password: string }} param0
+ * Register user given credentials. Throws error if user already exists with
+ * email or username.
+ * @param {{ name: string, username: string, email: string, password: string }}
+ *     param0
  * @returns {Promise<PouchDBResponse>}
  */
-const registerUser = ({ name, username, email, password }) =>
-  sendAPIReq("POST", "/signup", { name, username, email, password });
+const registerUser = ({name, username, email, password}) =>
+    sendAPIReq("POST", "/signup", {name, username, email, password});
 
 /**
  * Logout user
@@ -331,12 +347,12 @@ const getUser = (id) => sendAPIReq("GET", `/api/users/${id}`);
  * @returns {Promise<User>}
  */
 const getUserByUsername = (username) =>
-  sendAPIReq("GET", `/api/users/@${username}`);
+    sendAPIReq("GET", `/api/users/@${username}`);
 
 /**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
- * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
- * since this query does not allow for an index to be used.
+ * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters
+ * each time, since this query does not allow for an index to be used.
  * @param {number} page
  * @param {string[]} known
  * @param {string[]} interests
@@ -345,8 +361,8 @@ const getUserByUsername = (username) =>
 const allUsersWithSkills = (page = 1, known = [], interests = []) => {
   const search = new URLSearchParams({
     page,
-    known: known.join(","),
-    interests: interests.join(","),
+    known : known.join(","),
+    interests : interests.join(","),
   });
 
   return sendAPIReq("GET", `/api/users?${search}`);
@@ -364,21 +380,21 @@ const updateUserAvatar = (id, avatar) => {
   formData.append("avatar", avatar);
 
   return sendAPIReq("PUT", `/api/users/${id}/avatar`, formData, {
-    headers: {}, // remove 'Content-Type' header
+    headers : {}, // remove 'Content-Type' header
   });
 };
 
 export const users = {
-  login: loginUser,
-  register: registerUser,
-  logout: logoutUser,
+  login : loginUser,
+  register : registerUser,
+  logout : logoutUser,
 
-  get: getUser,
-  getByUsername: getUserByUsername,
-  withSkills: allUsersWithSkills,
+  get : getUser,
+  getByUsername : getUserByUsername,
+  withSkills : allUsersWithSkills,
 
-  update: updateUser,
-  updateAvatar: updateUserAvatar,
+  update : updateUser,
+  updateAvatar : updateUserAvatar,
 };
 
 // ===== SESSION =====
@@ -398,7 +414,8 @@ const setSessionCurrent = (u) => (currentUser = u);
  * @returns {Promise<User?>}
  */
 const getSessionCurrent = async () => {
-  if (currentUser !== undefined) return currentUser;
+  if (currentUser !== undefined)
+    return currentUser;
 
   // avoid fetching while already fetching
   setSessionCurrent(null);
@@ -416,17 +433,19 @@ const getSessionCurrent = async () => {
  * @returns {Promise<User?>}
  */
 const getSessionUser = async () => {
-  const res = await sendAPIReq("GET", "/api/me", undefined, { noThrow: true });
+  const res = await sendAPIReq("GET", "/api/me", undefined, {noThrow : true});
 
-  if (res.status === 401) return null;
-  else if (res.status) throw new Error(res.message);
+  if (res.status === 401)
+    return null;
+  else if (res.status)
+    throw new Error(res.message);
 
   return res;
 };
 
 export const session = {
-  getUser: getSessionUser,
+  getUser : getSessionUser,
 
-  current: getSessionCurrent,
-  setCurrent: setSessionCurrent,
+  current : getSessionCurrent,
+  setCurrent : setSessionCurrent,
 };

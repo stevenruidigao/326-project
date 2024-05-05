@@ -1,10 +1,11 @@
-import { Router } from "express";
+import {Router} from "express";
+import asyncHandler from "express-async-handler";
 
+import {withSerializer} from "../db/index.js";
 import * as messages from "../db/messages.js";
 import * as users from "../db/users.js";
-import { APIError, requiresAuth } from "./helpers.js";
-import asyncHandler from "express-async-handler";
-import { withSerializer } from "../db/index.js";
+
+import {APIError, requiresAuth} from "./helpers.js";
 
 const router = Router();
 
@@ -19,66 +20,66 @@ const router = Router();
  * Gets all conversations for the current user
  */
 router.get(
-  "/messages",
-  requiresAuth,
-  asyncHandler(async (req, res) => {
-    const curId = req.user._id;
+    "/messages",
+    requiresAuth,
+    asyncHandler(async (req, res) => {
+      const curId = req.user._id;
 
-    const allMessages = await messages.getAllMessagesInvolvingUser(curId);
+      const allMessages = await messages.getAllMessagesInvolvingUser(curId);
 
-    const conversations = allMessages.reduce((acc, msg) => {
-      const otherUserId = msg.fromId === curId ? msg.toId : msg.fromId;
-      if (!acc[otherUserId]) {
-        acc[otherUserId] = [];
+      const conversations = allMessages.reduce((acc, msg) => {
+        const otherUserId = msg.fromId === curId ? msg.toId : msg.fromId;
+        if (!acc[otherUserId]) {
+          acc[otherUserId] = [];
+        }
+        acc[otherUserId].push(msg);
+        return acc;
+      }, {});
+
+      // in-place sort conversations by most recent message
+      for (const convoKey in conversations) {
+        conversations[convoKey].sort((a, b) => b.time - a.time);
       }
-      acc[otherUserId].push(msg);
-      return acc;
-    }, {});
 
-    // in-place sort conversations by most recent message
-    for (const convoKey in conversations) {
-      conversations[convoKey].sort((a, b) => b.time - a.time);
-    }
-
-    res.json(conversations);
-  }),
+      res.json(conversations);
+    }),
 );
 
 /**
- * TODO: probably don't return the full message object? don't expose an ID BUT still need to return the sent message
- * Send a message to a user
+ * TODO: probably don't return the full message object? don't expose an ID BUT
+ * still need to return the sent message Send a message to a user
  * @param {string} toId
  * @param {string} text
  * @returns {Promise<Message>} the created message (with no message ID)
  */
 router.post(
-  "/users/:id/message",
-  requiresAuth,
-  asyncHandler(async (req, res) => {
-    const toId = req.params.id;
-    const text = req.body.msg;
+    "/users/:id/message",
+    requiresAuth,
+    asyncHandler(async (req, res) => {
+      const toId = req.params.id;
+      const text = req.body.msg;
 
-    if (!text) {
-      throw new APIError("Message text is required", 400);
-    }
+      if (!text) {
+        throw new APIError("Message text is required", 400);
+      }
 
-    const toUser = await users.findUser(toId);
-    if (!toUser) {
-      throw new APIError("User not found", 404);
-    }
+      const toUser = await users.findUser(toId);
+      if (!toUser) {
+        throw new APIError("User not found", 404);
+      }
 
-    const newMsg = {
-      fromId: req.user._id,
-      toId: toUser._id,
-      text,
-      time: Date.now(),
-    };
+      const newMsg = {
+        fromId : req.user._id,
+        toId : toUser._id,
+        text,
+        time : Date.now(),
+      };
 
-    // don't return the created message in case it has sensitive info
-    await messages.createMessage(newMsg);
+      // don't return the created message in case it has sensitive info
+      await messages.createMessage(newMsg);
 
-    res.json(newMsg);
-  }),
+      res.json(newMsg);
+    }),
 );
 
 // /**

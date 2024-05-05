@@ -1,17 +1,19 @@
-import { app } from "../helper.js";
 import * as api from "../../api/index.js";
+import {formatRelative, formatTimeVerbose} from "../../dayjs.js";
+import {app} from "../helper.js";
 import * as routes from "../index.js";
-import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
 
 const NUM_MSG_PREVIEWS = 3;
 const APPT_PAGE_SIZE = 8;
 
-// TODO: consider using the `onunload` when websockets are implemented to close the connection here
+// TODO: consider using the `onunload` when websockets are implemented to close
+// the connection here
 
 /**
  * Shows the dashboard page for the current logged-in user (at /dashboard)
  * @param {any} args - unused (no args expected)
- * @param {DocumentFragment} doc - the document fragment containing useful elements
+ * @param {DocumentFragment} doc - the document fragment containing useful
+ *     elements
  */
 export default async (args, doc) => {
   app.innerHTML = "";
@@ -45,54 +47,52 @@ export default async (args, doc) => {
   //   return acc;
   // }, {});
 
-  // in-place sort conversations by most recent message, then set it to the most recent message
-  // for (const convoKey in conversations) {
+  // in-place sort conversations by most recent message, then set it to the most
+  // recent message for (const convoKey in conversations) {
   //   conversations[convoKey].sort((a, b) => b.time - a.time);
   // }
 
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
-    .map((userId) => {
-      const convo = conversations[userId];
-      return convo[0];
-    })
-    .sort((a, b) => b.time - a.time)
-    .slice(0, NUM_MSG_PREVIEWS);
+                                 .map((userId) => {
+                                   const convo = conversations[userId];
+                                   return convo[0];
+                                 })
+                                 .sort((a, b) => b.time - a.time)
+                                 .slice(0, NUM_MSG_PREVIEWS);
 
   // initializes the message container
-  const messageContainerEl = doc
-    .querySelector("#message-container")
-    .cloneNode(true);
+  const messageContainerEl =
+      doc.querySelector("#message-container").cloneNode(true);
   const messageListEl = messageContainerEl.querySelector("#message-list");
 
   // creates and appends message preview elements
   messageListEl.append(
-    ...(await Promise.all(
-      mostRecentMessages.map(async (msg) => {
-        const otherUser = await api.users.get(
-          msg.fromId === user._id ? msg.toId : msg.fromId,
-        );
+      ...(await Promise.all(
+          mostRecentMessages.map(async (msg) => {
+            const otherUser = await api.users.get(
+                msg.fromId === user._id ? msg.toId : msg.fromId,
+            );
 
-        const msgPreviewEl = doc
-          .querySelector(".message-preview")
-          .cloneNode(true);
+            const msgPreviewEl =
+                doc.querySelector(".message-preview").cloneNode(true);
 
-        // routes link to the right convo
-        const linkEl = msgPreviewEl.querySelector("a");
-        linkEl.setAttribute(":id", otherUser._id);
+            // routes link to the right convo
+            const linkEl = msgPreviewEl.querySelector("a");
+            linkEl.setAttribute(":id", otherUser._id);
 
-        linkEl.querySelector(".name").innerText = otherUser.name;
-        linkEl.querySelector(".msg-timestamp").innerText = formatRelative(
-          msg.time,
-        );
+            linkEl.querySelector(".name").innerText = otherUser.name;
+            linkEl.querySelector(".msg-timestamp").innerText = formatRelative(
+                msg.time,
+            );
 
-        linkEl.querySelector(".msg-text").innerText = msg.text;
+            linkEl.querySelector(".msg-text").innerText = msg.text;
 
-        linkEl.querySelector("img").src = otherUser.avatarUrl;
+            linkEl.querySelector("img").src = otherUser.avatarUrl;
 
-        return msgPreviewEl;
-      }),
-    )),
+            return msgPreviewEl;
+          }),
+          )),
   );
 
   app.append(messageContainerEl);
@@ -100,19 +100,22 @@ export default async (args, doc) => {
   // ################# show all upcoming appointments? #################
 
   /**
-   * Creates and returns a new appointment element with the given appointment data
+   * Creates and returns a new appointment element with the given appointment
+   * data
    *
    * @param {Appointment} appt - The appointment data to render.
-   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+   * @returns {Promise<Element>} - A promise that resolves to the new
+   *     appointment element.
    */
   const createNewAppointmentEl = async (appt) => {
     const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
     const apptRole = appt.teacherId === user._id ? "Teaching" : "Learning";
-    const time = `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
+    const time =
+        `${formatTimeVerbose(appt.time)} - ${formatRelative(appt.time)}`;
 
     const otherUser = await api.users.get(
-      appt.teacherId === user._id ? appt.learnerId : appt.teacherId,
+        appt.teacherId === user._id ? appt.learnerId : appt.teacherId,
     );
 
     apptEl.querySelector(".name").innerText = otherUser.name;
@@ -134,9 +137,11 @@ export default async (args, doc) => {
 
   // /**
   //  * Fetches all appointments with the current user
-  //  * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
+  //  * Bypasses the pagination in the API since the API doesn't correctly sort
+  //  appointments yet
   //  *
-  //  * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
+  //  * @returns {Promise<Appointment[]>} - A promise that resolves to the new
+  //  appointment element.
   //  */
   // const getAllApptsWithUser = async () => {
   //   const allAppts = [];
@@ -151,26 +156,24 @@ export default async (args, doc) => {
 
   // get all future appointments
   const curTime = Date.now();
-  const futureAppts = (await api.appointments.allMyAppointments()).filter(
-    (appt) => {
-      return curTime < appt.time;
-    },
-  );
+  const futureAppts = (await api.appointments.allMyAppointments())
+                          .filter(
+                              (appt) => { return curTime < appt.time; },
+                          );
 
   // sort appointments by time in place
   // futureAppts.sort((a, b) => a.time - b.time);
 
-  const apptContainerEl = doc
-    .querySelector("#appointment-container")
-    .cloneNode(true);
+  const apptContainerEl =
+      doc.querySelector("#appointment-container").cloneNode(true);
 
-  apptContainerEl.querySelector("#appointment-list").append(
-    ...(await Promise.all(
-      futureAppts.map(async (appt) => {
-        return createNewAppointmentEl(appt);
-      }),
-    )),
-  );
+  apptContainerEl.querySelector("#appointment-list")
+      .append(
+          ...(await Promise.all(
+              futureAppts.map(
+                  async (appt) => { return createNewAppointmentEl(appt); }),
+              )),
+      );
 
   app.append(apptContainerEl);
 };

@@ -1,4 +1,4 @@
-import { createDB, withPagination, withSerializer } from "./index.js";
+import {createDB, withPagination, withSerializer} from "./index.js";
 
 const db = createDB("messages");
 
@@ -36,8 +36,8 @@ const db = createDB("messages");
  */
 export const getAllMessagesInvolvingUser = async (userId) => {
   const res = await db.find({
-    selector: {
-      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
+    selector : {
+      $or : [ {fromId : {$eq : userId}}, {toId : {$eq : userId}} ],
     },
     // sort: ["time"],
   });
