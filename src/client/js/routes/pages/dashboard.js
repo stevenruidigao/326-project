@@ -23,7 +23,7 @@ export default async (args, doc) => {
 
   // FIXME: redirect to login page instead of home
   if (!user) {
-    console.log(`[dashboard] user not logged in! returning to home`);
+    console.log("[dashboard] user not logged in! returning to home");
     return routes.goToRoute("home");
   }
 

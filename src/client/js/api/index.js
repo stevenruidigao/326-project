@@ -176,7 +176,7 @@ export const appointments = {
  * TODO: fix the return type
  * @returns
  */
-const getAllConvosWithSelf = () => sendAPIReq("GET", `/api/messages`);
+const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
 
 // /**
 //  * Get all messages in the database
