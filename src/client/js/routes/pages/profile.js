@@ -21,17 +21,20 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   apptsParentEl.classList.remove("is-hidden");
 
-  const userAppointments = (await appointments.withUser(user._id)).slice(
-    0,
-    3,
-  );
+  const appts = await appointments.withUser(user._id);
+  const userAppointments = appts.apppointments.slice(0, 3);
+
+  // const userAppointments = (await appointments.withUser(user._id)).slice(
+  //   0,
+  //   3,
+  // );
 
   if (!userAppointments.length) {
     apptsParentEl.classList.add("is-hidden");
     return;
   }
 
-  const usersInvolved = await appointments.getUsersInvolved(userAppointments);
+  const usersInvolved = appts.idToUserMap;
 
   // render appointments
   for (const appt of userAppointments) {

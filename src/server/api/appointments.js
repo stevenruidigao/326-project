@@ -44,11 +44,26 @@ router.get(
  */
 router.get(
   "/users/:id/appointments",
-  requiresAuth,
+  // requiresAuth,
   asyncHandler(async (req, res) => {
     const userId = req.params.id;
     const appointments = await appointments.getAllAppointmentsForUser(userId);
-    res.json(appointments.sort(futureToPast));
+    appointments.sort(futureToPast)
+    
+    const userIds = new Set(
+      appts
+        .map((appt) => appt.teacherId)
+        .concat(appts.map((appt) => appt.learnerId)),
+    );
+    const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
+
+    const idToUserMap = Object.fromEntries(userArray.map((u) => [u._id, u]));
+
+
+    res.json({
+      appointments: appointments,
+      idToUserMap: idToUserMap,
+    });
   }),
 );
 

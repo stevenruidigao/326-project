@@ -106,24 +106,16 @@ const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 //     }),
 //   );
 
-// FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
-/**
- * Returns an id-to-user map of all users involved in the appointments.
- * Scuffed way to obtain relationship values...
- * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
- *     properties for each item
- * @returns {Promise<Object.<string, User>>}
- */
-const getAppointmentUsersInvolved = async (appts) => {
-  const userIds = new Set(
-    appts
-      .map((appt) => appt.teacherId)
-      .concat(appts.map((appt) => appt.learnerId)),
-  );
-  const userArray = await Promise.all([...userIds].map((id) => users.get(id)));
-
-  return Object.fromEntries(userArray.map((u) => [u._id, u]));
-};
+// // FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
+// /**
+//  * Returns an id-to-user map of all users involved in the appointments.
+//  * Scuffed way to obtain relationship values...
+//  * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
+//  *     properties for each item
+//  * @returns {Promise<Object.<string, User>>}
+//  */
+// const getAppointmentUsersInvolved = async (appts) => {
+// };
 
 // modify
 // -> default attrs probably? but those would happen in backend anyways
@@ -162,7 +154,7 @@ export const appointments = {
   get: getAppointment,
   withUser: withUserAppointments,
   myAppointmentsWithUser: myAppointmentsWithUser,
-  getUsersInvolved: getAppointmentUsersInvolved,
+  // getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
   create: createAppointment,
