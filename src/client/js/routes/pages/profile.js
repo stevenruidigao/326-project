@@ -21,7 +21,7 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   apptsParentEl.classList.remove("is-hidden");
 
-  const userAppointments = (await appointments.withUser(user._id, 1)).slice(
+  const userAppointments = (await appointments.withUser(user._id)).slice(
     0,
     3,
   );

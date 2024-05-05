@@ -136,31 +136,31 @@ export default async (args, doc) => {
     return apptEl;
   };
 
-  /**
-   * Fetches all appointments with the current user
-   * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
-   *
-   * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
-   */
-  const getAllApptsWithUser = async () => {
-    const allAppts = [];
-    for (let curPage = 1; ; curPage++) {
-      const response = await api.appointments.withUser(user._id, curPage);
-      if (response.length === 0) break;
+  // /**
+  //  * Fetches all appointments with the current user
+  //  * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
+  //  *
+  //  * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
+  //  */
+  // const getAllApptsWithUser = async () => {
+  //   const allAppts = [];
+  //   for (let curPage = 1; ; curPage++) {
+  //     const response = await api.appointments.withUser(user._id, curPage);
+  //     if (response.length === 0) break;
 
-      allAppts.push(...Array.from(response));
-    }
-    return allAppts;
-  };
+  //     allAppts.push(...Array.from(response));
+  //   }
+  //   return allAppts;
+  // };
 
   // get all future appointments
   const curTime = Date.now();
-  const futureAppts = (await getAllApptsWithUser()).filter((appt) => {
+  const futureAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
     return curTime < appt.time;
   });
 
   // sort appointments by time in place
-  futureAppts.sort((a, b) => a.time - b.time);
+  // futureAppts.sort((a, b) => a.time - b.time);
 
   const apptContainerEl = doc
     .querySelector("#appointment-container")

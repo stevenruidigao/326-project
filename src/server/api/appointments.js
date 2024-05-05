@@ -10,6 +10,9 @@ const router = Router();
 
 // TODO: add typedef
 
+const futureToPast = (a, b) => a.time - b.time;
+
+
 /**
  * Gets a specific appointment by ID
  */
@@ -31,9 +34,25 @@ router.get(
   asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const appointments = await appointments.getAllAppointmentsForUser(userId);
-    res.json(appointments);
+    res.json(appointments.sort(futureToPast));
   }),
 );
+
+/**
+ * Gets all appointments for a specific user
+ * TODO: consider removing sensitive information from here?
+ */
+router.get(
+  "/users/:id/appointments",
+  requiresAuth,
+  asyncHandler(async (req, res) => {
+    const userId = req.params.id;
+    const appointments = await appointments.getAllAppointmentsForUser(userId);
+    res.json(appointments.sort(futureToPast));
+  }),
+);
+
+
 
 // ===== CREATE / UPDATE / DELETE =====
 

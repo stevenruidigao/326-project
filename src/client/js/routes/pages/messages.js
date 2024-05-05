@@ -447,26 +447,27 @@ export default async (args, doc) => {
     convoWrapperEl.appendChild(convoEl);
 
     // unpaginated get all appointments by calling until no more next
-    const getAllAppts = async () => {
-      const allAppts = [];
-      for (let curPage = 1; ; curPage++) {
-        const response = await api.appointments.all(curPage);
-        allAppts.push(...Array.from(response));
-        if (!response.pagination.next) break;
-      }
-      return allAppts;
-    };
+    // const getAllAppts = async () => {
+    //   const allAppts = [];
+    //   for (let curPage = 1; ; curPage++) {
+    //     const response = await api.appointments.all(curPage);
+    //     allAppts.push(...Array.from(response));
+    //     if (!response.pagination.next) break;
+    //   }
+    //   return allAppts;
+    // };
 
     // get all appointments between user and other user
-    const relevantAppts = (await getAllAppts()).filter((appt) => {
-      return (
-        (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
-        (appt.teacherId === otherUser._id && appt.learnerId === user._id)
-      );
-    });
+    const relevantAppts = await api.appointments.myAppointmentsWithUser(otherUser._id);
+    // const relevantAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
+    //   return (
+    //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
+    //     (appt.teacherId === otherUser._id && appt.learnerId === user._id)
+    //   );
+    // });
 
     // sort appointments by time in place
-    relevantAppts.sort((a, b) => b.time - a.time);
+    // relevantAppts.sort((a, b) => b.time - a.time);
 
     console.log("[messages] relevant appts", relevantAppts);
 

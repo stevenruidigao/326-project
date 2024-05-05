@@ -50,15 +50,23 @@ const withPagination = (pageSize) => async (page, cb) => {
 
 // ===== APPOINTMENTS =====
 
-const APPOINTMENTS_PAGE_SIZE = 8;
-const appointmentsPagination = withPagination(APPOINTMENTS_PAGE_SIZE);
-
 /**
  *
  * @param {number} page
  * @returns {Promise<PaginatedArray<Appointment>>}
  */
-// const allAppointments = 
+const allAppointments = () => sendAPIReq("GET", "/api/appointments");
+
+/**
+ * uses `allAppointments` but filters for a specific other user
+ */
+const myAppointmentsWithUser = (userId) => allAppointments().then((appts) =>
+  appts.filter((appt) => appt.teacherId === userId || appt.learnerId === userId),
+);
+
+
+const withUserAppointments = (userId) => sendAPIReq("GET", `/api/users/${userId}/appointments`);
+
 
 /**
  * Obtain a specific appointment by ID
@@ -67,20 +75,6 @@ const appointmentsPagination = withPagination(APPOINTMENTS_PAGE_SIZE);
  */
 const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
 
-/**
- * Obtain all appointments involving a specific user.
- * NOTE: Paginated, not sorted!
- * @param {string} userId
- * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
- */
-const withUserAppointments = (userId, page = 1) =>
-  appointmentsPagination(page, (opts) =>
-    mock.appointments.find({
-      selector: { $or: [{ teacherId: userId }, { learnerId: userId }] },
-      ...opts,
-    }),
-  );
 
 // /**
 //  * Obtain all appointments with a specific user as teacher.
@@ -167,6 +161,7 @@ export const appointments = {
   allMyAppointments: allAppointments,
   get: getAppointment,
   withUser: withUserAppointments,
+  myAppointmentsWithUser: myAppointmentsWithUser,
   getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
