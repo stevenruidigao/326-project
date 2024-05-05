@@ -140,11 +140,7 @@ export default async (args, doc) => {
   nameEl[key] = user.name;
   usernameEl[key] = user.username;
 
-  const avatar = await users.getAvatar(user);
-
-  if (avatar) {
-    imageEl.src = URL.createObjectURL(avatar);
-  }
+  imageEl.src = user.avatarUrl;
 
   if (isEditingUser) {
     idEl.value = "User ID: " + user._id;
@@ -162,22 +158,11 @@ export default async (args, doc) => {
     const saveAvatar = async (file) => {
       toggleElementAll("button", "is-loading", true, imageButtons);
 
-      await users.update(user._id, {
-        ...user,
-        _attachments: file
-          ? {
-              avatar: {
-                content_type: file.type,
-                data: file,
-              },
-            }
-          : {},
-      });
+      user = await users.updateAvatar(user._id, file);
 
-      imageEl.src = file ? URL.createObjectURL(file) : "/images/logo.png";
+      imageEl.src = `${user.avatarUrl}?${Date.now()}`;
 
-      await session.setCurrent();
-      await session.current();
+      session.setCurrent(user);
 
       setupNavbar();
 

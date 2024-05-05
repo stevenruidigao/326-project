@@ -261,12 +261,7 @@ export default async (args, doc) => {
       ).fromNow();
 
       linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
-
-      const avatar = await api.users.getAvatar(otherUser);
-
-      linkEl.querySelector("img").src = avatar
-        ? URL.createObjectURL(avatar)
-        : "/images/logo.png";
+      linkEl.querySelector("img").src = otherUser.avatarUrl;
 
       previews.push(previewEl);
 
@@ -409,6 +404,14 @@ export default async (args, doc) => {
     });
 
     app.append(createApptModal, editApptModal);
+  }
+
+  if (!args.id) {
+    setTitle(`My Messages`);
+    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
+    convoWrapperEl.appendChild(blankConvoEl);
+
+    return;
   }
 
   conversationOtherUser = null;
@@ -597,17 +600,10 @@ export default async (args, doc) => {
   } catch (err) {
     // if there was an arg provided, log error and redirect to blank
     // conversation
-    if (args.id) {
-      console.error(
-        `[messages] error fetching conversation with user ${args.id}:`,
-        err,
-      );
-      return routes.goToRoute("messages");
-    }
-
-    setTitle(`My Messages`);
-    // if no arg provided, render a blank conversation
-    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
-    convoWrapperEl.appendChild(blankConvoEl);
+    console.error(
+      `[messages] error fetching conversation with user ${args.id}:`,
+      err,
+    );
+    return routes.goToRoute("messages");
   }
 };

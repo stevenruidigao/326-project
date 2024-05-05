@@ -30,12 +30,17 @@ export const findUser = (identifier) => {
  * @type {ReturnType<typeof withSerializer<User>>}
  */
 export const serialize = withSerializer((user, loggedInId) => {
+  const avatar = user._attachments?.avatar;
+
   const data = {
     _id: user._id,
     username: user.username,
     name: user.name,
     known: user.known || [],
     interests: user.interests || [],
+    avatarUrl: avatar
+      ? `/api/users/${user._id}/avatar?${avatar.digest}`
+      : "/images/logo.png",
   };
 
   // if logged in
@@ -86,6 +91,23 @@ export const getByEmail = async (email) => {
   });
 
   return result.docs[0];
+};
+
+/**
+ * @param {string} id
+ * @returns {Promise<Blob | Buffer>}
+ */
+export const getAvatar = async (user) => {
+  const avatar = user._attachments?.avatar;
+
+  if (!avatar) return null;
+  else if (avatar.data) return avatar.data;
+
+  const attachment = await db.getAttachment(user._id, "avatar");
+
+  avatar.data = attachment;
+
+  return attachment;
 };
 
 /**
@@ -165,6 +187,32 @@ export const update = async (id, data) => {
   });
 
   return { ...data, _id: id, _rev: result.rev };
+};
+
+/**
+ * TODO
+ * @param {User} user
+ * @param {string} [mimetype]
+ * @param {Blob | Buffer} [avatar]
+ * @returns {Promise<void>}
+ */
+export const updateAvatar = async (user, mimetype, avatar) => {
+  if (!user) throw new Error("User not found");
+
+  if (!avatar) {
+    if (user._attachments?.avatar) {
+      const result = await db.removeAttachment(user._id, "avatar", user._rev);
+
+      user._rev = result.rev;
+      delete user._attachments.avatar;
+    }
+
+    return user;
+  }
+
+  await db.putAttachment(user._id, "avatar", user._rev, avatar, mimetype);
+
+  return db.get(user._id);
 };
 
 export default db;

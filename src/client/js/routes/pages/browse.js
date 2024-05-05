@@ -46,7 +46,7 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
     users: users.data,
     getNextPage: async () =>
       await getUsersPaginated(users.pagination.next, skillsHad, skillsWant),
-    hasNextPage: !!users.pagination.next,
+    hasNextPage: Boolean(users.pagination.next),
   };
 }
 
@@ -80,16 +80,12 @@ async function createUserCard(user) {
   figure.className = "image is-48x48 is-square";
 
   // Basic user info (pic, name, username)
-  const avatar = await api.users.getAvatar(user);
-
-  console.debug("[browse]", avatar, user);
+  console.debug("[browse]", user);
 
   const profilePicture = document.createElement("img");
   profilePicture.loading = "lazy";
   profilePicture.className = "is-rounded";
-  profilePicture.src = avatar
-    ? URL.createObjectURL(avatar)
-    : "/images/logo.png";
+  profilePicture.src = user.avatarUrl;
   profilePicture.alt = `${user.name}'s profile picture`;
 
   figure.appendChild(profilePicture);
