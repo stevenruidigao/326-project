@@ -174,12 +174,24 @@ export const load = async (routeName, args = {}, search) => {
 
   const route = routes[routeName];
 
-  const [routeJS, document, css] = await Promise.all([
-    import(`./pages/${route.file}.js`),
-    route.hasHTML && pages.fetchDOM(route.file),
-    route.hasCSS && pages.fetchCSS(route.file),
-    layout.onAppLoad(), // the logic inside only runs once!
-  ]);
+  let [routeJS, document, css] = [];
+
+  layout.showGlobalError();
+
+  try {
+    [routeJS, document, css] = await Promise.all([
+      import(`./pages/${route.file}.js`),
+      route.hasHTML && pages.fetchDOM(route.file),
+      route.hasCSS && pages.fetchCSS(route.file),
+      layout.onAppLoad(), // the logic inside only runs once!
+    ]);
+  } catch (err) {
+    layout.showGlobalError("Error loading page. Please refresh and try again.");
+    console.error(`[routes] Error loading route '${routeName}' --`, err);
+
+    loadingEl.classList.remove("is-active");
+    return;
+  }
 
   const init = routeJS.default;
 
@@ -212,8 +224,6 @@ export const load = async (routeName, args = {}, search) => {
   // Most of this CSS should be scoped anyways, but it doesn't hurt to get rid
   // of it.
   routeStyles.textContent = css || "";
-
-  layout.showGlobalError();
 
   await init(args, document);
 

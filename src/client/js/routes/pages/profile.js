@@ -4,7 +4,7 @@ import dayjs, {
   formatTime,
   formatTimeVerbose,
 } from "../../dayjs.js";
-import { setupNavbar } from "../../layout.js";
+import { setupNavbar, showGlobalError } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
 import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
 
@@ -149,13 +149,17 @@ export default async (args, doc) => {
     const saveAvatar = async (file) => {
       toggleElementAll("button", "is-loading", true, imageButtons);
 
-      user = await users.updateAvatar(user._id, file);
+      try {
+        user = await users.updateAvatar(user._id, file);
 
-      imageEl.src = `${user.avatarUrl}?${Date.now()}`;
+        imageEl.src = `${user.avatarUrl}?${Date.now()}`;
 
-      session.setCurrent(user);
+        session.setCurrent(user);
 
-      setupNavbar();
+        setupNavbar();
+      } catch (err) {
+        showGlobalError(err.message);
+      }
 
       toggleElementAll("button", "is-loading", false, imageButtons);
     };
@@ -194,6 +198,14 @@ export default async (args, doc) => {
           ...user,
           ...data,
         })
+        .then((res) => {
+          // update session user & navbar -- solves input values keeping old value on route reload
+          if (isSameUser) {
+            session.setCurrent(res);
+            setupNavbar();
+          }
+        })
+        .catch((err) => showGlobalError(err.message))
         .finally(() => submitEl.classList.remove("is-loading"));
     });
 
