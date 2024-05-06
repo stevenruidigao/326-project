@@ -34,7 +34,7 @@ export const isNetworkError = (err) => {
 export const withFallback = (func, fallback) => {
   return async (...args) => {
     if (isOffline()) {
-      const data = await fallback(...args);
+      return fallback(...args);
     }
 
     try {
