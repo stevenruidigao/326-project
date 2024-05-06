@@ -1,22 +1,12 @@
+import "/js/libs/pouchdb.min.js";
+
 import { showOfflineStatus } from "../layout.js";
 
 export const records = {
-  /**
-   * @type Map<string, User>
-   */
-  users: new Map(),
-
-  /**
-   * @type Map<string, Appointment>
-   */
-  appointments: new Map(),
-
-  /**
-   * @type Map<string, Message>
-   */
-  messages: new Map(),
-
-  loggedInUser: null,
+  users: new PouchDB("offline-users"),
+  appointments: new PouchDB("offline-appointments"),
+  messages: new PouchDB("offline-messages"),
+  other: new PouchDB("offline-other"),
 };
 
 window.records = records; // TODO testing
@@ -102,9 +92,12 @@ export const withoutFallback = (func) => {
 export const addResource = async (type, el) => {
   if (!el?._id) return;
 
-  const map = records[type];
+  const db = records[type];
+  const doc = await db.get(el._id).catch(() => {});
 
-  map.set(el._id, el);
+  if ("skills" in el) console.trace("addResource", type, el, doc);
+
+  await db.put({ ...el, _rev: doc?._rev }, { force: true });
 
   return el;
 };
@@ -114,34 +107,60 @@ export const addResources = async (type, data) => {
 };
 
 export const removeResource = async (type, el) => {
-  const map = records[type];
+  const db = records[type];
 
-  map.remove(el._id);
+  const doc = await db.get(el._id).catch(() => {});
+
+  if (doc) {
+    await db.remove(doc);
+  }
 };
 
 export const getResource = async (type, id) => {
-  const map = records[type];
+  const db = records[type];
 
-  return map.get(id);
+  return db.get(id);
 };
 
 export const findResource = async (type, func) => {
-  const map = records[type];
+  const db = records[type];
 
-  return Array.from(map.values()).find(func);
+  const arr = await db.allDocs({ include_docs: true });
+
+  return arr.rows.map((row) => row.doc).find(func);
 };
 
 export const findResources = async (type, func) => {
-  const map = records[type];
+  const db = records[type];
 
   func ||= () => true;
 
-  return Array.from(map.values()).filter(func);
+  const arr = await db.allDocs({ include_docs: true });
+
+  return arr.rows.map((row) => row.doc).filter(func);
 };
 
 export const setLoggedInUser = async (user) => {
-  records.loggedInUser = user?._id;
+  const existing = await records["other"].get("loggedInUser").catch(() => {});
+
+  if (!user) {
+    if (existing) {
+      await records["other"].remove(existing);
+    }
+
+    return;
+  }
+
+  if (existing?.value === user?._id) return;
+
+  const data = { ...existing, _id: "loggedInUser", value: user?._id };
+
+  await records["other"].put(data, { force: true });
+
   addResource("users", user);
 };
 
-export const getLoggedInUserId = async () => records.loggedInUser;
+export const getLoggedInUserId = async () => {
+  const data = await records["other"].get("loggedInUser").catch(() => {});
+  return data?.value;
+};

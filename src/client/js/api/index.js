@@ -100,10 +100,11 @@ const updateAppointment = offline.withoutFallback(async (id, data) =>
  * @returns {Promise<void>}
  * @throws {Error} if appointment does not exist
  */
-const deleteAppointment = async (id) =>
+const deleteAppointment = offline.withoutFallback(async (id) =>
   sendAPIReq("DELETE", `/api/appointments/${id}`).then(() =>
     offline.removeResource("appointments", id),
-  );
+  ),
+);
 
 export const appointments = {
   // fetch
@@ -267,9 +268,9 @@ const allUsersWithSkills = offline.withFallback(
 
     const filtered = users.filter(
       (user) =>
-        (!known.length || known.some((skill) => user.known.includes(skill))) &&
+        (!known.length || known.some((skill) => user.known?.includes(skill))) &&
         (!interests.length ||
-          interests.some((skill) => user.interests.includes(skill))),
+          interests.some((skill) => user.interests?.includes(skill))),
     );
 
     return { data: filtered, pagination: {} };
