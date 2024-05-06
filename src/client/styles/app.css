@@ -45,3 +45,18 @@ body {
     /* Prevent footer from jumping in page before content loads */
     min-height: calc(100vh - var(--bulma-navbar-height));
 }
+
+#global-error {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0;
+    margin-bottom: 0;
+    z-index: 99999;
+    font-weight: bold;
+
+    .delete {
+        top: 0.75rem;
+    }
+}

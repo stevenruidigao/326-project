@@ -24,11 +24,6 @@ export const loadAppointments = async (doc, profileEl, user) => {
   const appts = await appointments.withUser(user._id);
   const userAppointments = appts.appointments.slice(0, 3);
 
-  // const userAppointments = (await appointments.withUser(user._id)).slice(
-  //   0,
-  //   3,
-  // );
-
   if (!userAppointments.length) {
     apptsParentEl.classList.add("is-hidden");
     return;
@@ -51,10 +46,11 @@ export const loadAppointments = async (doc, profileEl, user) => {
     timeEl.title = formatTime(appt.time);
     timeEl.dateTime = date.toISOString();
 
+    const otherUserId =
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId;
     const otherUser =
-      usersInvolved[
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId
-      ];
+      usersInvolved[otherUserId] ?? (await users.get(otherUserId));
+
     const link = new HTMLAppRouteElement();
     link.route = "user";
     link.setArg("id", otherUser._id);
@@ -86,18 +82,13 @@ export default async (args, doc) => {
   }
 
   const id = args.id;
-  const isUsername = id?.startsWith("@");
-  const getMethod = isUsername ? "getByUsername" : "get";
-  const username = isUsername ? id.slice(1) : id;
 
   app.innerHTML = "";
 
   let user = null;
 
   try {
-    user = username
-      ? await users[getMethod](username, { attachments: true, binary: true })
-      : loggedInUser;
+    user = id ? await users.get(id) : loggedInUser;
   } catch (err) {
     console.error("An error occurred while loading user profile --", err);
   }
@@ -204,8 +195,6 @@ export default async (args, doc) => {
           ...data,
         })
         .finally(() => submitEl.classList.remove("is-loading"));
-
-      // TODO backend validation of duplicate email & username
     });
 
     // add link to public view

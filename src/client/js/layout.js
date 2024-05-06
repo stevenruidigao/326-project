@@ -1,4 +1,5 @@
 import { session, users } from "./api/index.js";
+import { isOffline } from "./api/offline.js";
 import { toggleElement, toggleElementAll } from "./routes/helper.js";
 
 let onLoadPromise = null;
@@ -26,6 +27,18 @@ export const setupNavbar = async () => {
     image.src = user.avatarUrl;
     imageContainer.classList.remove("is-hidden");
   }
+};
+
+export const showOfflineStatus = () => {
+  const offline = isOffline();
+
+  toggleElement("#offline-status", "is-hidden", !offline);
+};
+
+export const showGlobalError = (message) => {
+  const errorEl = document.querySelector("#global-error");
+  errorEl.querySelector("span").innerText = message;
+  errorEl.classList.toggle("is-hidden", !message);
 };
 
 /**
@@ -56,4 +69,9 @@ export default () => {
       $target.classList.toggle("is-active");
     });
   });
+
+  setInterval(() => showOfflineStatus(), 10000);
+
+  const $globalErrorClose = document.querySelector("#global-error .delete");
+  $globalErrorClose.addEventListener("click", () => showGlobalError());
 };

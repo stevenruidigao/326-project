@@ -55,7 +55,7 @@ export const configure = (app) => {
       saveUninitialized: false,
       //   FIXME PACKAGE ERRORS. LIKELY BROKEN
       //   store: new PouchDBStore(sessions),
-      store: new (FileStore(session)),
+      store: new (FileStore(session))(),
       cookie: {
         secure: app.get("env") === "production",
         sameSite: "strict",

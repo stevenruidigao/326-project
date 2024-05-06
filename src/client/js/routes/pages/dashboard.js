@@ -35,21 +35,6 @@ export default async (args, doc) => {
   console.log("funny");
   // const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
-  // group messages by user
-  // const conversations = allUserMessages.reduce((acc, msg) => {
-  //   const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-  //   if (!acc[otherUserId]) {
-  //     acc[otherUserId] = [];
-  //   }
-  //   acc[otherUserId].push(msg);
-  //   return acc;
-  // }, {});
-
-  // in-place sort conversations by most recent message, then set it to the most recent message
-  // for (const convoKey in conversations) {
-  //   conversations[convoKey].sort((a, b) => b.time - a.time);
-  // }
-
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
     .map((userId) => {
@@ -69,9 +54,15 @@ export default async (args, doc) => {
   messageListEl.append(
     ...(await Promise.all(
       mostRecentMessages.map(async (msg) => {
-        const otherUser = await api.users.get(
-          msg.fromId === user._id ? msg.toId : msg.fromId,
-        );
+        const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+        const otherUser = await api.users.get(otherUserId);
+
+        if (!otherUser) {
+          console.error(
+            `[dashboard] could not find user with id ${otherUserId}`,
+          );
+          return;
+        }
 
         const msgPreviewEl = doc
           .querySelector(".message-preview")
@@ -131,23 +122,6 @@ export default async (args, doc) => {
 
     return apptEl;
   };
-
-  // /**
-  //  * Fetches all appointments with the current user
-  //  * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
-  //  *
-  //  * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
-  //  */
-  // const getAllApptsWithUser = async () => {
-  //   const allAppts = [];
-  //   for (let curPage = 1; ; curPage++) {
-  //     const response = await api.appointments.withUser(user._id, curPage);
-  //     if (response.length === 0) break;
-
-  //     allAppts.push(...Array.from(response));
-  //   }
-  //   return allAppts;
-  // };
 
   // get all future appointments
   const curTime = Date.now();

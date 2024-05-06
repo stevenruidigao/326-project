@@ -213,6 +213,8 @@ export const load = async (routeName, args = {}, search) => {
   // of it.
   routeStyles.textContent = css || "";
 
+  layout.showGlobalError();
+
   await init(args, document);
 
   // After loading the page, finalize the route change.
@@ -565,8 +567,6 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
 /**
  * Registers `<a is="app-route">` custom element for linking
  * and handler for changing state (backwards/forwards in history).
- *
- * MOCK ONLY: Waits for mock data before loading first page!
  */
 export default () => {
   document.head.appendChild(routeStyles);
@@ -577,8 +577,7 @@ export default () => {
   });
 
   // Initialize page
-  // --> wait for mock data
-  mock.then(() => loadPath());
+  loadPath();
 
   /**
    * Define custom element <app-route> for local SPA links

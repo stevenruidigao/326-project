@@ -1,5 +1,6 @@
 import * as api from "../../api/index.js";
 import dayjs, { formatTimeVerbose } from "../../dayjs.js";
+import { showGlobalError } from "../../layout.js";
 import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
@@ -160,37 +161,12 @@ export default async (args, doc) => {
   }
 
   // get user id if logged in, otherwise redirect to home
-  const user = await api.session.getUser();
+  const user = await api.session.current();
 
   if (!user) {
     console.debug("[messages] user not logged in! returning to home");
     return routes.goToRoute("login");
   }
-
-  // const fetchSortedMessages = async () => {
-  //   const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
-
-  //   // group messages by user
-  //   const conversations = allUserMessages.reduce((acc, msg) => {
-  //     const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-  //     if (!acc[otherUserId]) {
-  //       acc[otherUserId] = [];
-  //     }
-  //     acc[otherUserId].push(msg);
-  //     return acc;
-  //   }, {});
-
-  //   // in-place sort conversations by most recent message
-  //   for (const convoKey in conversations) {
-  //     conversations[convoKey].sort((a, b) => b.time - a.time);
-  //   }
-
-  //   console.log("[messages] fetched conversations", conversations);
-
-  //   return conversations;
-  // };
-
-  // let conversations = await fetchSortedMessages();
 
   let conversations = await api.messages.allMyConvos();
   console.debug("[messages] fetched conversations", conversations);
@@ -584,12 +560,18 @@ export default async (args, doc) => {
       const msgText = messageInputEl.querySelector("#message-box").value;
       if (!msgText) return;
 
-      // send message and clear the input
-      const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
-      messageInputEl.querySelector("#message-box").value = "";
+      try {
+        // send message and clear the input
+        const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
+        messageInputEl.querySelector("#message-box").value = "";
 
-      // render the new message in the conversation
-      messageContainerEl.prepend(await createNewMessageEl(sentMsg));
+        // render the new message in the conversation
+        messageContainerEl.prepend(await createNewMessageEl(sentMsg));
+      } catch (err) {
+        console.error("[messages] error sending message", err);
+        showGlobalError(err);
+      }
+
       // new message requires a rerender of message previews
       renderSidebar(true);
     });
