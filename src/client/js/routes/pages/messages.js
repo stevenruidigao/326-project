@@ -51,9 +51,8 @@ const setupBulmaModals = () => {
   const openModal = async (el, e) => {
     console.log("opening modal with event", e);
 
-    if (el.querySelector("#status-message .has-text-success") && el.querySelector("#status-message .has-text-danger")) {
-      el.querySelector("#status-message .has-text-success").classList.add("is-hidden");
-      el.querySelector("#status-message .has-text-danger").classList.add("is-hidden");
+    if (el.querySelector("#status-message")) {
+      el.querySelector("#status-message").innerHTML = "";
     }
 
     if (e.target?.dataset?.apptid) {
@@ -363,17 +362,42 @@ export default async (args, doc) => {
           parsedApptData,
         );
 
-        createAppointmentForm.querySelector("#status-message .has-text-success").classList.remove("is-hidden");
-        createAppointmentForm.querySelector("#status-message .has-text-danger").classList.add("is-hidden");
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment created successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          createAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        createAppointmentForm.querySelector("#status-message").appendChild(notification);
+        
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
+
       } catch (err) {
         // TODO add user-facing error message
         console.error("[messages] error creating appointment", err);
 
-        createAppointmentForm.querySelector("#status-message .has-text-success").classList.add("is-hidden");
-        createAppointmentForm.querySelector("#status-message .has-text-danger").classList.remove("is-hidden");
-        createAppointmentForm.querySelector("#status-message .has-text-danger").innerText = err.message;
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          createAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        createAppointmentForm.querySelector("#status-message").appendChild(notification);
       }
 
       createBtn.classList.remove("is-loading");
