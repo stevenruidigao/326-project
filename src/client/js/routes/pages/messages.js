@@ -50,6 +50,12 @@ const setupBulmaModals = () => {
 
   const openModal = async (el, e) => {
     console.log("opening modal with event", e);
+
+    if (el.querySelector("#status-message .has-text-success") && el.querySelector("#status-message .has-text-danger")) {
+      el.querySelector("#status-message .has-text-success").classList.add("is-hidden");
+      el.querySelector("#status-message .has-text-danger").classList.add("is-hidden");
+    }
+
     if (e.target?.dataset?.apptid) {
       const loggedInUser = await api.session.current();
       const apptId = e.target.dataset.apptid;
@@ -357,11 +363,17 @@ export default async (args, doc) => {
           parsedApptData,
         );
 
+        createAppointmentForm.querySelector("#status-message .has-text-success").classList.remove("is-hidden");
+        createAppointmentForm.querySelector("#status-message .has-text-danger").classList.add("is-hidden");
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
       } catch (err) {
         // TODO add user-facing error message
         console.error("[messages] error creating appointment", err);
+
+        createAppointmentForm.querySelector("#status-message .has-text-success").classList.add("is-hidden");
+        createAppointmentForm.querySelector("#status-message .has-text-danger").classList.remove("is-hidden");
+        createAppointmentForm.querySelector("#status-message .has-text-danger").innerText = err.message;
       }
 
       createBtn.classList.remove("is-loading");
