@@ -376,6 +376,8 @@ export default async (args, doc) => {
         notification.appendChild(closeNotificationButton);
 
         createAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
         
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
@@ -398,6 +400,8 @@ export default async (args, doc) => {
         notification.appendChild(closeNotificationButton);
 
         createAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
       }
 
       createBtn.classList.remove("is-loading");
