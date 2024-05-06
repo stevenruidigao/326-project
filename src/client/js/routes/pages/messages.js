@@ -56,32 +56,60 @@ const setupBulmaModals = () => {
     }
 
     if (e.target?.dataset?.apptid) {
-      const loggedInUser = await api.session.current();
-      const apptId = e.target.dataset.apptid;
-      const userId = loggedInUser._id;
-      const currentAppt = await api.appointments.get(apptId);
+      try {
+        const loggedInUser = await api.session.current();
+        const apptId = e.target.dataset.apptid;
+        const userId = loggedInUser._id;
+        const currentAppt = await api.appointments.get(apptId);
 
-      console.log("[messages] opening edit appt modal", currentAppt);
+        console.log("[messages] opening edit appt modal", currentAppt);
+  
+        el.querySelector("input[name='topic']").value = currentAppt.topic;
+        el.querySelector("input[name='url']").value = currentAppt.url;
+  
+        // needed due to timezones
+        const date = dayjs(currentAppt.time);
+        el.querySelector("input[name='time']").value =
+          date.format("YYYY-MM-DDTHH:mm");
+  
+        el.querySelector(
+          `input[name='role'][value='${
+            currentAppt.teacherId === userId ? "teaching" : "learning"
+          }']`,
+        ).checked = true;
+        el.querySelector(
+          `input[name='type'][value='${currentAppt.type}']`,
+        ).checked = true;
+  
+        const form = el.querySelector("form");
+        form.dataset.apptid = apptId;
 
-      el.querySelector("input[name='topic']").value = currentAppt.topic;
-      el.querySelector("input[name='url']").value = currentAppt.url;
+      } catch (err) {
+        console.error("[messages] error fetching appointment", err);
 
-      // needed due to timezones
-      const date = dayjs(currentAppt.time);
-      el.querySelector("input[name='time']").value =
-        date.format("YYYY-MM-DDTHH:mm");
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
 
-      el.querySelector(
-        `input[name='role'][value='${
-          currentAppt.teacherId === userId ? "teaching" : "learning"
-        }']`,
-      ).checked = true;
-      el.querySelector(
-        `input[name='type'][value='${currentAppt.type}']`,
-      ).checked = true;
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
 
-      const form = el.querySelector("form");
-      form.dataset.apptid = apptId;
+        closeNotificationButton.addEventListener("click", () => {
+          if (e.target?.parentElement) {
+            e.target.parentElement.removeChild(notification);
+          }
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        if (e.target?.parentElement) {
+          e.target.parentElement.appendChild(notification);
+        }
+
+        notification.scrollIntoView();
+
+        return;
+      }
     }
 
     el.classList.add("is-active");
@@ -409,22 +437,67 @@ export default async (args, doc) => {
 
     // add event listener to edit appointment
     const editAppointmentForm = editApptModal.querySelector("#form-edit-appt");
+
+    const editApptBtn = editApptModal.querySelector(".is-success");
+
     editAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
       e.preventDefault();
 
-      const apptId = e.target.dataset.apptid;
+      editApptBtn.classList.add("is-loading");
 
-      const formData = new FormData(editAppointmentForm);
+      try {
+        const apptId = e.target.dataset.apptid;
 
-      const parsedApptData = parseApptFormData(formData);
+        const formData = new FormData(editAppointmentForm);
 
-      await api.appointments.update(apptId, parsedApptData);
+        const parsedApptData = parseApptFormData(formData);
 
-      console.log(parsedApptData);
+        await api.appointments.update(apptId, parsedApptData);
 
-      // route refresh to update the conversation & close modals
-      routes.refresh();
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment edited successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
+
+        console.log(parsedApptData);
+
+        // route refresh to update the conversation & close modals
+        routes.refresh();
+      } catch (err) {
+        console.error("[messages] error editing appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
+      }
+
+      editApptBtn.classList.remove("is-loading");
     });
 
     editDeleteBtn.addEventListener("click", async (e) => {
@@ -434,10 +507,44 @@ export default async (args, doc) => {
         const apptId = editAppointmentForm.dataset.apptid;
         await api.appointments.delete(apptId);
 
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment deleted successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
+
         // route refresh to update the conversation & close modals
         routes.refresh();
       } catch (err) {
         console.error("[messages] error deleting appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+
+        notification.scrollIntoView();
       }
 
       editDeleteBtn.classList.remove("is-loading");
