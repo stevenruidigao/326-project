@@ -35,15 +35,6 @@ export const withFallback = (func, fallback) => {
   return async (...args) => {
     if (isOffline()) {
       const data = await fallback(...args);
-
-      console.debug(
-        "[offline] withFallback",
-        ...args,
-        "- returning fallback",
-        data,
-      );
-
-      return data;
     }
 
     try {
@@ -94,8 +85,6 @@ export const addResource = async (type, el) => {
 
   const db = records[type];
   const doc = await db.get(el._id).catch(() => {});
-
-  if ("skills" in el) console.trace("addResource", type, el, doc);
 
   await db.put({ ...el, _rev: doc?._rev }, { force: true });
 
