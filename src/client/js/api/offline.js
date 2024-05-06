@@ -2,6 +2,14 @@ import "/js/libs/pouchdb.min.js";
 
 import { showOfflineStatus } from "../layout.js";
 
+/**
+ * @typedef {import("../../../server/db/users.js").User} User
+ * @typedef {import("../../../server/db/messages.js").Message} Message
+ * @typedef {import("../../../server/db/appointments.js").Appointment} Appointment
+ *
+ * @typedef {{ users: User, messages: Message, appointments: Appointment }} RecordTypes
+ */
+
 export const records = {
   users: new PouchDB("offline-users"),
   appointments: new PouchDB("offline-appointments"),
@@ -9,12 +17,21 @@ export const records = {
   other: new PouchDB("offline-other"),
 };
 
-window.records = records; // TODO testing
-
+/**
+ * Return whether the user is offline.
+ * @returns {boolean}
+ */
 export const isOffline = () => !navigator.onLine || !!window.TEST_OFFLINE;
 
-// Chrome: TypeError: Failed to fetch
-// Firefox: TypeError: NetworkError when attempting to fetch resource.
+/**
+ * Parse whether an error is a network error.
+ * Primarily concerned with offline status vs other network issues.
+ * If it is, show the offline status in navbar.
+ * - Chrome: TypeError: Failed to fetch
+ * - Firefox: TypeError: NetworkError when attempting to fetch resource.
+ * @param {Error} err
+ * @returns {boolean}
+ */
 export const isNetworkError = (err) => {
   const is =
     err.message === "Failed to fetch" ||
@@ -26,6 +43,10 @@ export const isNetworkError = (err) => {
 };
 
 /**
+ * Wrap API call with an offline fallback to use when offline.
+ * The fallback will be called if the user is offline or if the API call fails due to a network error.
+ * When a network error occurs, the offline status will be shown in the navbar,
+ * which may be hidden quickly after, depending on the value of `navigator.onLine`.
  * @template {T}
  * @param {T} func
  * @param {T} fallback
@@ -50,6 +71,8 @@ export const withFallback = (func, fallback) => {
 };
 
 /**
+ * Wrap API call with no support for offline usage (eg. POST requests).
+ * @see withFallback
  * @template T
  * @param {T} func
  * @returns {T}
@@ -72,13 +95,12 @@ export const withoutFallback = (func) => {
   };
 };
 
-// TODO use pouchdb doofus!!!!
-
 /**
- * @template {User|Message|Appointment} T
- * @param {"users"|"messages"|"appointments"} type
- * @param {T} el
- * @returns {T}
+ * Add a resource to the offline database. If it already exists, update it.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {RecordTypes[T]} el
+ * @returns {Promise<RecordTypes[T]>}
  */
 export const addResource = async (type, el) => {
   if (!el?._id) return;
@@ -91,10 +113,24 @@ export const addResource = async (type, el) => {
   return el;
 };
 
+/**
+ * Add multiple resources to the offline database.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {RecordTypes[T][]} el
+ * @returns {Promise<RecordTypes[T][]>}
+ */
 export const addResources = async (type, data) => {
   return Promise.all(data.map((el) => addResource(type, el)));
 };
 
+/**
+ * Delete a resource (if it exists) from the offline database.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {RecordTypes[T]} el
+ * @returns {Promise<void>}
+ */
 export const removeResource = async (type, el) => {
   const db = records[type];
 
@@ -105,12 +141,26 @@ export const removeResource = async (type, el) => {
   }
 };
 
+/**
+ * Get a resource by its ID from the offline database.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {string} id
+ * @returns {Promise<RecordTypes[T]>}
+ */
 export const getResource = async (type, id) => {
   const db = records[type];
 
   return db.get(id);
 };
 
+/**
+ * Find the first matching resource in the offline database.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {(item: RecordTypes[T]) => boolean} func
+ * @returns {Promise<RecordTypes[T]?>}
+ */
 export const findResource = async (type, func) => {
   const db = records[type];
 
@@ -119,6 +169,13 @@ export const findResource = async (type, func) => {
   return arr.rows.map((row) => row.doc).find(func);
 };
 
+/**
+ * Find all the matching resources in the offline database.
+ * @template {keyof RecordTypes} T
+ * @param {T} type
+ * @param {(item: RecordTypes[T]) => boolean} func
+ * @returns {Promise<RecordTypes[T][]>}
+ */
 export const findResources = async (type, func) => {
   const db = records[type];
 
@@ -129,6 +186,11 @@ export const findResources = async (type, func) => {
   return arr.rows.map((row) => row.doc).filter(func);
 };
 
+/**
+ * Set the logged in user in the offline database.
+ * @param {User} user
+ * @returns {Promise<void>}
+ */
 export const setLoggedInUser = async (user) => {
   const existing = await records["other"].get("loggedInUser").catch(() => {});
 
@@ -149,6 +211,10 @@ export const setLoggedInUser = async (user) => {
   addResource("users", user);
 };
 
+/**
+ * Get the ID of the logged in user from the offline database.
+ * @returns {Promise<string?>}
+ */
 export const getLoggedInUserId = async () => {
   const data = await records["other"].get("loggedInUser").catch(() => {});
   return data?.value;
