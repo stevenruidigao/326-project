@@ -1,4 +1,4 @@
-import {createDB, withPagination, withSerializer} from "./index.js";
+import { createDB, withPagination, withSerializer } from "./index.js";
 
 const db = createDB("users");
 
@@ -36,13 +36,14 @@ export const serialize = withSerializer((user, loggedInId) => {
   const avatar = user._attachments?.avatar;
 
   const data = {
-    _id : user._id,
-    username : user.username,
-    name : user.name,
-    known : user.known || [],
-    interests : user.interests || [],
-    avatarUrl : avatar ? `/api/users/${user._id}/avatar?${avatar.digest}`
-                       : "/images/logo.png",
+    _id: user._id,
+    username: user.username,
+    name: user.name,
+    known: user.known || [],
+    interests: user.interests || [],
+    avatarUrl: avatar
+      ? `/api/users/${user._id}/avatar?${avatar.digest}`
+      : "/images/logo.png",
   };
 
   // if logged in
@@ -53,7 +54,7 @@ export const serialize = withSerializer((user, loggedInId) => {
   return data;
 });
 
-export const VALID_KEYS = [ "name", "username", "email", "known", "interests" ];
+export const VALID_KEYS = ["name", "username", "email", "known", "interests"];
 
 const USERS_PAGE_SIZE = 5;
 
@@ -70,10 +71,10 @@ const userPagination = withPagination(USERS_PAGE_SIZE);
  */
 export const getByUsername = async (username) => {
   const result = await db.find({
-    selector : {
-      username : {$eq : username},
+    selector: {
+      username: { $eq: username },
     },
-    limit : 1,
+    limit: 1,
   });
 
   return result.docs[0];
@@ -86,10 +87,10 @@ export const getByUsername = async (username) => {
  */
 export const getByEmail = async (email) => {
   const result = await db.find({
-    selector : {
-      email : {$eq : email},
+    selector: {
+      email: { $eq: email },
     },
-    limit : 1,
+    limit: 1,
   });
 
   return result.docs[0];
@@ -102,10 +103,8 @@ export const getByEmail = async (email) => {
 export const getAvatar = async (user) => {
   const avatar = user._attachments?.avatar;
 
-  if (!avatar)
-    return null;
-  else if (avatar.data)
-    return avatar.data;
+  if (!avatar) return null;
+  else if (avatar.data) return avatar.data;
 
   const attachment = await db.getAttachment(user._id, "avatar");
 
@@ -143,27 +142,26 @@ export const getById = async (id) => {
  * @returns {Promise<PaginatedArray<User>>}
  */
 export const allWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
-    // TODO probably fix logic
-    userPagination(
-        page,
-        (opts) => db.find({
-          selector : {
-            $and : [
-              skillsHad.length && {
-                $or : skillsHad.map((skill) => ({
-                                      known : {$elemMatch : {$eq : skill}},
-                                    })),
-              },
-              skillsWant.length && {
-                $or : skillsWant.map((skill) => ({
-                                       interests : {$elemMatch : {$eq : skill}},
-                                     })),
-              },
-            ].filter(Boolean),
+  // TODO probably fix logic
+  userPagination(page, (opts) =>
+    db.find({
+      selector: {
+        $and: [
+          skillsHad.length && {
+            $or: skillsHad.map((skill) => ({
+              known: { $elemMatch: { $eq: skill } },
+            })),
           },
-          ...opts,
-        }),
-    );
+          skillsWant.length && {
+            $or: skillsWant.map((skill) => ({
+              interests: { $elemMatch: { $eq: skill } },
+            })),
+          },
+        ].filter(Boolean),
+      },
+      ...opts,
+    }),
+  );
 
 // modify
 
@@ -175,7 +173,7 @@ export const allWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
 export const create = async (user) => {
   const result = await db.post(user);
 
-  return {...user, _id : result.id, _rev : result.rev};
+  return { ...user, _id: result.id, _rev: result.rev };
 };
 
 /**
@@ -188,10 +186,10 @@ export const create = async (user) => {
 export const update = async (id, data) => {
   const result = await db.put({
     ...data,
-    _id : id,
+    _id: id,
   });
 
-  return {...data, _id : id, _rev : result.rev};
+  return { ...data, _id: id, _rev: result.rev };
 };
 
 /**
@@ -202,8 +200,7 @@ export const update = async (id, data) => {
  * @returns {Promise<void>}
  */
 export const updateAvatar = async (user, mimetype, avatar) => {
-  if (!user)
-    throw new Error("User not found");
+  if (!user) throw new Error("User not found");
 
   if (!avatar) {
     if (user._attachments?.avatar) {

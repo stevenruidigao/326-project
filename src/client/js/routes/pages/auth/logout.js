@@ -1,7 +1,7 @@
-import {session, users} from "../../../api/index.js";
-import {setLogOut} from "../../../api/offline.js";
-import {setupNavbar, showGlobalError} from "../../../layout.js";
-import {app, setTitle} from "../../helper.js";
+import { session, users } from "../../../api/index.js";
+import { setLogOut } from "../../../api/offline.js";
+import { setupNavbar, showGlobalError } from "../../../layout.js";
+import { app, setTitle } from "../../helper.js";
 import * as routes from "../../index.js";
 
 /**

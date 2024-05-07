@@ -1,6 +1,6 @@
 import * as api from "../../api/index.js";
-import {app, setTitle} from "../helper.js";
-import {getCurrent, goToRoute, HTMLAppRouteElement} from "../index.js";
+import { app, setTitle } from "../helper.js";
+import { getCurrent, goToRoute, HTMLAppRouteElement } from "../index.js";
 
 /**
  * Generates search parameters based on the values of the "search-has" and
@@ -13,15 +13,17 @@ function generateSearchParams() {
   const wantsInput = document.getElementById("search-wants");
 
   const params = new URLSearchParams();
-  const knows =
-      hasInput.value.split(/,\s*/g).filter((str) => str !== "").join(",");
-  const interests =
-      wantsInput.value.split(/,\s*/g).filter((str) => str !== "").join(",");
+  const knows = hasInput.value
+    .split(/,\s*/g)
+    .filter((str) => str !== "")
+    .join(",");
+  const interests = wantsInput.value
+    .split(/,\s*/g)
+    .filter((str) => str !== "")
+    .join(",");
 
-  if (knows)
-    params.set("knows", knows);
-  if (interests)
-    params.set("interests", interests);
+  if (knows) params.set("knows", knows);
+  if (interests) params.set("interests", interests);
 
   return params;
 }
@@ -41,10 +43,10 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
   const users = await api.users.withSkills(page, skillsHad, skillsWant);
 
   return {
-    users : users.data,
-    getNextPage : async () =>
-        await getUsersPaginated(users.pagination.next, skillsHad, skillsWant),
-    hasNextPage : Boolean(users.pagination.next),
+    users: users.data,
+    getNextPage: async () =>
+      await getUsersPaginated(users.pagination.next, skillsHad, skillsWant),
+    hasNextPage: Boolean(users.pagination.next),
   };
 }
 
@@ -165,10 +167,10 @@ async function createUserCard(user) {
  */
 async function renderUsers(page = 1, skillsHad = [], skillsWant = []) {
   const browseContainer = document.getElementById("browse");
-  const {users, getNextPage, hasNextPage} = await getUsersPaginated(
-      page,
-      skillsHad,
-      skillsWant,
+  const { users, getNextPage, hasNextPage } = await getUsersPaginated(
+    page,
+    skillsHad,
+    skillsWant,
   );
 
   for (const user of users) {
@@ -276,9 +278,9 @@ export default async (args) => {
   // Render search results
   browseContainer.innerHTML = "";
   renderUsers(
-      1,
-      hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-      wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+    1,
+    hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+    wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
   );
 
   // Add event listeners for searching users
@@ -287,9 +289,9 @@ export default async (args) => {
     loadMoreButton.classList.add("is-hidden");
     endOfResults.classList.add("is-hidden");
     renderUsers(
-        1,
-        hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-        wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      1,
+      hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
     );
   });
 
@@ -298,9 +300,9 @@ export default async (args) => {
     loadMoreButton.classList.add("is-hidden");
     endOfResults.classList.add("is-hidden");
     renderUsers(
-        1,
-        hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
-        wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      1,
+      hasInput.value.split(/,\s*/g).filter((str) => str !== ""),
+      wantsInput.value.split(/,\s*/g).filter((str) => str !== ""),
     );
   });
 
