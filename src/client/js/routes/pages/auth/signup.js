@@ -30,8 +30,6 @@ export const showErrors = (errors) => {
 export const register = async (data) => {
   showErrors([]);
 
-  let id = null;
-
   try {
     const user = await users.register(data);
 
