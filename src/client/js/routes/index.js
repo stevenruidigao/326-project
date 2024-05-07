@@ -435,6 +435,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   static observedAttributes = [
     "route",
     "when-active",
+    "when-active-ignore-args",
     "search",
     ":id",
     ":search",
@@ -509,12 +510,14 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
    * Update the active state of the app route link.
    */
   _updateActiveState() {
+    const cur = getCurrent();
     // calculate whether the route name & arguments match
-    const isSameRoute = getCurrent()?.name === this.route;
+    const isSameRoute = cur?.name === this.route || cur?.file === this.file;
     const currentArgsEntries = Object.entries(getCurrent()?.args || {});
     const isSameArgs =
-      currentArgsEntries.length === Object.keys(this.#args).length &&
-      currentArgsEntries.every(([key, val]) => this.#args[key] === val);
+      this.ignoreArgs ||
+      (currentArgsEntries.length === Object.keys(this.#args).length &&
+        currentArgsEntries.every(([key, val]) => this.#args[key] === val));
 
     // we only care if the search params are the same or not if any were
     // specified in the <a> itself!
@@ -553,6 +556,14 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   set route(route) {
     this.setAttribute("route", route);
     this._updateAttrs();
+  }
+
+  get file() {
+    return this.getAttribute("file") ?? routes[this.route]?.file;
+  }
+
+  get ignoreArgs() {
+    return this.hasAttribute("when-active-ignore-args");
   }
 
   /**

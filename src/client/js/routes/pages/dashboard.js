@@ -16,7 +16,7 @@ const APPT_PAGE_SIZE = 8;
 export default async (args, doc) => {
   app.innerHTML = "";
 
-  setTitle('Dashboard');
+  setTitle("Dashboard");
 
   console.log("** dashboard loaded with args", args);
 
