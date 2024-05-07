@@ -64,15 +64,15 @@ const setupBulmaModals = () => {
         const currentAppt = await api.appointments.get(apptId);
 
         console.log("[messages] opening edit appt modal", currentAppt);
-  
+
         el.querySelector("input[name='topic']").value = currentAppt.topic;
         el.querySelector("input[name='url']").value = currentAppt.url;
-  
+
         // needed due to timezones
         const date = dayjs(currentAppt.time);
         el.querySelector("input[name='time']").value =
           date.format("YYYY-MM-DDTHH:mm");
-  
+
         el.querySelector(
           `input[name='role'][value='${
             currentAppt.teacherId === userId ? "teaching" : "learning"
@@ -81,10 +81,9 @@ const setupBulmaModals = () => {
         el.querySelector(
           `input[name='type'][value='${currentAppt.type}']`,
         ).checked = true;
-  
+
         const form = el.querySelector("form");
         form.dataset.apptid = apptId;
-
       } catch (err) {
         console.error("[messages] error fetching appointment", err);
 
@@ -379,13 +378,14 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        createAppointmentForm.querySelector("#status-message").appendChild(notification);
+        createAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
-        
+
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
-
       } catch (err) {
         // TODO add user-facing error message
         console.error("[messages] error creating appointment", err);
@@ -403,7 +403,9 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        createAppointmentForm.querySelector("#status-message").appendChild(notification);
+        createAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
       }
@@ -444,7 +446,9 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
 
@@ -468,7 +472,9 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
       }
@@ -496,7 +502,9 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
 
@@ -518,7 +526,9 @@ export default async (args, doc) => {
 
         notification.appendChild(closeNotificationButton);
 
-        editAppointmentForm.querySelector("#status-message").appendChild(notification);
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
 
         notification.scrollIntoView();
       }
