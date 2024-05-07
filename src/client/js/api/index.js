@@ -311,6 +311,7 @@ export const users = {
 
 // session user data to prevent multiple fetches
 let currentUser = undefined;
+let isLoadingCurrentUser = false;
 
 /**
  * Store the current session user
@@ -327,17 +328,24 @@ const setSessionCurrent = (u) => {
  * @returns {Promise<User?>}
  */
 const getSessionCurrent = async () => {
-  if (currentUser !== undefined) return currentUser;
+  if (currentUser !== undefined || isLoadingCurrentUser) return currentUser;
 
   // avoid fetching while already fetching
-  setSessionCurrent(null);
+  isLoadingCurrentUser = true;
 
   try {
-    return setSessionCurrent(await getSessionUser());
+    setSessionCurrent(await getSessionUser());
+
+    isLoadingCurrentUser = false;
+
+    return currentUser;
   } catch (err) {
     setSessionCurrent(undefined);
+    isLoadingCurrentUser = false;
+
     throw err;
   }
+
 };
 
 /**
