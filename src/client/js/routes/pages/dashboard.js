@@ -1,4 +1,4 @@
-import { app } from "../helper.js";
+import { app, setTitle } from "../helper.js";
 import * as api from "../../api/index.js";
 import * as routes from "../index.js";
 import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
@@ -15,6 +15,8 @@ const APPT_PAGE_SIZE = 8;
  */
 export default async (args, doc) => {
   app.innerHTML = "";
+
+  setTitle('Dashboard');
 
   console.log("** dashboard loaded with args", args);
 
