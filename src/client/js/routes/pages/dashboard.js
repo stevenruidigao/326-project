@@ -87,6 +87,14 @@ export default async (args, doc) => {
     )),
   );
 
+  // Add default message if user has no conversations
+  if (mostRecentMessages.length === 0) {
+    const defaultMsg = document.createElement("div");
+    defaultMsg.className = "box m-1";
+    defaultMsg.textContent = "You have no recent messages.";
+    messageListEl.append(defaultMsg);
+  }
+
   app.append(messageContainerEl);
 
   // ################# show all upcoming appointments? #################
@@ -147,5 +155,12 @@ export default async (args, doc) => {
     )),
   );
 
+  // Empty appointment message
+  if (futureAppts.length === 0) {
+    const emptyMsg = document.createElement("div");
+    emptyMsg.className = "box";
+    emptyMsg.textContent = "You have no upcoming appointments.";
+    apptContainerEl.querySelector("#appointment-list").append(emptyMsg);
+  }
   app.append(apptContainerEl);
 };
