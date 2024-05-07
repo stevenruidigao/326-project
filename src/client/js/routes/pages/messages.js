@@ -15,7 +15,7 @@ export const onunload = async (prev, next) => {
   // messages --> messages
 
   if (prev.file === "messages" && next.file === "messages") {
-    console.log(`[messages] not unloading, loading new conversation!`);
+    console.log("[messages] not unloading, loading new conversation!");
   } else {
     console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
   }
@@ -540,7 +540,7 @@ export default async (args, doc) => {
   }
 
   if (!args.id) {
-    setTitle(`My Messages`);
+    setTitle("My Messages");
     const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
     convoWrapperEl.appendChild(blankConvoEl);
 

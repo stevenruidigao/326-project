@@ -86,7 +86,7 @@ async function createUserCard(user) {
   profilePicture.loading = "lazy";
   profilePicture.className = "is-rounded is-clipped";
   profilePicture.src = user.avatarUrl;
-  profilePicture.alt = `user avatar`;
+  profilePicture.alt = "user avatar";
 
   figure.appendChild(profilePicture);
 
