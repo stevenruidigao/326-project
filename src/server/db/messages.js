@@ -40,7 +40,12 @@ export const getAllMessagesInvolvingUser = async (userId) => {
     db.find({ selector: { toId: { $eq: userId } } }),
   ]);
 
-  return [...from.docs, ...to.docs];
+  const messages = [...from.docs, ...to.docs];
+
+  // filter out duplicates just in case :)
+  return messages.filter(
+    (msg, index) => messages.findIndex((v) => v._id === msg._id) === index,
+  );
 };
 
 /**

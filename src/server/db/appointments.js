@@ -43,7 +43,12 @@ export const getAllAppointmentsForUser = async (userId) => {
     db.find({ selector: { learnerId: userId } }),
   ]);
 
-  return [...teacher.docs, ...learner.docs];
+  const appts = [...teacher.docs, ...learner.docs];
+
+  // filter out duplicates just in case :)
+  return appts.filter(
+    (msg, index) => appts.findIndex((v) => v._id === msg._id) === index,
+  );
 };
 
 /**
