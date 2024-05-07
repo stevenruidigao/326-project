@@ -250,5 +250,7 @@ export const setLogOut = (value) => localStorage.setItem("logOut", value);
 
 /**
  * Get whether to log out the user and clear the offline database.
+ * 
+ * @returns {boolean}
  */
 export const shouldLogOut = () => localStorage.getItem("logOut") === "true";
