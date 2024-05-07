@@ -30,6 +30,18 @@ authConfigure(app);
 
 app.use("/api", api);
 
+app.use((req, res) =>
+  res.sendFile(path.resolve(__dirname, "../client/index.html")),
+);
+
+app.use((err, req, res) => {
+  console.error(err);
+
+  if (err.stack && process.env.NODE_ENV === "production") delete err.stack;
+
+  res.status(err.status || 500).send(err);
+});
+
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

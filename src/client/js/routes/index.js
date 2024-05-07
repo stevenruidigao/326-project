@@ -8,7 +8,7 @@ import * as pages from "./pages.js";
  * Prefix for all paths in the app
  * @type {string}
  */
-export const PATH_PREFIX = "/#";
+export const PATH_PREFIX = "";
 
 /**
  * Regular expression to match the path prefix
