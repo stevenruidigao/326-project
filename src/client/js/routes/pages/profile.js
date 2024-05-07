@@ -77,7 +77,7 @@ export default async (args, doc) => {
   const loggedInUser = await session.current();
 
   if (!args.id && !loggedInUser) {
-    goToRoute("login");
+    goToRoute("login", null, null, true);
     return;
   }
 

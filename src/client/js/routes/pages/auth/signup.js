@@ -33,7 +33,7 @@ export const register = async (data) => {
 
     session.setCurrent(user);
 
-    goToRoute("dashboard");
+    goToRoute("dashboard", null, null, true);
     setupNavbar();
   } catch (err) {
     console.error("An error occurred during registration --", err);
