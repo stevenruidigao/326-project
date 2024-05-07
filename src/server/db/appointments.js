@@ -1,7 +1,7 @@
 import { APIError } from "../api/helpers.js";
 import { createDB, withPagination, withSerializer } from "./index.js";
 
-const db = createDB("appointments");
+export const db = createDB("appointments");
 
 /**
  * @typedef {{
@@ -38,12 +38,12 @@ export const getAppointment = async (apptId) => {
  * @returns {Promise<Appointment[]>}
  */
 export const getAllAppointmentsForUser = async (userId) => {
-  const res = await db.find({
-    selector: {
-      $or: [{ teacherId: userId }, { learnerId: userId }],
-    },
-  });
-  return res.docs;
+  const [teacher, learner] = await Promise.all([
+    db.find({ selector: { teacherId: userId } }),
+    db.find({ selector: { learnerId: userId } }),
+  ]);
+
+  return [...teacher.docs, ...learner.docs];
 };
 
 /**

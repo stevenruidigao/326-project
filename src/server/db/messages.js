@@ -1,6 +1,6 @@
 import { createDB, withPagination, withSerializer } from "./index.js";
 
-const db = createDB("messages");
+export const db = createDB("messages");
 
 /**
  * @typedef {{
@@ -35,13 +35,12 @@ const db = createDB("messages");
  * @returns {Promise<Message[]>}
  */
 export const getAllMessagesInvolvingUser = async (userId) => {
-  const res = await db.find({
-    selector: {
-      $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-    },
-    // sort: ["time"],
-  });
-  return res.docs;
+  const [from, to] = await Promise.all([
+    db.find({ selector: { fromId: { $eq: userId } } }),
+    db.find({ selector: { toId: { $eq: userId } } }),
+  ]);
+
+  return [...from.docs, ...to.docs];
 };
 
 /**

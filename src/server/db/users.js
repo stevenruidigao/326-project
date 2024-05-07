@@ -1,6 +1,6 @@
 import { createDB, withPagination, withSerializer } from "./index.js";
 
-const db = createDB("users");
+export const db = createDB("users");
 
 /**
  * @typedef {{
