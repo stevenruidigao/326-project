@@ -1,7 +1,5 @@
 import "/js/libs/pouchdb.min.js";
 
-import { showOfflineStatus } from "../layout.js";
-
 /**
  * @typedef {import("../../../server/db/users.js").User} User
  * @typedef {import("../../../server/db/messages.js").Message} Message
@@ -18,10 +16,22 @@ export const records = {
 };
 
 /**
- * Return whether the user is offline.
+ * Whether the last request failed due to a network error.
+ */
+let lastRequestFailed = false;
+
+/**
+ * Return whether the user is online.
  * @returns {boolean}
  */
-export const isOffline = () => !navigator.onLine || !!window.TEST_OFFLINE;
+export const isOnline = () => navigator.onLine && !window.TEST_OFFLINE;
+
+/**
+ * Return whether the user is offline.
+ * Takes into account whether the last request failed due to a network error
+ * @returns {boolean}
+ */
+export const isOffline = () => !isOnline() || lastRequestFailed;
 
 /**
  * Parse whether an error is a network error.
@@ -37,7 +47,7 @@ export const isNetworkError = (err) => {
     err.message === "Failed to fetch" ||
     err.message === "NetworkError when attempting to fetch resource.";
 
-  if (is) showOfflineStatus(true);
+  if (is) lastRequestFailed = true;
 
   return is;
 };
@@ -54,13 +64,13 @@ export const isNetworkError = (err) => {
  */
 export const withFallback = (func, fallback) => {
   return async (...args) => {
-    if (isOffline()) {
+    if (!isOnline()) {
       return fallback(...args);
     }
 
     try {
       const res = await func(...args);
-      showOfflineStatus(false);
+      lastRequestFailed = false;
       return res;
     } catch (err) {
       if (isNetworkError(err)) return fallback(...args);
@@ -81,11 +91,11 @@ export const withoutFallback = (func) => {
   return async (...args) => {
     const error = new Error("You cannot perform this action while offline.");
 
-    if (isOffline()) throw error;
+    if (!isOnline()) throw error;
 
     try {
       const res = await func(...args);
-      showOfflineStatus(false);
+      lastRequestFailed = false;
       return res;
     } catch (err) {
       if (isNetworkError(err)) throw error;
@@ -187,12 +197,25 @@ export const findResources = async (type, func) => {
 };
 
 /**
+ * Clear all offline databases except 'other'
+ */
+export const clear = () =>
+  Promise.all(
+    Object.entries(records)
+      .filter(([_, db]) => db.name !== "other")
+      .map(async ([name, db]) => {
+        await db.destroy({ force: true });
+        records[name] = new PouchDB(name);
+      }),
+  );
+
+/**
  * Set the logged in user in the offline database.
  * @param {User} user
  * @returns {Promise<void>}
  */
 export const setLoggedInUser = async (user) => {
-  const existing = await records["other"].get("loggedInUser").catch(() => {});
+  const existing = await records["other"].get("loggedInUser").catch(() => null);
 
   if (!user) {
     if (existing) {
@@ -219,3 +242,13 @@ export const getLoggedInUserId = async () => {
   const data = await records["other"].get("loggedInUser").catch(() => {});
   return data?.value;
 };
+
+/**
+ * Set whether the user should be logged out.
+ */
+export const setLogOut = (value) => localStorage.setItem("logOut", value);
+
+/**
+ * Get whether to log out the user and clear the offline database.
+ */
+export const shouldLogOut = () => localStorage.getItem("logOut") === "true";

@@ -2,6 +2,7 @@ import * as routes from "../../index.js";
 import { session, users } from "../../../api/index.js";
 import { setupNavbar, showGlobalError } from "../../../layout.js";
 import { app, setTitle } from "../../helper.js";
+import { setLogOut } from "../../../api/offline.js";
 
 /**
  * Log the user out if there is a session logged in.
@@ -16,6 +17,7 @@ export default async () => {
 
   if (user) {
     try {
+      console.debug("[logout] LOGGING OUT");
       await users.logout();
       session.setCurrent(null);
       await setupNavbar();
@@ -26,5 +28,5 @@ export default async () => {
     }
   }
 
-  await routes.goToRoute("home");
+  await routes.goToRoute("home", null, null, true);
 };

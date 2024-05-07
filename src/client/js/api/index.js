@@ -222,7 +222,13 @@ const registerUser = offline.withoutFallback(
  * Logout user
  * @returns {Promise<void>}
  */
-const logoutUser = offline.withoutFallback(() => sendAPIReq("POST", "/logout"));
+const logoutUser = offline.withFallback(
+  () => sendAPIReq("POST", "/logout").then(() => offline.setLogOut(false)),
+  async () => {
+    await offline.clear();
+    await offline.setLogOut(true);
+  },
+);
 
 /**
  * Obtain user by ID
@@ -345,7 +351,6 @@ const getSessionCurrent = async () => {
 
     throw err;
   }
-
 };
 
 /**

@@ -1,3 +1,4 @@
+import { isNetworkError, shouldLogOut } from "../api/offline.js";
 import * as layout from "../layout.js";
 
 import { app } from "./helper.js";
@@ -189,6 +190,10 @@ export const load = async (routeName, args = {}, search) => {
     layout.showGlobalError("Error loading page. Please refresh and try again.");
     console.error(`[routes] Error loading route '${routeName}' --`, err);
 
+    if (isNetworkError(err)) {
+      layout.showOfflineStatus();
+    }
+
     loadingEl.classList.remove("is-active");
     return;
   }
@@ -312,7 +317,7 @@ export const convertPathToRoute = (origPath) => {
       return {
         route: routeName,
         data: args,
-        search: search && new URLSearchParams(search),
+        search: search ? new URLSearchParams(search) : null,
       };
     }
   }
@@ -327,9 +332,10 @@ export const convertPathToRoute = (origPath) => {
  * @param {Object} args arguments to pass to route  -- pass force=true to force
  *     pushState
  * @param {URLSearchParams} search
+ * @param {boolean} replace whether to replace the current history state
  * @example goToRoute(user, { id: 5 });
  */
-export const goToRoute = (name, args, search) => {
+export const goToRoute = (name, args, search, replace = false) => {
   args ||= {};
 
   if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
@@ -345,11 +351,15 @@ export const goToRoute = (name, args, search) => {
   // sort params to ensure consistency
   search?.sort?.();
 
-  const data = { route: name, data: args, search: search?.toString() };
+  const data = { route: name, data: args, search: search?.toString() || null };
 
   // only push state is path is not equal AND push state is not being forced
   if (path !== getPath() && !args.force)
-    history.pushState(data, "", PATH_PREFIX + path);
+    history[replace ? "replaceState" : "pushState"](
+      data,
+      "",
+      PATH_PREFIX + path,
+    );
 
   return load(name, args, search);
 };
@@ -381,7 +391,14 @@ export const loadPath = (def) => {
   const path = getPath(true);
   const info = def || convertPathToRoute(path);
 
-  console.debug("[routes] loadPath() path =", path, "=>", info);
+  console.debug(
+    "[routes] loadPath() path =",
+    path,
+    "=>",
+    info,
+    " --- def =",
+    def,
+  );
 
   // coming from popstate, cannot serialize URLSearchParams
   if (typeof info?.search === "string")
@@ -502,6 +519,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     // we only care if the search params are the same or not if any were
     // specified in the <a> itself!
     const currentSearch = getCurrent()?.search;
+
     currentSearch?.sort();
     this.#search?.sort();
     const isSameSearch =
@@ -586,8 +604,16 @@ export default () => {
     loadPath(ev?.state);
   });
 
-  // Initialize page
-  loadPath();
+  const path = getPath();
+
+  // Check if the user logged out while offline
+  if (shouldLogOut()) {
+    // Log the user out, then load the correct page
+    load("logout").then(() => loadPath(convertPathToRoute(path)));
+  } else {
+    // Initialize page
+    loadPath();
+  }
 
   /**
    * Define custom element <app-route> for local SPA links

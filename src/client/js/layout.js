@@ -1,4 +1,4 @@
-import { session, users } from "./api/index.js";
+import { session } from "./api/index.js";
 import { isOffline } from "./api/offline.js";
 import { toggleElement, toggleElementAll } from "./routes/helper.js";
 

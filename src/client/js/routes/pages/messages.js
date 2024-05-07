@@ -165,7 +165,7 @@ export default async (args, doc) => {
 
   if (!user) {
     console.debug("[messages] user not logged in! returning to home");
-    return routes.goToRoute("login");
+    return routes.goToRoute("login", null, null, true);
   }
 
   let conversations = await api.messages.allMyConvos();
