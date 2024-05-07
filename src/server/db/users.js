@@ -17,7 +17,7 @@ export const db = createDB("users");
  */
 
 /**
- * Finds a user by their id or their username (if it starts with an @)
+ * Finds a user by their id or their username (if it starts with an \@)
  *
  * @param {string} identifier
  * @returns {Promise<User?>}
