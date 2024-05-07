@@ -11,6 +11,8 @@ export const showErrors = (errors) => {
     errorsEl.innerText = errors.join("\n");
 
     toggleElement(errorsEl, "is-hidden", !errors.length);
+
+    if (errors.length) errorsEl.scrollIntoView(false);
   }
 };
 
@@ -31,7 +33,7 @@ export const register = async (data) => {
 
     session.setCurrent(user);
 
-    goToRoute("dashboard");
+    goToRoute("dashboard", null, null, true);
     setupNavbar();
   } catch (err) {
     console.error("An error occurred during registration --", err);

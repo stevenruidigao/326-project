@@ -1,61 +1,31 @@
-import * as local from "./local.js";
-import * as mock from "./mock/index.js";
+import * as offline from "./offline.js";
 
 /**
  * @typedef {T[] & { pagination?: { prev?: number, next?: number, total?: number }}} PaginatedArray<T>
  * @template {any} T
  */
 
-/**
- * @typedef {{ id: string, rev: string, ok: boolean }} PouchDBResponse
- * @typedef {{ limit: number, skip: number, attachments: boolean, binary: boolean }} PouchDBOptions
- */
-
-/**
- * Pagination helper function for PouchDB queries. The callback function
- * should utilize the `opts` object to pass to the query function.
- *
- * NOTE: .find() doesn't return total_rows equivalent (since we're querying
- * data) so we don't know when pagination ends until we reach a page with no
- * rows. Those queries will have to likely implement a "show more"
- * button/infinite scrolling on the frontend
- * @param {number} pageSize
- * @returns {(page: number, cb: (opts: { limit: number, skip: number }) => Promise<any>) =>
- *  Promise<PaginatedArray>}
- */
-const withPagination = (pageSize) => async (page, cb) => {
-  page = Math.max(1, page);
-
-  const start = (page - 1) * pageSize;
-  const res = await cb({ limit: pageSize, skip: start });
-
-  if (res.warning) console.warn(`[PouchDB] ${res.warning}`);
-
-  const rows = res.rows?.map((r) => r.doc || r);
-
-  const data = [...(rows || res.docs)];
-  const totalPages = Math.ceil(res.total_rows / pageSize);
-
-  // Not present for .find() results. See note above function
-  if (totalPages) {
-    data.pagination = {};
-
-    if (page > 1) data.pagination.prev = Math.min(totalPages, page - 1);
-    if (page < totalPages) data.pagination.next = page + 1;
-    data.pagination.total = totalPages;
-  }
-
-  return data;
-};
-
 // ===== APPOINTMENTS =====
 
 /**
  *
  * @param {number} page
- * @returns {Promise<PaginatedArray<Appointment>>}
+ * @returns {Promise<Appointment[]>}
  */
-const allAppointments = () => sendAPIReq("GET", "/api/appointments");
+const allAppointments = offline.withFallback(
+  () =>
+    sendAPIReq("GET", "/api/appointments").then((appts) =>
+      offline.addResources("appointments", appts),
+    ),
+  async () => {
+    const appts = await offline.findResources("appointments");
+    const curId = (await session.current())?._id;
+
+    return appts.filter(
+      (appt) => appt.teacherId === curId || appt.learnerId === curId,
+    );
+  },
+);
 
 /**
  * uses `allAppointments` but filters for a specific other user
@@ -67,87 +37,74 @@ const myAppointmentsWithUser = (userId) =>
     ),
   );
 
-const withUserAppointments = (userId) =>
-  sendAPIReq("GET", `/api/users/${userId}/appointments`);
+const withUserAppointments = offline.withFallback(
+  (userId) =>
+    sendAPIReq("GET", `/api/users/${userId}/appointments`).then((data) => {
+      offline.addResources("appointments", data.appointments);
+      offline.addResources("users", Object.values(data.idToUserMap));
+
+      return data;
+    }),
+  async (userId) => {
+    const appts = await offline.findResources("appointments");
+    const curId = (await session.current())?._id;
+
+    const filteredAppts = appts.filter(
+      (appt) =>
+        (appt.teacherId === curId || appt.learnerId === curId) &&
+        (appt.teacherId === userId || appt.learnerId === userId),
+    );
+
+    return { appointments: filteredAppts, idToUserMap: {} };
+  },
+);
 
 /**
  * Obtain a specific appointment by ID
  * @param {string} id
  * @returns {Promise<Appointment>}
  */
-const getAppointment = (id) => sendAPIReq("GET", `/api/appointments/${id}`);
-
-// /**
-//  * Obtain all appointments with a specific user as teacher.
-//  * NOTE: Paginated, not sorted!
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Appointment>>}
-//  */
-// const withTeacherAppointments = (userId, page = 1) =>
-//   appointmentsPagination(page, (opts) =>
-//     mock.appointments.find({
-//       selector: { teacherId: userId },
-//       ...opts,
-//     }),
-//   );
-
-// /**
-//  * Obtain all appointments with a specific user as learner.
-//  * NOTE: Paginated, not sorted!
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Appointment>>}
-//  */
-// const withLearnerAppointments = (userId, page = 1) =>
-//   appointmentsPagination(page, (opts) =>
-//     mock.appointments.find({
-//       selector: { learnerId: userId },
-//       ...opts,
-//     }),
-//   );
-
-// // FIXME: turn into api call? or honestly if this doesnt ping db then its fine (it kinda does but might be ok, may want to do this all in the backend tho cuz users.get(id) is a separate API call each time)
-// /**
-//  * Returns an id-to-user map of all users involved in the appointments.
-//  * Scuffed way to obtain relationship values...
-//  * @param {Appointment[]} appts Only requires `teacherId` and `learnerId`
-//  *     properties for each item
-//  * @returns {Promise<Object.<string, User>>}
-//  */
-// const getAppointmentUsersInvolved = async (appts) => {
-// };
-
-// modify
-// -> default attrs probably? but those would happen in backend anyways
-// (validation & stuff)
+const getAppointment = offline.withFallback(
+  (id) =>
+    sendAPIReq("GET", `/api/appointments/${id}`).then((appt) =>
+      offline.addResource("appointments", appt),
+    ),
+  (id) => offline.getResource("appointments", id),
+);
 
 /**
  * Create a new appointment
  * @param {string} targetUserId
  * @param {Appointment} data
- * @returns {Promise<PouchDBResponse>}
+ * @returns {Promise<{ appointments: Appointment[], idToUserMap: Record<String, User> }>}
  */
-const createAppointment = (targetUserId, data) =>
-  sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data);
+const createAppointment = offline.withoutFallback((targetUserId, data) =>
+  sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data),
+);
 
 /**
  * Update an appointment's data
  * @param {string} id
  * @param {Appointment} data
- * @returns {Promise<PouchDBResponse>}
+ * @returns {Promise<Appointment>}
  */
-const updateAppointment = async (id, data) =>
-  sendAPIReq("PUT", `/api/appointments/${id}`, data);
+const updateAppointment = offline.withoutFallback(async (id, data) =>
+  sendAPIReq("PUT", `/api/appointments/${id}`, data).then((appt) =>
+    offline.addResource("appointments", appt),
+  ),
+);
 
 /**
  * Delete an appointment
  * @param {string} id
- * @returns {Promise<PouchDBResponse>}
+ * @returns {Promise<void>}
  * @throws {Error} if appointment does not exist
  */
-const deleteAppointment = async (id) =>
-  sendAPIReq("DELETE", `/api/appointments/${id}`);
+const deleteAppointment = offline.withoutFallback(async (id) =>
+  sendAPIReq("DELETE", `/api/appointments/${id}`).then(() =>
+    offline.removeResource("appointments", id),
+  ),
+);
 
 export const appointments = {
   // fetch
@@ -155,7 +112,6 @@ export const appointments = {
   get: getAppointment,
   withUser: withUserAppointments,
   myAppointmentsWithUser: myAppointmentsWithUser,
-  // getUsersInvolved: getAppointmentUsersInvolved,
 
   // modify
   create: createAppointment,
@@ -169,54 +125,30 @@ export const appointments = {
  * @typedef {import("../../../server/db/messages.js").Message} Message
  */
 
-// const MESSAGES_PAGE_SIZE = 10;
-// const messagesPagination = withPagination(MESSAGES_PAGE_SIZE);
-
 /**
- * TODO: fix the return type
- * @returns
+ * @returns {Promise<Record<string, Message[]>>} maps user IDs to their conversation with the current user
  */
-const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
+const getAllConvosWithSelf = offline.withFallback(
+  () =>
+    sendAPIReq("GET", "/api/messages").then(async (data) => {
+      await offline.addResources("messages", Object.values(data).flat());
 
-// /**
-//  * Get all messages in the database
-//  * @returns {Promise<PaginatedArray<Message>>}
-//  */
-// const getAllMessages = () => mock.messages.allDocs({ include_docs: true });
+      return data;
+    }),
+  () =>
+    offline.findResources("messages").then(async (msgs) => {
+      const curId = (await session.current())?._id;
 
-// /**
-//  * Get all messages involving a specific user
-//  * @param {string} userId
-//  * @returns {Promise<{ docs: Message[] }>}
-//  */
-// const getAllMessagesInvolvingUser = (userId) =>
-//   mock.messages.find({
-//     selector: {
-//       $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-//     },
-//     // sort: ["time"],
-//   });
+      return msgs.reduce((acc, msg) => {
+        const otherId = msg.fromId === curId ? msg.toId : msg.fromId;
 
-// /**
-//  * Get messages involving a specific user, paginated.
-//  * FIXME: pagination does not correctly give newest messages first
-//  * @param {string} userId
-//  * @param {number} page
-//  * @returns {Promise<PaginatedArray<Message>>}
-//  */
-// const getMessagesInvolvingUser = (userId, page = 1) => {
-//   console.warn("pagination does not correctly give newest messages first");
-//   messagesPagination(page, (opts) =>
-//     mock.messages.find({
-//       selector: {
-//         $or: [{ fromId: { $eq: userId } }, { toId: { $eq: userId } }],
-//       },
-//       // use_index: ['time', 'fromId', 'toId'],
-//       // sort: ['time'],
-//       ...opts,
-//     }),
-//   );
-// };
+        acc[otherId] ||= [];
+        acc[otherId].push(msg);
+
+        return acc;
+      }, {});
+    }),
+);
 
 /**
  * TODO: should `createMessage` return anything? just the status of the operation?
@@ -227,40 +159,14 @@ const getAllConvosWithSelf = () => sendAPIReq("GET", "/api/messages");
  * @param {Message} data
  * @returns {Promise<Message>}
  */
-const sendMessage = (toId, msg) =>
-  sendAPIReq("POST", `/api/users/${toId}/message`, { msg });
-
-// /**
-//  * TODO: should `createMessage` return anything? just the status of the operation?
-//  * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
-//  *
-//  * Create new message.
-//  * NOTE: Should not include & not return ID!
-//  * @param {Message} data
-//  * @returns {Promise<Message>}
-//  */
-// const createMessage = () =>
-// sendAPIReq("POST", `/api/messages`);
-
-// const createMessage = (data) => {
-//   const newMsg = {
-//     ...data,
-//     time: Date.now(),
-//   };
-//   mock.messages.post(newMsg);
-//   return newMsg;
-// };
+const sendMessage = offline.withoutFallback((toId, msg) =>
+  sendAPIReq("POST", `/api/users/${toId}/message`, { msg }),
+);
 
 // TODO: should I add functions to get all messages?
 export const messages = {
-  // fetch
-  // all: getAllMessages,
   allMyConvos: getAllConvosWithSelf, // returns conversations
-  // allWithUser: getAllMessagesInvolvingUser,
-  // getWithUser: getMessagesInvolvingUser, // paginated
 
-  // modify
-  // create: createMessage,
   send: sendMessage,
 };
 
@@ -269,9 +175,6 @@ export const messages = {
 /**
  * @typedef {import("../../../server/db/users.js").User} User
  */
-
-const USERS_PAGE_SIZE = 5;
-const userPagination = withPagination(USERS_PAGE_SIZE);
 
 // TODO  handle password in backend
 
@@ -301,37 +204,47 @@ const sendAPIReq = async (method, path, body, opts = {}) => {
  * @param {{ username: string, password: string }} args
  * @returns {Promise<User>}
  */
-const loginUser = ({ username, password }) =>
-  sendAPIReq("POST", "/login", { username, password });
+const loginUser = offline.withoutFallback(({ username, password }) =>
+  sendAPIReq("POST", "/login", { username, password }),
+);
 
 /**
  * Register user given credentials. Throws error if user already exists with email or username.
  * @param {{ name: string, username: string, email: string, password: string }} param0
  * @returns {Promise<PouchDBResponse>}
  */
-const registerUser = ({ name, username, email, password }) =>
-  sendAPIReq("POST", "/signup", { name, username, email, password });
+const registerUser = offline.withoutFallback(
+  ({ name, username, email, password }) =>
+    sendAPIReq("POST", "/signup", { name, username, email, password }),
+);
 
 /**
  * Logout user
  * @returns {Promise<void>}
  */
-const logoutUser = () => sendAPIReq("POST", "/logout");
+const logoutUser = offline.withFallback(
+  () => sendAPIReq("POST", "/logout").then(() => offline.setLogOut(false)),
+  async () => {
+    await offline.clear();
+    await offline.setLogOut(true);
+  },
+);
 
 /**
  * Obtain user by ID
  * @param {string} id
  * @returns {Promise<User>}
  */
-const getUser = (id) => sendAPIReq("GET", `/api/users/${id}`);
-
-/**
- * Obtain user by username
- * @param {string} username
- * @returns {Promise<User>}
- */
-const getUserByUsername = (username) =>
-  sendAPIReq("GET", `/api/users/@${username}`);
+const getUser = offline.withFallback(
+  (id) =>
+    sendAPIReq("GET", `/api/users/${id}`).then((user) =>
+      offline.addResource("users", user),
+    ),
+  (id) =>
+    id.startsWith("@")
+      ? offline.findResource("users", (user) => user.username === id.slice(1))
+      : offline.getResource("users", id),
+);
 
 /**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
@@ -342,31 +255,51 @@ const getUserByUsername = (username) =>
  * @param {string[]} interests
  * @returns
  */
-const allUsersWithSkills = (page = 1, known = [], interests = []) => {
-  const search = new URLSearchParams({
-    page,
-    known: known.join(","),
-    interests: interests.join(","),
-  });
+const allUsersWithSkills = offline.withFallback(
+  async (page = 1, known = [], interests = []) => {
+    const search = new URLSearchParams({
+      page,
+      known: known.join(","),
+      interests: interests.join(","),
+    });
 
-  return sendAPIReq("GET", `/api/users?${search}`);
-};
+    const res = await sendAPIReq("GET", `/api/users?${search}`);
+
+    offline.addResources("users", res.data);
+
+    return res;
+  },
+  async (_, known = [], interests = []) => {
+    const users = await offline.findResources("users");
+
+    const filtered = users.filter(
+      (user) =>
+        (!known.length || known.some((skill) => user.known?.includes(skill))) &&
+        (!interests.length ||
+          interests.some((skill) => user.interests?.includes(skill))),
+    );
+
+    return { data: filtered, pagination: {} };
+  },
+);
 
 /**
  * @param {string} id
  * @param {object} data Data to update
  * @returns {User}
  */
-const updateUser = (id, data) => sendAPIReq("PUT", `/api/users/${id}`, data);
+const updateUser = offline.withoutFallback((id, data) =>
+  sendAPIReq("PUT", `/api/users/${id}`, data),
+);
 
-const updateUserAvatar = (id, avatar) => {
+const updateUserAvatar = offline.withoutFallback((id, avatar) => {
   const formData = new FormData();
   formData.append("avatar", avatar);
 
   return sendAPIReq("PUT", `/api/users/${id}/avatar`, formData, {
     headers: {}, // remove 'Content-Type' header
   });
-};
+});
 
 export const users = {
   login: loginUser,
@@ -374,7 +307,6 @@ export const users = {
   logout: logoutUser,
 
   get: getUser,
-  getByUsername: getUserByUsername,
   withSkills: allUsersWithSkills,
 
   update: updateUser,
@@ -385,28 +317,38 @@ export const users = {
 
 // session user data to prevent multiple fetches
 let currentUser = undefined;
+let isLoadingCurrentUser = false;
 
 /**
  * Store the current session user
  * @param {User} u
  * @returns {User}
  */
-const setSessionCurrent = (u) => (currentUser = u);
+const setSessionCurrent = (u) => {
+  offline.setLoggedInUser(u);
+  return (currentUser = u);
+};
 
 /**
  * Obtain the current session user. Fetches if not already stored.
  * @returns {Promise<User?>}
  */
 const getSessionCurrent = async () => {
-  if (currentUser !== undefined) return currentUser;
+  if (currentUser !== undefined || isLoadingCurrentUser) return currentUser;
 
   // avoid fetching while already fetching
-  setSessionCurrent(null);
+  isLoadingCurrentUser = true;
 
   try {
-    return setSessionCurrent(await getSessionUser());
+    setSessionCurrent(await getSessionUser());
+
+    isLoadingCurrentUser = false;
+
+    return currentUser;
   } catch (err) {
     setSessionCurrent(undefined);
+    isLoadingCurrentUser = false;
+
     throw err;
   }
 };
@@ -415,14 +357,25 @@ const getSessionCurrent = async () => {
  * Get current logged-in user from session data
  * @returns {Promise<User?>}
  */
-const getSessionUser = async () => {
-  const res = await sendAPIReq("GET", "/api/me", undefined, { noThrow: true });
+const getSessionUser = offline.withFallback(
+  async () => {
+    const res = await sendAPIReq("GET", "/api/me", undefined, {
+      noThrow: true,
+    });
 
-  if (res.status === 401) return null;
-  else if (res.status) throw new Error(res.message);
+    if (res.status === 401) return null;
+    else if (res.status) throw new Error(res.message);
 
-  return res;
-};
+    await offline.setLoggedInUser(res);
+
+    return res;
+  },
+  async () => {
+    const id = await offline.getLoggedInUserId();
+
+    return offline.getResource("users", id);
+  },
+);
 
 export const session = {
   getUser: getSessionUser,

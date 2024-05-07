@@ -16,6 +16,8 @@ const showError = (el, error) => {
   else {
     el.innerText = error;
     toggleElement(el, "is-hidden", !error);
+
+    if (error) el.scrollIntoView(false);
   }
 };
 
@@ -30,7 +32,7 @@ export default async (args, doc) => {
   const loggedInUser = await session.current();
 
   if (loggedInUser) {
-    await goToRoute("dashboard");
+    await goToRoute("dashboard", null, null, true);
     return;
   }
 

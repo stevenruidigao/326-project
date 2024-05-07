@@ -4,7 +4,7 @@ import dayjs, {
   formatTime,
   formatTimeVerbose,
 } from "../../dayjs.js";
-import { setupNavbar } from "../../layout.js";
+import { setupNavbar, showGlobalError } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
 import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
 
@@ -23,11 +23,6 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   const appts = await appointments.withUser(user._id);
   const userAppointments = appts.appointments.slice(0, 3);
-
-  // const userAppointments = (await appointments.withUser(user._id)).slice(
-  //   0,
-  //   3,
-  // );
 
   if (!userAppointments.length) {
     apptsParentEl.classList.add("is-hidden");
@@ -51,10 +46,11 @@ export const loadAppointments = async (doc, profileEl, user) => {
     timeEl.title = formatTime(appt.time);
     timeEl.dateTime = date.toISOString();
 
+    const otherUserId =
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId;
     const otherUser =
-      usersInvolved[
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId
-      ];
+      usersInvolved[otherUserId] ?? (await users.get(otherUserId));
+
     const link = new HTMLAppRouteElement();
     link.route = "user";
     link.setArg("id", otherUser._id);
@@ -81,23 +77,18 @@ export default async (args, doc) => {
   const loggedInUser = await session.current();
 
   if (!args.id && !loggedInUser) {
-    goToRoute("login");
+    goToRoute("login", null, null, true);
     return;
   }
 
   const id = args.id;
-  const isUsername = id?.startsWith("@");
-  const getMethod = isUsername ? "getByUsername" : "get";
-  const username = isUsername ? id.slice(1) : id;
 
   app.innerHTML = "";
 
   let user = null;
 
   try {
-    user = username
-      ? await users[getMethod](username, { attachments: true, binary: true })
-      : loggedInUser;
+    user = id ? await users.get(id) : loggedInUser;
   } catch (err) {
     console.error("An error occurred while loading user profile --", err);
   }
@@ -158,13 +149,17 @@ export default async (args, doc) => {
     const saveAvatar = async (file) => {
       toggleElementAll("button", "is-loading", true, imageButtons);
 
-      user = await users.updateAvatar(user._id, file);
+      try {
+        user = await users.updateAvatar(user._id, file);
 
-      imageEl.src = `${user.avatarUrl}?${Date.now()}`;
+        imageEl.src = `${user.avatarUrl}?${Date.now()}`;
 
-      session.setCurrent(user);
+        session.setCurrent(user);
 
-      setupNavbar();
+        setupNavbar();
+      } catch (err) {
+        showGlobalError(err.message);
+      }
 
       toggleElementAll("button", "is-loading", false, imageButtons);
     };
@@ -203,9 +198,15 @@ export default async (args, doc) => {
           ...user,
           ...data,
         })
+        .then((res) => {
+          // update session user & navbar -- solves input values keeping old value on route reload
+          if (isSameUser) {
+            session.setCurrent(res);
+            setupNavbar();
+          }
+        })
+        .catch((err) => showGlobalError(err.message))
         .finally(() => submitEl.classList.remove("is-loading"));
-
-      // TODO backend validation of duplicate email & username
     });
 
     // add link to public view
