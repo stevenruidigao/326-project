@@ -16,6 +16,8 @@ const showError = (el, error) => {
   else {
     el.innerText = error;
     toggleElement(el, "is-hidden", !error);
+
+    if (error) el.scrollIntoView(false);
   }
 };
 

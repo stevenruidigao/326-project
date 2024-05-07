@@ -11,6 +11,8 @@ export const showErrors = (errors) => {
     errorsEl.innerText = errors.join("\n");
 
     toggleElement(errorsEl, "is-hidden", !errors.length);
+
+    if (errors.length) errorsEl.scrollIntoView(false);
   }
 };
 
