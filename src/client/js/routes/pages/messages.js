@@ -281,7 +281,7 @@ export default async (args, doc) => {
   };
 
   // only needs to rerender if new message is sent/received
-  if (isFullRender) renderSidebar();
+  if (isFullRender) await renderSidebar();
 
   // only render the convo wrapper on a full render
   if (isFullRender) {
@@ -743,6 +743,9 @@ export default async (args, doc) => {
       `[messages] error fetching conversation with user ${args.id}:`,
       err,
     );
+
+    showGlobalError(err.message || err);
+
     return routes.goToRoute("messages");
   }
 };

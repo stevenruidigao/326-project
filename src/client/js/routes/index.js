@@ -230,7 +230,19 @@ export const load = async (routeName, args = {}, search) => {
   // of it.
   routeStyles.textContent = css || "";
 
-  await init(args, document);
+  try {
+    await init(args, document);
+  } catch (err) {
+    console.error(
+      `An error occurred initializing the route "${routeName}" --`,
+      err,
+    );
+    layout.showGlobalError(
+      err.message || "Error initializing page. Please refresh and try again.",
+    );
+    loadingEl.classList.remove("is-active");
+    return;
+  }
 
   // After loading the page, finalize the route change.
   // Sometimes `init` may go to another route - somehow this has not caused
