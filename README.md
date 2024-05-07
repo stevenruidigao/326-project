@@ -5,7 +5,7 @@
 > Include a README.md file in the root of the project repository detailing the **project structure**, **setup instructions**, and **documentation** necessary to _understand and navigate your application_.
 > --- -->
 
-This repository contains code for both Milestone 1 and Milestone 2 in `src/`. The code for Milestone 1 is in `src/docs/milestone-01` and the code for Milestone 2 is in `src/client`.
+This repository contains code for both Milestone 1 and Milestone 2 in `src/`. The code for Milestone 1 is in `src/docs/milestone-01` and the code for Milestone 2 is in `src/client`. The code for Milestone 3 is in `src/server` and `src/db` (alongside the client code in `src/client`).
 
 To set up this project to run locally, run `npm install` in the project root.
 
@@ -56,3 +56,15 @@ The directory structure is divided primarily into the API and routes. _All furth
 - `styles` - the app's CSS
   - contains bulma framework (`libs/`) & general css (`app.css`)
   - `pages/*.css` contains page-specific CSS loaded only when those routes request it
+
+## Milestone 03: Back-End
+
+### Usage
+
+- Copy `.env.example` to `.env` and fill in `SESSION_SECRET` (the others may be left blank)
+- Run `npm run db:migrate` to create PouchDB indexes in the backend
+- Run `npm milestone-03`/`npm start` to start up the NodeJS server serving the client-side & backend API code.
+
+To test "offline"/local PouchDB storage, set `TEST_OFFLINE = true` in the developer console. Switching the network throttling to offline also works, but you must've loaded all the routes already, otherwise loading them will fail (since those are file endpoints & not API data).
+
+<!-- TODO more -->
