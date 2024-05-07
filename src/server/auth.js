@@ -10,6 +10,11 @@ import FileStore from "session-file-store";
 import * as users from "./db/users.js";
 // import sessions from "./db/sessions.js";
 
+if (!process.env.SESSION_SECRET) {
+  console.error("Please set SESSION_SECRET in .env");
+  process.exit(1);
+}
+
 // Setup passport
 
 /**
