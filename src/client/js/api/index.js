@@ -1,13 +1,41 @@
 import * as offline from "./offline.js";
 
 /**
- * @typedef {T[] & { pagination?: { prev?: number, next?: number, total?: number }}} PaginatedArray<T>
- * @template {any} T
+ * Send an API request to the server.
+ * Throws an error if the response is not OK with the JSON message from the server.
+ *
+ * @param {string} method
+ * @param {string} path
+ * @param {BodyInit?} body
+ * @param {Omit<RequestInit, "method" | "body">} opts
+ * @returns
  */
+const sendAPIReq = async (method, path, body, opts = {}) => {
+  if (body && !(body instanceof FormData)) body = JSON.stringify(body);
+
+  const res = await fetch(path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body || null,
+    ...opts,
+  });
+
+  if (!res.ok && !opts.noThrow) {
+    const { message } = await res.json();
+
+    throw new Error(message);
+  }
+
+  return res.json();
+};
 
 // ===== APPOINTMENTS =====
 
 /**
+ * Get all appointments for the current user.
+ * Available offline.
  *
  * @param {number} page
  * @returns {Promise<Appointment[]>}
@@ -28,7 +56,9 @@ const allAppointments = offline.withFallback(
 );
 
 /**
- * uses `allAppointments` but filters for a specific other user
+ * Get all appointments between the current user and a specific user.
+ * Uses `allAppointments` but filters for a specific other user.
+ * Available offline.
  */
 const myAppointmentsWithUser = (userId) =>
   allAppointments().then((appts) =>
@@ -37,6 +67,11 @@ const myAppointmentsWithUser = (userId) =>
     ),
   );
 
+/**
+ * Get all appointments between the current user and a specific user.
+ * Returns the appointments and the user data of those involved.
+ * Available offline.
+ */
 const withUserAppointments = offline.withFallback(
   (userId) =>
     sendAPIReq("GET", `/api/users/${userId}/appointments`).then((data) => {
@@ -156,7 +191,7 @@ const getAllConvosWithSelf = offline.withFallback(
  *
  * Create new message.
  * NOTE: Should not include & not return ID!
- * @param {Message} data
+ * @param {Omit<Message, "fromId" | "toId" | "time">} data
  * @returns {Promise<Message>}
  */
 const sendMessage = offline.withoutFallback((toId, msg) =>
@@ -173,31 +208,8 @@ export const messages = {
 // ===== USERS =====
 
 /**
- * @typedef {import("../../../server/db/users.js").User} User
+ * @typedef {import("../../../server/db/users.js").SerializedUser} User
  */
-
-// TODO  handle password in backend
-
-const sendAPIReq = async (method, path, body, opts = {}) => {
-  if (body && !(body instanceof FormData)) body = JSON.stringify(body);
-
-  const res = await fetch(path, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: body || null,
-    ...opts,
-  });
-
-  if (!res.ok && !opts.noThrow) {
-    const { message } = await res.json();
-
-    throw new Error(message);
-  }
-
-  return res.json();
-};
 
 /**
  * Obtain user given credentials. Throws error if no user found.

@@ -8,8 +8,17 @@ import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
-// TODO: add typedef
+/**
+ * @typedef {import("../db/appointments.js").Appointment} Appointment
+ */
 
+/**
+ * Sort appointments from future to past
+ *
+ * @param {Appointment} a
+ * @param {Appointment} b
+ * @returns {number}
+ */
 const futureToPast = (a, b) => a.time - b.time;
 
 /**
@@ -71,6 +80,13 @@ router.get(
 
 // ===== CREATE / UPDATE / DELETE =====
 
+/**
+ * Create a new appointment.
+ * The other user is specified by the ID in the URL, and must be different & valid.
+ *
+ * The request body contains the appointment data, with an additional "role" field,
+ * instead of "teacherId" and "learnerId", that dictates the current user's role in the appointment.
+ */
 router.post(
   "/users/:id/appointments",
   requiresAuth,
@@ -94,6 +110,10 @@ router.post(
   }),
 );
 
+/**
+ * Update an appointment the user is involved in.
+ * See the POST endpoint for the request body format.
+ */
 router.put(
   "/appointments/:id",
   requiresAuth,
@@ -129,7 +149,8 @@ router.put(
 );
 
 /**
- * checks to make sure the deleted event is the user's event
+ * Delete an appointment the user is involved in.
+ * The DB checks to make sure the deleted event contains the user's ID before proceeding.
  */
 router.delete(
   "/appointments/:id",

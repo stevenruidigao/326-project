@@ -3,12 +3,40 @@ import { createDB, withPagination, withSerializer } from "./index.js";
 
 const db = createDB("appointments");
 
-// TODO: typedef
+/**
+ * @typedef {{
+ *   _id: string,
+ *   teacherId: string,
+ *   learnerId: string,
+ *   time: number,
+ *   topic: string,
+ *   type: "online" | "in-person",
+ *   url?: string,
+ *
+ *   createdAt: number,
+ *   updatedAt: number,
+ * }} SerializedAppointment
+ *
+ * @typedef {SerializedAppointment & Pick<PouchDB.Core.GetMeta, "_rev">} Appointment
+ */
 
+/**
+ * Get an appointment by its ID
+ *
+ * @param {string} apptId
+ * @returns {Promise<Appointment>}
+ * @throws if the appointment is not found
+ */
 export const getAppointment = async (apptId) => {
   return db.get(apptId);
 };
 
+/**
+ * Get all appointments where a user is involved
+ *
+ * @param {string} userId
+ * @returns {Promise<Appointment[]>}
+ */
 export const getAllAppointmentsForUser = async (userId) => {
   const res = await db.find({
     selector: {
@@ -18,6 +46,12 @@ export const getAllAppointmentsForUser = async (userId) => {
   return res.docs;
 };
 
+/**
+ * Create an appointment in the database
+ *
+ * @param {Omit<SerializedAppointment, "createdAt" | "updatedAt">} apptData
+ * @returns {Promise<Appointment>}
+ */
 export const createAppointment = async (apptData) => {
   const newAppointment = {
     ...apptData,
@@ -25,14 +59,21 @@ export const createAppointment = async (apptData) => {
     updatedAt: Date.now(),
   };
 
-  await db.post(newAppointment);
-  return newAppointment;
+  const { _rev } = await db.post(newAppointment);
+
+  return { ...newAppointment, _rev };
 };
 
+/**
+ * Update an appointment
+ *
+ * @param {string} apptId
+ * @param {Omit<SerializedAppointment, "createdAt" | "updatedAt">} newAppt
+ * @param {string} userId
+ * @returns {Promise<Appointment>}
+ */
 export const updateAppointment = async (apptId, newAppt, userId) => {
   const doc = await db.get(apptId);
-
-  console.log("updating appointment", doc, newAppt, userId);
 
   // do not allow changing user ids (except exchanging them -- role!)
   const allowedUserIds = [doc.learnerId, doc.teacherId];
@@ -46,7 +87,7 @@ export const updateAppointment = async (apptId, newAppt, userId) => {
     );
   }
 
-  // FIXME: is the error thrown correctly? I don't think I have access to APIError here
+  // this should probably not throw APIError here, but works for now
   if (!(doc.learnerId === userId || doc.teacherId === userId)) {
     throw new APIError("You can't update someone else's appointment", 403);
   }
@@ -59,12 +100,18 @@ export const updateAppointment = async (apptId, newAppt, userId) => {
     updatedAt: Date.now(),
   };
 
-  await db.put(updatedAppointment);
+  const { _rev } = await db.put(updatedAppointment);
 
-  // TODO: consider returning serialized?
-  return updatedAppointment;
+  return { ...updatedAppointment, _rev };
 };
 
+/**
+ * Delete an appointment the user is involved in.
+ *
+ * @param {string} apptId
+ * @param {string} userId
+ * @returns {Promise<PouchDB.Core.Response>}
+ */
 export const deleteAppointment = async (apptId, userId) => {
   const appointment = await db.get(apptId);
 
@@ -73,6 +120,5 @@ export const deleteAppointment = async (apptId, userId) => {
     throw new APIError("You can't delete someone else's appointment", 403);
   }
 
-  await db.remove(appointment);
-  return appointment;
+  return db.remove(appointment);
 };
