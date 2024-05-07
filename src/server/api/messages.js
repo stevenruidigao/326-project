@@ -65,6 +65,8 @@ router.post(
     const toUser = await users.findUser(toId);
     if (!toUser) {
       throw new APIError("User not found", 404);
+    } else if (toUser._id === req.user._id) {
+      throw new APIError("Cannot message yourself", 400);
     }
 
     const newMsg = {

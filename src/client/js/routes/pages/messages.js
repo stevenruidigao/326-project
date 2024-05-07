@@ -555,6 +555,10 @@ export default async (args, doc) => {
     // rendering
     const otherUser = await api.users.get(args.id);
 
+    if (otherUser?._id === user._id) {
+      return routes.goToRoute("messages", null, null, true);
+    }
+
     conversationOtherUser = otherUser;
     console.log("set conversationOtherUser", conversationOtherUser);
 
