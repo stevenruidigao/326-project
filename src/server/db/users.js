@@ -3,9 +3,15 @@ import { createDB, withPagination, withSerializer } from "./index.js";
 const db = createDB("users");
 
 /**
- * @typedef {{ _id: string }} User
- *
- * TODO
+ * @typedef {{
+ *   _id: string,
+ *   username: string,
+ *   name: string,
+ *   email: string,
+ *   password: string,
+ *   known: string[],
+ *   interests: string[],
+ * }} User
  */
 
 /**
@@ -20,9 +26,6 @@ export const findUser = (identifier) => {
 
   return method(id);
 };
-
-// * @param {User | User[] | PaginatedArray<User>} res Data to serialize
-// * @param {string?} userId ID of logged in user
 
 /**
  * Serialize a user for sending to the client
