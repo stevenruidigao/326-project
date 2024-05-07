@@ -10,14 +10,22 @@ PouchDB.plugin(PouchDBFind);
 const __dirname =
   import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Save PouchDB databases to the local directory `db` in the project root
+ */
 export const directory = path.resolve(__dirname, "../../../db");
 
 const LocalPouchDB = PouchDB.defaults({
   prefix: directory,
 });
 
-// Helper functions
+// *** HELPER FUNCTIONS
 
+/**
+ * Create a new PouchDB database with the given name in the local directory
+ * @param {string} name
+ * @returns {PouchDB.Database}
+ */
 export const createDB = (name) => new LocalPouchDB(`./${name}`);
 
 /**
@@ -68,6 +76,7 @@ export const withPagination = (pageSize) => async (page, cb) => {
 };
 
 /**
+ * Wrap a serializer function that can be used to serialize one or more documents.
  *
  * @template T, V
  * @param {(doc: T) => V} serializer

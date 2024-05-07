@@ -12,6 +12,10 @@ import * as users from "./db/users.js";
 
 // Setup passport
 
+/**
+ * Configure the sign in strategy for passport.
+ * Finds the user & verifies their password.
+ */
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
@@ -34,10 +38,16 @@ passport.use(
   }),
 );
 
+/**
+ * Convert a user object into a user ID for storage in the session data
+ */
 passport.serializeUser((user, done) => {
   done(null, user._id);
 });
 
+/**
+ * Convert a user ID into the user object
+ */
 passport.deserializeUser((id, done) => {
   users
     .getById(id)
@@ -47,6 +57,10 @@ passport.deserializeUser((id, done) => {
 
 // Express
 
+/**
+ * Configure the Express application for authentication
+ * @param {Express.Application} app
+ */
 export const configure = (app) => {
   app.use(
     session({
@@ -59,6 +73,7 @@ export const configure = (app) => {
       cookie: {
         secure: app.get("env") === "production",
         sameSite: "strict",
+        maxAge: 60 * 60 * 1000, // 1 hour (in ms)
       },
       name: "tutorswap.session",
     }),
@@ -67,6 +82,16 @@ export const configure = (app) => {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  /**
+   * Log in a user.
+   * Since we use this like an API (no redirects), we'll return the user data
+   * so that the frontend can update its data.
+   *
+   * The session data contains the user ID after `req.login`, so the API will
+   * allow the user to access their data. If the cookie doesn't exist beforehand,
+   * it is created, and sent to the client's browser. Subsequent requests will
+   * include this cookie, allowing the server to identify the user.
+   */
   app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info, status) => {
       if (err) return next(err);
@@ -85,6 +110,10 @@ export const configure = (app) => {
     })(req, res, next);
   });
 
+  /**
+   * Sign up a new user. Weak validation of input & password hashing occurs here.
+   * Similar to the /login endpoint in terms of logic.
+   */
   app.post(
     "/signup",
     asyncHandler(async (req, res) => {
@@ -137,6 +166,11 @@ export const configure = (app) => {
     }),
   );
 
+  /**
+   * Log out the user. This will remove the session data from the server.
+   * The client will not lose the session cookie, but the server-side session data
+   * will no longer match that token, effectively logging the user out.
+   */
   app.post("/logout", (req, res) => {
     req.logout((err) => {
       if (err) return res.status(500).json({ message: err.message });
