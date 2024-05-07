@@ -7,11 +7,13 @@ const db = createDB("users");
  *   _id: string,
  *   username: string,
  *   name: string,
- *   email: string,
- *   password: string,
+ *   email?: string,
  *   known: string[],
  *   interests: string[],
- * }} User
+ *   avatarUrl: string,
+ * }} SerializedUser
+ *
+ * @typedef {Omit<SerializedUser, "avatarUrl"> & { password: string } & Pick<PouchDB.Core.GetMeta, "_rev" | "_attachments">} User
  */
 
 /**
@@ -30,7 +32,7 @@ export const findUser = (identifier) => {
 /**
  * Serialize a user for sending to the client
  *
- * @type {ReturnType<typeof withSerializer<User>>}
+ * @type {ReturnType<typeof withSerializer<User, SerializedUser>>}
  */
 export const serialize = withSerializer((user, loggedInId) => {
   const avatar = user._attachments?.avatar;
@@ -54,8 +56,14 @@ export const serialize = withSerializer((user, loggedInId) => {
   return data;
 });
 
+/**
+ * Valid keys for user data -- used to maintain consistency in the database
+ */
 export const VALID_KEYS = ["name", "username", "email", "known", "interests"];
 
+/**
+ * How many users to show per page in paginated endpoints
+ */
 const USERS_PAGE_SIZE = 5;
 
 /**
@@ -64,7 +72,7 @@ const USERS_PAGE_SIZE = 5;
 const userPagination = withPagination(USERS_PAGE_SIZE);
 
 /**
- * TODO
+ * Find a user by their username
  *
  * @param {string} username
  * @returns {Promise<User?>}
@@ -81,7 +89,8 @@ export const getByUsername = async (username) => {
 };
 
 /**
- * TODO
+ * Find a user by their email
+ *
  * @param {string} email
  * @returns {Promise<User?>}
  */
@@ -97,7 +106,9 @@ export const getByEmail = async (email) => {
 };
 
 /**
- * @param {string} id
+ * Get a user's avatar
+ *
+ * @param {User} user
  * @returns {Promise<Blob | Buffer>}
  */
 export const getAvatar = async (user) => {
@@ -114,7 +125,7 @@ export const getAvatar = async (user) => {
 };
 
 /**
- * TODO
+ * Get a user by their ID
  * @param {string} id
  * @returns {Promise<User?>}
  */
@@ -166,8 +177,8 @@ export const allWithSkills = (page = 1, skillsHad = [], skillsWant = []) =>
 // modify
 
 /**
- * TODO
- * @param {User} user
+ * Create a new user given their data
+ * @param {Omit<User, "_attachments" | "_rev" | "_id">} user
  * @returns {Promise<User>}
  */
 export const create = async (user) => {
@@ -177,10 +188,10 @@ export const create = async (user) => {
 };
 
 /**
- * TODO
+ * Update a user with new data
  *
  * @param {string} id User ID
- * @param {Omit<User, "id">} data
+ * @param {User} data
  * @returns {Promise<User>}
  */
 export const update = async (id, data) => {
@@ -193,11 +204,12 @@ export const update = async (id, data) => {
 };
 
 /**
- * TODO
+ * Update a user's avatar. If no avatar is provided, the user's avatar is removed.
+ *
  * @param {User} user
  * @param {string} [mimetype]
  * @param {Blob | Buffer} [avatar]
- * @returns {Promise<void>}
+ * @returns {Promise<User>}
  */
 export const updateAvatar = async (user, mimetype, avatar) => {
   if (!user) throw new Error("User not found");

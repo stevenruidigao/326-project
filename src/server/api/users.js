@@ -30,6 +30,10 @@ router.get(
   }),
 );
 
+/**
+ * Get a user's avatar by their username/ID.
+ * This endpoint returns the avatar as an image if it exists.
+ */
 router.get(
   "/users/:id/avatar",
   asyncHandler(async (req, res, next) => {
@@ -49,6 +53,11 @@ router.get(
   }),
 );
 
+/**
+ * Get all users with optional filters.
+ * Optional filters: `page` (number), `known` (comma-separated string), `interests` (comma-separated string).
+ * Returns the users (+ pagination data) that match any of the known AND any of the interests (if both provided, must have one of each).
+ */
 router.get(
   "/users",
   asyncHandler(async (req, res) => {
@@ -67,11 +76,8 @@ router.get(
 );
 
 /**
- * TODO
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * Verify that the user is editing their own profile.
+ * Throws 401 error if the user is editing another or a non-existent user.
  */
 const canOnlyEditSameUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
@@ -83,6 +89,10 @@ const canOnlyEditSameUser = asyncHandler(async (req, res, next) => {
   next();
 });
 
+/**
+ * Allows a user to update their own profile (excluding password).
+ * @see {users.VALID_KEYS} for valid keys that can be updated
+ */
 router.put(
   "/users/:id",
   requiresAuth,
@@ -124,6 +134,9 @@ router.put(
   }),
 );
 
+/**
+ * Allows a user to update their own avatar.
+ */
 router.put(
   "/users/:id/avatar",
   requiresAuth,
