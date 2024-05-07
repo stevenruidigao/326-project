@@ -205,7 +205,7 @@ export const clear = () =>
       .filter(([_, db]) => db.name !== "other")
       .map(async ([name, db]) => {
         await db.destroy({ force: true });
-        records[name] = new PouchDB(name);
+        records[name] = new PouchDB(`offline-${name}`);
       }),
   );
 
