@@ -3,16 +3,18 @@ import "/js/libs/pouchdb.min.js";
 /**
  * @typedef {import("../../../server/db/users.js").User} User
  * @typedef {import("../../../server/db/messages.js").Message} Message
- * @typedef {import("../../../server/db/appointments.js").Appointment} Appointment
+ * @typedef {import("../../../server/db/appointments.js").Appointment}
+ * Appointment
  *
- * @typedef {{ users: User, messages: Message, appointments: Appointment }} RecordTypes
+ * @typedef {{ users: User, messages: Message, appointments: Appointment }}
+ * RecordTypes
  */
 
 export const records = {
-  users: new PouchDB("offline-users"),
-  appointments: new PouchDB("offline-appointments"),
-  messages: new PouchDB("offline-messages"),
-  other: new PouchDB("offline-other"),
+  users : new PouchDB("offline-users"),
+  appointments : new PouchDB("offline-appointments"),
+  messages : new PouchDB("offline-messages"),
+  other : new PouchDB("offline-other"),
 };
 
 /**
@@ -43,20 +45,21 @@ export const isOffline = () => !isOnline() || lastRequestFailed;
  * @returns {boolean}
  */
 export const isNetworkError = (err) => {
-  const is =
-    err.message === "Failed to fetch" ||
-    err.message === "NetworkError when attempting to fetch resource.";
+  const is = err.message === "Failed to fetch" ||
+             err.message === "NetworkError when attempting to fetch resource.";
 
-  if (is) lastRequestFailed = true;
+  if (is)
+    lastRequestFailed = true;
 
   return is;
 };
 
 /**
  * Wrap API call with an offline fallback to use when offline.
- * The fallback will be called if the user is offline or if the API call fails due to a network error.
- * When a network error occurs, the offline status will be shown in the navbar,
- * which may be hidden quickly after, depending on the value of `navigator.onLine`.
+ * The fallback will be called if the user is offline or if the API call fails
+ * due to a network error. When a network error occurs, the offline status will
+ * be shown in the navbar, which may be hidden quickly after, depending on the
+ * value of `navigator.onLine`.
  * @template {T}
  * @param {T} func
  * @param {T} fallback
@@ -73,7 +76,8 @@ export const withFallback = (func, fallback) => {
       lastRequestFailed = false;
       return res;
     } catch (err) {
-      if (isNetworkError(err)) return fallback(...args);
+      if (isNetworkError(err))
+        return fallback(...args);
 
       throw err;
     }
@@ -91,14 +95,16 @@ export const withoutFallback = (func) => {
   return async (...args) => {
     const error = new Error("You cannot perform this action while offline.");
 
-    if (!isOnline()) throw error;
+    if (!isOnline())
+      throw error;
 
     try {
       const res = await func(...args);
       lastRequestFailed = false;
       return res;
     } catch (err) {
-      if (isNetworkError(err)) throw error;
+      if (isNetworkError(err))
+        throw error;
 
       throw err;
     }
@@ -113,12 +119,13 @@ export const withoutFallback = (func) => {
  * @returns {Promise<RecordTypes[T]>}
  */
 export const addResource = async (type, el) => {
-  if (!el?._id) return;
+  if (!el?._id)
+    return;
 
   const db = records[type];
   const doc = await db.get(el._id).catch(() => {});
 
-  await db.put({ ...el, _rev: doc?._rev }, { force: true });
+  await db.put({...el, _rev : doc?._rev}, {force : true});
 
   return el;
 };
@@ -130,9 +137,9 @@ export const addResource = async (type, el) => {
  * @param {RecordTypes[T][]} el
  * @returns {Promise<RecordTypes[T][]>}
  */
-export const addResources = async (type, data) => {
-  return Promise.all(data.map((el) => addResource(type, el)));
-};
+export const addResources = async (
+    type,
+    data) => { return Promise.all(data.map((el) => addResource(type, el)));};
 
 /**
  * Delete a resource (if it exists) from the offline database.
@@ -174,7 +181,7 @@ export const getResource = async (type, id) => {
 export const findResource = async (type, func) => {
   const db = records[type];
 
-  const arr = await db.allDocs({ include_docs: true });
+  const arr = await db.allDocs({include_docs : true});
 
   return arr.rows.map((row) => row.doc).find(func);
 };
@@ -191,7 +198,7 @@ export const findResources = async (type, func) => {
 
   func ||= () => true;
 
-  const arr = await db.allDocs({ include_docs: true });
+  const arr = await db.allDocs({include_docs : true});
 
   return arr.rows.map((row) => row.doc).filter(func);
 };
@@ -199,15 +206,14 @@ export const findResources = async (type, func) => {
 /**
  * Clear all offline databases except 'other'
  */
-export const clear = () =>
-  Promise.all(
+export const clear = () => Promise.all(
     Object.entries(records)
-      .filter(([_, db]) => db.name !== "other")
-      .map(async ([name, db]) => {
-        await db.destroy({ force: true });
-        records[name] = new PouchDB(`offline-${name}`);
-      }),
-  );
+        .filter(([ _, db ]) => db.name !== "other")
+        .map(async ([ name, db ]) => {
+          await db.destroy({force : true});
+          records[name] = new PouchDB(`offline-${name}`);
+        }),
+);
 
 /**
  * Set the logged in user in the offline database.
@@ -225,11 +231,12 @@ export const setLoggedInUser = async (user) => {
     return;
   }
 
-  if (existing?.value === user?._id) return;
+  if (existing?.value === user?._id)
+    return;
 
-  const data = { ...existing, _id: "loggedInUser", value: user?._id };
+  const data = {...existing, _id : "loggedInUser", value : user?._id};
 
-  await records["other"].put(data, { force: true });
+  await records["other"].put(data, {force : true});
 
   addResource("users", user);
 };
@@ -250,7 +257,7 @@ export const setLogOut = (value) => localStorage.setItem("logOut", value);
 
 /**
  * Get whether to log out the user and clear the offline database.
- * 
+ *
  * @returns {boolean}
  */
 export const shouldLogOut = () => localStorage.getItem("logOut") === "true";

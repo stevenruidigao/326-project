@@ -1,22 +1,24 @@
-import { session, users } from "../../../api/index.js";
-import { setupNavbar } from "../../../layout.js";
-import { app, setTitle, toggleElement } from "../../helper.js";
-import { goToRoute } from "../../index.js";
+import {session, users} from "../../../api/index.js";
+import {setupNavbar} from "../../../layout.js";
+import {app, setTitle, toggleElement} from "../../helper.js";
+import {goToRoute} from "../../index.js";
 
 let errorsEl = null;
 
 /**
  * Show the errors on the signup form. Hide the display if there are none.
- * @param {string[]} errors 
+ * @param {string[]} errors
  */
 export const showErrors = (errors) => {
-  if (!errorsEl) console.warn("`errorsEl` has not been initialized!");
+  if (!errorsEl)
+    console.warn("`errorsEl` has not been initialized!");
   else {
     errorsEl.innerText = errors.join("\n");
 
     toggleElement(errorsEl, "is-hidden", !errors.length);
 
-    if (errors.length) errorsEl.scrollIntoView(false);
+    if (errors.length)
+      errorsEl.scrollIntoView(false);
   }
 };
 
@@ -40,9 +42,10 @@ export const register = async (data) => {
   } catch (err) {
     console.error("An error occurred during registration --", err);
 
-    if (err === "Error logging in") return goToRoute("login");
+    if (err === "Error logging in")
+      return goToRoute("login");
 
-    showErrors([err]);
+    showErrors([ err ]);
 
     return;
   }
@@ -68,8 +71,8 @@ export default async (_, doc) => {
   const formContainer = doc.querySelector("#signup-form");
   const form = doc.querySelector("form");
   const submitButton = form.querySelector("[type=submit]");
-  const requiredFields = [...form.querySelectorAll("input[required]")].map(
-    (el) => el.name,
+  const requiredFields = [...form.querySelectorAll("input[required]") ].map(
+      (el) => el.name,
   );
 
   errorsEl = doc.querySelector("#signup-form-errors");
@@ -83,18 +86,17 @@ export default async (_, doc) => {
     const errors = [];
 
     for (const key of requiredFields) {
-      if (data.get(key)?.trim()) continue;
+      if (data.get(key)?.trim())
+        continue;
 
       errors.push(`The ${key} is required.`);
     }
 
-    const next = errors.length
-      ? Promise.resolve(showErrors(errors))
-      : register(Object.fromEntries(data.entries()));
+    const next = errors.length ? Promise.resolve(showErrors(errors))
+                               : register(Object.fromEntries(data.entries()));
 
-    next
-      .then(() => setupNavbar())
-      .finally(() => submitButton.classList.remove("is-loading"));
+    next.then(() => setupNavbar())
+        .finally(() => submitButton.classList.remove("is-loading"));
   });
 
   app.appendChild(formContainer);
