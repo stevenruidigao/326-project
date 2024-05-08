@@ -68,7 +68,6 @@ The directory structure is divided primarily into the API and routes. _All furth
 
 To test "offline"/local PouchDB storage, set `TEST_OFFLINE = true` in the developer console. Switching the network throttling to offline also works, but you must've loaded all the routes already, otherwise loading them will fail (since those are file endpoints & not API data).
 
-
 ### API Routes
 
 - `GET /api/me` - returns the current logged in user
