@@ -243,7 +243,7 @@ export default async (args, doc) => {
     addSkills(interestsEl, "interests", interests);
 
     // obtain sample set of appointments
-    loadAppointments(doc, div, user);
+    await loadAppointments(doc, div, user);
   }
 
   app.appendChild(div);
