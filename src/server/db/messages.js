@@ -1,4 +1,4 @@
-import {createDB, withPagination, withSerializer} from "./index.js";
+import { createDB, withPagination, withSerializer } from "./index.js";
 
 export const db = createDB("messages");
 
@@ -36,15 +36,15 @@ export const db = createDB("messages");
  */
 export const getAllMessagesInvolvingUser = async (userId) => {
   const [from, to] = await Promise.all([
-    db.find({selector : {fromId : {$eq : userId}}}),
-    db.find({selector : {toId : {$eq : userId}}}),
+    db.find({ selector: { fromId: { $eq: userId } } }),
+    db.find({ selector: { toId: { $eq: userId } } }),
   ]);
 
-  const messages = [...from.docs, ...to.docs ];
+  const messages = [...from.docs, ...to.docs];
 
   // filter out duplicates just in case :)
   return messages.filter(
-      (msg, index) => messages.findIndex((v) => v._id === msg._id) === index,
+    (msg, index) => messages.findIndex((v) => v._id === msg._id) === index,
   );
 };
 

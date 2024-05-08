@@ -15,7 +15,7 @@ router.use(messageRouter);
 router.use(appointmentHandler);
 
 // API  404 handler
-router.use((req, res) => res.status(404).json({message : "Not Found"}));
+router.use((req, res) => res.status(404).json({ message: "Not Found" }));
 
 // API error handler
 router.use((err, req, res, next) => {
@@ -25,7 +25,7 @@ router.use((err, req, res, next) => {
     console.error(err);
   }
 
-  res.status(err.status).json({status : err.status, message : err.message});
+  res.status(err.status).json({ status: err.status, message: err.message });
 });
 
 export default router;

@@ -1,4 +1,4 @@
-import {createDB} from "./index.js";
+import { createDB } from "./index.js";
 
 const db = createDB("sessions");
 

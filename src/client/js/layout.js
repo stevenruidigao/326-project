@@ -1,6 +1,6 @@
-import {session} from "./api/index.js";
-import {isOffline} from "./api/offline.js";
-import {toggleElement, toggleElementAll} from "./routes/helper.js";
+import { session } from "./api/index.js";
+import { isOffline } from "./api/offline.js";
+import { toggleElement, toggleElementAll } from "./routes/helper.js";
 
 let onLoadPromise = null;
 
@@ -47,10 +47,9 @@ export const showGlobalError = (message) => {
  * @returns {Promise}
  */
 export const onAppLoad = () => {
-  if (onLoadPromise)
-    return onLoadPromise;
+  if (onLoadPromise) return onLoadPromise;
 
-  return (onLoadPromise = Promise.all([ setupNavbar() ]));
+  return (onLoadPromise = Promise.all([setupNavbar()]));
 };
 
 /**
@@ -58,7 +57,7 @@ export const onAppLoad = () => {
  */
 export default () => {
   // navbar burger nav -- https://bulma.io/documentation/components/navbar/
-  const $navbarBurgers = [...document.querySelectorAll(".navbar-burger") ];
+  const $navbarBurgers = [...document.querySelectorAll(".navbar-burger")];
 
   $navbarBurgers.forEach((el) => {
     el.addEventListener("click", () => {

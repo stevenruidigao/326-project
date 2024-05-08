@@ -3,10 +3,10 @@ import "dotenv/config";
 import express from "express";
 import logger from "morgan";
 import path from "node:path";
-import {fileURLToPath} from "node:url";
+import { fileURLToPath } from "node:url";
 
 import api from "./api/index.js";
-import {configure as authConfigure} from "./auth.js";
+import { configure as authConfigure } from "./auth.js";
 
 const app = express();
 const port = process.env.WEB_PORT || 3000;
@@ -17,7 +17,7 @@ const port = process.env.WEB_PORT || 3000;
  * @type {string}
  */
 const __dirname =
-    import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
+  import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
 
 // Serve static files before logger middleware to avoid cluttering the log with
 // static files
@@ -25,23 +25,24 @@ app.use(express.static(path.resolve(__dirname, "../client")));
 
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({extended : false}));
+app.use(express.urlencoded({ extended: false }));
 
 authConfigure(app);
 
 app.use("/api", api);
 
-app.use(
-    (req, res) => res.sendFile(path.resolve(__dirname, "../client/index.html")),
+app.use((req, res) =>
+  res.sendFile(path.resolve(__dirname, "../client/index.html")),
 );
 
 app.use((err, req, res) => {
   console.error(err);
 
-  if (err.stack && process.env.NODE_ENV === "production")
-    delete err.stack;
+  if (err.stack && process.env.NODE_ENV === "production") delete err.stack;
 
   res.status(err.status || 500).send(err);
 });
 
-app.listen(port, () => { console.log(`Server listening on port ${port}`); });
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});

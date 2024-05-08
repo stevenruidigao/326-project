@@ -1,9 +1,12 @@
-import {appointments, session, users} from "../../api/index.js";
-import dayjs,
-{formatRelative, formatTime, formatTimeVerbose,} from "../../dayjs.js";
-import {setupNavbar, showGlobalError} from "../../layout.js";
-import {app, setTitle, toggleElementAll} from "../helper.js";
-import {goToRoute, HTMLAppRouteElement, load} from "../index.js";
+import { appointments, session, users } from "../../api/index.js";
+import dayjs, {
+  formatRelative,
+  formatTime,
+  formatTimeVerbose,
+} from "../../dayjs.js";
+import { setupNavbar, showGlobalError } from "../../layout.js";
+import { app, setTitle, toggleElementAll } from "../helper.js";
+import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
 
 /**
  * Load 3 appointments that the user was involved in.
@@ -30,10 +33,11 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   // render appointments
   for (const appt of userAppointments) {
-    const newApptEl =
-        doc.querySelector(".profile-appointments-cell").cloneNode(true);
+    const newApptEl = doc
+      .querySelector(".profile-appointments-cell")
+      .cloneNode(true);
     newApptEl.querySelector(".profile-appointments-card-topic").innerText =
-        appt.topic;
+      appt.topic;
 
     const timeEl = newApptEl.querySelector(".profile-appointments-card-time");
     const date = dayjs(appt.time);
@@ -43,17 +47,18 @@ export const loadAppointments = async (doc, profileEl, user) => {
     timeEl.dateTime = date.toISOString();
 
     const otherUserId =
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId;
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId;
     const otherUser =
-        usersInvolved[otherUserId] ?? (await users.get(otherUserId));
+      usersInvolved[otherUserId] ?? (await users.get(otherUserId));
 
     const link = new HTMLAppRouteElement();
     link.route = "user";
     link.setArg("id", otherUser._id);
     link.innerText = `@${otherUser.username}`;
 
-    newApptEl.querySelector(".profile-appointments-card-user")
-        .appendChild(link);
+    newApptEl
+      .querySelector(".profile-appointments-card-user")
+      .appendChild(link);
 
     apptsGridEl.appendChild(newApptEl);
   }
@@ -110,7 +115,7 @@ export default async (args, doc) => {
   editContent.classList.toggle("is-hidden", !isEditingUser);
 
   const content = div.querySelector(
-      `#profile-${isEditingUser ? "edit" : "public"}`,
+    `#profile-${isEditingUser ? "edit" : "public"}`,
   );
   const key = isEditingUser ? "value" : "innerText";
 
@@ -190,20 +195,20 @@ export default async (args, doc) => {
       data.interests = data.interests?.split(/,\s+/) || [];
 
       users
-          .update(user._id, {
-            ...user,
-            ...data,
-          })
-          .then((res) => {
-            // update session user & navbar -- solves input values keeping old
-            // value on route reload
-            if (isSameUser) {
-              session.setCurrent(res);
-              setupNavbar();
-            }
-          })
-          .catch((err) => showGlobalError(err.message))
-          .finally(() => submitEl.classList.remove("is-loading"));
+        .update(user._id, {
+          ...user,
+          ...data,
+        })
+        .then((res) => {
+          // update session user & navbar -- solves input values keeping old
+          // value on route reload
+          if (isSameUser) {
+            session.setCurrent(res);
+            setupNavbar();
+          }
+        })
+        .catch((err) => showGlobalError(err.message))
+        .finally(() => submitEl.classList.remove("is-loading"));
     });
 
     // add link to public view
@@ -225,15 +230,16 @@ export default async (args, doc) => {
     const known = user.known || [];
     const interests = user.interests || [];
 
-    const addSkills = (parentEl, searchKey, known) => known.forEach((skill) => {
-      const link = new HTMLAppRouteElement();
+    const addSkills = (parentEl, searchKey, known) =>
+      known.forEach((skill) => {
+        const link = new HTMLAppRouteElement();
 
-      link.route = "browse";
-      link.search = `${searchKey}=${skill}`;
-      link.innerText = skill;
+        link.route = "browse";
+        link.search = `${searchKey}=${skill}`;
+        link.innerText = skill;
 
-      parentEl.appendChild(link);
-    });
+        parentEl.appendChild(link);
+      });
 
     addSkills(knowsEl, "knows", known);
     addSkills(interestsEl, "interests", interests);

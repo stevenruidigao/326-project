@@ -1,6 +1,6 @@
-import {APIError} from "../api/helpers.js";
+import { APIError } from "../api/helpers.js";
 
-import {createDB, withPagination, withSerializer} from "./index.js";
+import { createDB, withPagination, withSerializer } from "./index.js";
 
 export const db = createDB("appointments");
 
@@ -29,7 +29,9 @@ export const db = createDB("appointments");
  * @returns {Promise<Appointment>}
  * @throws if the appointment is not found
  */
-export const getAppointment = async (apptId) => { return db.get(apptId);};
+export const getAppointment = async (apptId) => {
+  return db.get(apptId);
+};
 
 /**
  * Get all appointments where a user is involved
@@ -39,15 +41,15 @@ export const getAppointment = async (apptId) => { return db.get(apptId);};
  */
 export const getAllAppointmentsForUser = async (userId) => {
   const [teacher, learner] = await Promise.all([
-    db.find({selector : {teacherId : userId}}),
-    db.find({selector : {learnerId : userId}}),
+    db.find({ selector: { teacherId: userId } }),
+    db.find({ selector: { learnerId: userId } }),
   ]);
 
-  const appts = [...teacher.docs, ...learner.docs ];
+  const appts = [...teacher.docs, ...learner.docs];
 
   // filter out duplicates just in case :)
   return appts.filter(
-      (msg, index) => appts.findIndex((v) => v._id === msg._id) === index,
+    (msg, index) => appts.findIndex((v) => v._id === msg._id) === index,
   );
 };
 
@@ -60,13 +62,13 @@ export const getAllAppointmentsForUser = async (userId) => {
 export const createAppointment = async (apptData) => {
   const newAppointment = {
     ...apptData,
-    createdAt : Date.now(),
-    updatedAt : Date.now(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   };
 
-  const {_rev} = await db.post(newAppointment);
+  const { _rev } = await db.post(newAppointment);
 
-  return {...newAppointment, _rev};
+  return { ...newAppointment, _rev };
 };
 
 /**
@@ -81,12 +83,14 @@ export const updateAppointment = async (apptId, newAppt, userId) => {
   const doc = await db.get(apptId);
 
   // do not allow changing user ids (except exchanging them -- role!)
-  const allowedUserIds = [ doc.learnerId, doc.teacherId ];
-  if (!allowedUserIds.includes(newAppt.learnerId) ||
-      !allowedUserIds.includes(newAppt.teacherId)) {
+  const allowedUserIds = [doc.learnerId, doc.teacherId];
+  if (
+    !allowedUserIds.includes(newAppt.learnerId) ||
+    !allowedUserIds.includes(newAppt.teacherId)
+  ) {
     throw new APIError(
-        "Changing the users involved in an appointment is not permitted - create a new one instead",
-        403,
+      "Changing the users involved in an appointment is not permitted - create a new one instead",
+      403,
     );
   }
 
@@ -98,14 +102,14 @@ export const updateAppointment = async (apptId, newAppt, userId) => {
   const updatedAppointment = {
     ...doc,
     ...newAppt,
-    _id : doc._id,
-    _rev : doc._rev,
-    updatedAt : Date.now(),
+    _id: doc._id,
+    _rev: doc._rev,
+    updatedAt: Date.now(),
   };
 
-  const {_rev} = await db.put(updatedAppointment);
+  const { _rev } = await db.put(updatedAppointment);
 
-  return {...updatedAppointment, _rev};
+  return { ...updatedAppointment, _rev };
 };
 
 /**
