@@ -73,12 +73,14 @@ To test "offline"/local PouchDB storage, set `TEST_OFFLINE = true` in the develo
 - `GET /api/me` - returns the current logged in user
 - `GET /api/users` - paginated search for users with specific known skills & interests
 - `GET /api/users/:id` - ID may be username (`@<USERNAME>`) or UID; returns user
+- `PUT /api/users/:id` - update user data such as name, email, and skills (not password)
 - `GET /api/users/:id/avatar` - returns image avatar for user (if it exists)
+- `PUT /api/users/:id/avatar` - updates the user's avatar
 - `GET /api/users/:id/appointments` - returns ALL appointments involving this user; includes user data for all involved users
 - `POST /api/users/:id/appointments` - create appointment between specified user and logged in user (must be different)
 - `GET /api/appointments` - return appointments involving logged-in user
 - `GET /api/appointments/:id` - fetch a single appointment
-- `POST /api/appointments/:id` - update appointment data
+- `PUT /api/appointments/:id` - update appointment data
 - `DELETE /api/appointments/:id` - delete appointment
 - `GET /api/messages` - get all messages involving logged-in user (sent or received)
 - `POST /users/:id/message` - send message to specified user
