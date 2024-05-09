@@ -1,10 +1,11 @@
 import { Router } from "express";
+import asyncHandler from "express-async-handler";
 
+import { withSerializer } from "../db/index.js";
 import * as messages from "../db/messages.js";
 import * as users from "../db/users.js";
+
 import { APIError, requiresAuth } from "./helpers.js";
-import asyncHandler from "express-async-handler";
-import { withSerializer } from "../db/index.js";
 
 const router = Router();
 
@@ -45,8 +46,8 @@ router.get(
 );
 
 /**
- * TODO: probably don't return the full message object? don't expose an ID BUT still need to return the sent message
- * Send a message to a user
+ * TODO: probably don't return the full message object? don't expose an ID BUT
+ * still need to return the sent message Send a message to a user
  * @param {string} toId
  * @param {string} text
  * @returns {Promise<Message>} the created message (with no message ID)

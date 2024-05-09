@@ -1,10 +1,11 @@
 import { Router } from "express";
+import asyncHandler from "express-async-handler";
 
 import * as appointments from "../db/appointments.js";
-import * as users from "../db/users.js";
-import { APIError, requiresAuth } from "./helpers.js";
-import asyncHandler from "express-async-handler";
 import { withSerializer } from "../db/index.js";
+import * as users from "../db/users.js";
+
+import { APIError, requiresAuth } from "./helpers.js";
 
 const router = Router();
 
@@ -82,10 +83,12 @@ router.get(
 
 /**
  * Create a new appointment.
- * The other user is specified by the ID in the URL, and must be different & valid.
+ * The other user is specified by the ID in the URL, and must be different &
+ * valid.
  *
- * The request body contains the appointment data, with an additional "role" field,
- * instead of "teacherId" and "learnerId", that dictates the current user's role in the appointment.
+ * The request body contains the appointment data, with an additional "role"
+ * field, instead of "teacherId" and "learnerId", that dictates the current
+ * user's role in the appointment.
  */
 router.post(
   "/users/:id/appointments",
@@ -150,7 +153,8 @@ router.put(
 
 /**
  * Delete an appointment the user is involved in.
- * The DB checks to make sure the deleted event contains the user's ID before proceeding.
+ * The DB checks to make sure the deleted event contains the user's ID before
+ * proceeding.
  */
 router.delete(
   "/appointments/:id",

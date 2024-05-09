@@ -1,10 +1,11 @@
 import { Router } from "express";
+import asyncHandler from "express-async-handler";
 import formidable from "formidable";
 import { readFile } from "fs/promises";
 
 import * as users from "../db/users.js";
+
 import { APIError, requiresAuth } from "./helpers.js";
-import asyncHandler from "express-async-handler";
 
 const router = Router();
 
@@ -55,8 +56,10 @@ router.get(
 
 /**
  * Get all users with optional filters.
- * Optional filters: `page` (number), `known` (comma-separated string), `interests` (comma-separated string).
- * Returns the users (+ pagination data) that match any of the known AND any of the interests (if both provided, must have one of each).
+ * Optional filters: `page` (number), `known` (comma-separated string),
+ * `interests` (comma-separated string). Returns the users (+ pagination data)
+ * that match any of the known AND any of the interests (if both provided, must
+ * have one of each).
  */
 router.get(
   "/users",

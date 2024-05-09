@@ -1,8 +1,9 @@
 export class APIError extends Error {
-  /** Constructor for APIError
-   * 
-   * @param {string} message 
-   * @param {number} status 
+  /**
+   * Constructor for APIError
+   *
+   * @param {string} message
+   * @param {number} status
    */
   constructor(message, status) {
     super(message);
@@ -12,7 +13,7 @@ export class APIError extends Error {
 
 /**
  *  Checks if a request requires authentication
- * 
+ *
  * @param {Request} req
  * @param {Response} res
  * @param {Function} next

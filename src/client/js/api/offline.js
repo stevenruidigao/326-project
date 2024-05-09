@@ -3,9 +3,11 @@ import "/js/libs/pouchdb.min.js";
 /**
  * @typedef {import("../../../server/db/users.js").User} User
  * @typedef {import("../../../server/db/messages.js").Message} Message
- * @typedef {import("../../../server/db/appointments.js").Appointment} Appointment
+ * @typedef {import("../../../server/db/appointments.js").Appointment}
+ * Appointment
  *
- * @typedef {{ users: User, messages: Message, appointments: Appointment }} RecordTypes
+ * @typedef {{ users: User, messages: Message, appointments: Appointment }}
+ * RecordTypes
  */
 
 export const records = {
@@ -54,9 +56,10 @@ export const isNetworkError = (err) => {
 
 /**
  * Wrap API call with an offline fallback to use when offline.
- * The fallback will be called if the user is offline or if the API call fails due to a network error.
- * When a network error occurs, the offline status will be shown in the navbar,
- * which may be hidden quickly after, depending on the value of `navigator.onLine`.
+ * The fallback will be called if the user is offline or if the API call fails
+ * due to a network error. When a network error occurs, the offline status will
+ * be shown in the navbar, which may be hidden quickly after, depending on the
+ * value of `navigator.onLine`.
  * @template {T}
  * @param {T} func
  * @param {T} fallback
@@ -250,7 +253,7 @@ export const setLogOut = (value) => localStorage.setItem("logOut", value);
 
 /**
  * Get whether to log out the user and clear the offline database.
- * 
+ *
  * @returns {boolean}
  */
 export const shouldLogOut = () => localStorage.getItem("logOut") === "true";

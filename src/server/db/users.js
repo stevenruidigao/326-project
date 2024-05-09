@@ -13,7 +13,8 @@ export const db = createDB("users");
  *   avatarUrl: string,
  * }} SerializedUser
  *
- * @typedef {Omit<SerializedUser, "avatarUrl"> & { password: string } & Pick<PouchDB.Core.GetMeta, "_rev" | "_attachments">} User
+ * @typedef {Omit<SerializedUser, "avatarUrl"> & { password: string } &
+ * Pick<PouchDB.Core.GetMeta, "_rev" | "_attachments">} User
  */
 
 /**
@@ -145,8 +146,8 @@ export const getById = async (id) => {
 
 /**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
- * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
- * since this query does not allow for an index to be used.
+ * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters
+ * each time, since this query does not allow for an index to be used.
  * @param {number} page
  * @param {string[]} skillsHad
  * @param {string[]} skillsWant
@@ -204,7 +205,8 @@ export const update = async (id, data) => {
 };
 
 /**
- * Update a user's avatar. If no avatar is provided, the user's avatar is removed.
+ * Update a user's avatar. If no avatar is provided, the user's avatar is
+ * removed.
  *
  * @param {User} user
  * @param {string} [mimetype]

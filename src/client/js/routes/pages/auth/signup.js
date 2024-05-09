@@ -7,7 +7,7 @@ let errorsEl = null;
 
 /**
  * Show the errors on the signup form. Hide the display if there are none.
- * @param {string[]} errors 
+ * @param {string[]} errors
  */
 export const showErrors = (errors) => {
   if (!errorsEl) console.warn("`errorsEl` has not been initialized!");

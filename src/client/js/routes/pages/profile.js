@@ -68,7 +68,8 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
 /**
  * Shows the profile edit page for the current logged-in user (at /profile)
- * or the public page for a user with the given id (at /profile/:id) or username (at /profile/@:username).
+ * or the public page for a user with the given id (at /profile/:id) or username
+ * (at /profile/@:username).
  * @param {{ id?: string }} args
  * @param {DocumentFragment} doc
  */
@@ -199,7 +200,8 @@ export default async (args, doc) => {
           ...data,
         })
         .then((res) => {
-          // update session user & navbar -- solves input values keeping old value on route reload
+          // update session user & navbar -- solves input values keeping old
+          // value on route reload
           if (isSameUser) {
             session.setCurrent(res);
             setupNavbar();

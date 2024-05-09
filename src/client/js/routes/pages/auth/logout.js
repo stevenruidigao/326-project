@@ -1,8 +1,8 @@
-import * as routes from "../../index.js";
 import { session, users } from "../../../api/index.js";
+import { setLogOut } from "../../../api/offline.js";
 import { setupNavbar, showGlobalError } from "../../../layout.js";
 import { app, setTitle } from "../../helper.js";
-import { setLogOut } from "../../../api/offline.js";
+import * as routes from "../../index.js";
 
 /**
  * Log the user out if there is a session logged in.

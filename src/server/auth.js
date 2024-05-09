@@ -1,13 +1,14 @@
+import { hash, verify } from "argon2";
+import asyncHandler from "express-async-handler";
+import session from "express-session";
 import passport from "passport";
 import LocalStrategy from "passport-local";
-import { hash, verify } from "argon2";
-
-import session from "express-session";
-import asyncHandler from "express-async-handler";
 import FileStore from "session-file-store";
+
 // import PouchDBStore from "session-pouchdb-store";
 
 import * as users from "./db/users.js";
+
 // import sessions from "./db/sessions.js";
 
 if (!process.env.SESSION_SECRET) {
@@ -93,9 +94,10 @@ export const configure = (app) => {
    * so that the frontend can update its data.
    *
    * The session data contains the user ID after `req.login`, so the API will
-   * allow the user to access their data. If the cookie doesn't exist beforehand,
-   * it is created, and sent to the client's browser. Subsequent requests will
-   * include this cookie, allowing the server to identify the user.
+   * allow the user to access their data. If the cookie doesn't exist
+   * beforehand, it is created, and sent to the client's browser. Subsequent
+   * requests will include this cookie, allowing the server to identify the
+   * user.
    */
   app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info, status) => {
@@ -116,8 +118,8 @@ export const configure = (app) => {
   });
 
   /**
-   * Sign up a new user. Weak validation of input & password hashing occurs here.
-   * Similar to the /login endpoint in terms of logic.
+   * Sign up a new user. Weak validation of input & password hashing occurs
+   * here. Similar to the /login endpoint in terms of logic.
    */
   app.post(
     "/signup",
@@ -173,8 +175,8 @@ export const configure = (app) => {
 
   /**
    * Log out the user. This will remove the session data from the server.
-   * The client will not lose the session cookie, but the server-side session data
-   * will no longer match that token, effectively logging the user out.
+   * The client will not lose the session cookie, but the server-side session
+   * data will no longer match that token, effectively logging the user out.
    */
   app.post("/logout", (req, res) => {
     req.logout((err) => {

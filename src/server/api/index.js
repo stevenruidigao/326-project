@@ -1,9 +1,10 @@
 import express from "express";
+
 import * as users from "../db/users.js";
 
-import userRouter from "./users.js";
-import messageRouter from "./messages.js";
 import appointmentHandler from "./appointments.js";
+import messageRouter from "./messages.js";
+import userRouter from "./users.js";
 
 const router = express.Router();
 

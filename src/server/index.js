@@ -1,12 +1,12 @@
 import "dotenv/config";
 
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import express from "express";
 import logger from "morgan";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { configure as authConfigure } from "./auth.js";
 import api from "./api/index.js";
+import { configure as authConfigure } from "./auth.js";
 
 const app = express();
 const port = process.env.WEB_PORT || 3000;
@@ -19,7 +19,8 @@ const port = process.env.WEB_PORT || 3000;
 const __dirname =
   import.meta.dirname || path.dirname(fileURLToPath(import.meta.url));
 
-// Serve static files before logger middleware to avoid cluttering the log with static files
+// Serve static files before logger middleware to avoid cluttering the log with
+// static files
 app.use(express.static(path.resolve(__dirname, "../client")));
 
 app.use(logger("dev"));

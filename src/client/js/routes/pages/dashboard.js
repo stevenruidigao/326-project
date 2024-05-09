@@ -1,17 +1,19 @@
-import { app, setTitle } from "../helper.js";
 import * as api from "../../api/index.js";
-import * as routes from "../index.js";
 import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
+import { app, setTitle } from "../helper.js";
+import * as routes from "../index.js";
 
 const NUM_MSG_PREVIEWS = 3;
 const APPT_PAGE_SIZE = 8;
 
-// TODO: consider using the `onunload` when websockets are implemented to close the connection here
+// TODO: consider using the `onunload` when websockets are implemented to close
+// the connection here
 
 /**
  * Shows the dashboard page for the current logged-in user (at /dashboard)
  * @param {any} args - unused (no args expected)
- * @param {DocumentFragment} doc - the document fragment containing useful elements
+ * @param {DocumentFragment} doc - the document fragment containing useful
+ *     elements
  */
 export default async (args, doc) => {
   app.innerHTML = "";
@@ -100,10 +102,12 @@ export default async (args, doc) => {
   // ################# show all upcoming appointments? #################
 
   /**
-   * Creates and returns a new appointment element with the given appointment data
+   * Creates and returns a new appointment element with the given appointment
+   * data
    *
    * @param {Appointment} appt - The appointment data to render.
-   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+   * @returns {Promise<Element>} - A promise that resolves to the new
+   *     appointment element.
    */
   const createNewAppointmentEl = async (appt) => {
     const apptEl = doc.querySelector(".appointment").cloneNode(true);

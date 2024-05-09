@@ -23,7 +23,9 @@ export const onunload = async (prev, next) => {
 
 /**
  * Sends a message from one user to another.
- * FIXME: move to API + consider making another method that handles "creating messages" separately so that we can use "create message" to render new things but only "send message" sends an API request to make a new message
+ * FIXME: move to API + consider making another method that handles "creating
+ * messages" separately so that we can use "create message" to render new things
+ * but only "send message" sends an API request to make a new message
  *
  * @param {Message} msg - The message to send.
  * @param {string} fromId - The ID of the user sending the message.
@@ -232,7 +234,8 @@ export default async (args, doc) => {
   const previewContainer = app.querySelector("#message-list");
 
   /**
-   * Render the sidebar only (list of conversations with users & preview of last message)
+   * Render the sidebar only (list of conversations with users & preview of last
+   * message)
    * @param {boolean} refetch
    */
   const renderSidebar = async (refetch = false) => {
@@ -598,7 +601,8 @@ export default async (args, doc) => {
     const relevantAppts = await api.appointments.myAppointmentsWithUser(
       otherUser._id,
     );
-    // const relevantAppts = (await api.appointments.allMyAppointments()).filter((appt) => {
+    // const relevantAppts = (await
+    // api.appointments.allMyAppointments()).filter((appt) => {
     //   return (
     //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
     //     (appt.teacherId === otherUser._id && appt.learnerId === user._id)
@@ -612,10 +616,12 @@ export default async (args, doc) => {
 
     /**
      * Creates and returns a new message element with the given message data
-     * NOTE: do not call this function for recieved new messages that aren't part of this conversation
+     * NOTE: do not call this function for recieved new messages that aren't
+     * part of this conversation
      *
      * @param {Message} msg - The message data to render.
-     * @returns {Promise<Element>} - A promise that resolves to the new message element.
+     * @returns {Promise<Element>} - A promise that resolves to the new message
+     *     element.
      */
     const createNewMessageEl = async (msg) => {
       const messageEl = doc.querySelector(".message").cloneNode(true);
@@ -640,10 +646,12 @@ export default async (args, doc) => {
     };
 
     /**
-     * Creates and returns a new appointment element with the given appointment data
+     * Creates and returns a new appointment element with the given appointment
+     * data
      *
      * @param {Appointment} appt - The appointment data to render.
-     * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+     * @returns {Promise<Element>} - A promise that resolves to the new
+     *     appointment element.
      */
     const createNewAppointmentEl = async (appt) => {
       const apptEl = doc.querySelector(".appointment").cloneNode(true);

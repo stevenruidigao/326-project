@@ -1,8 +1,7 @@
-import { app, setTitle } from "../../helper.js";
-import { goToRoute } from "../../index.js";
 import { session, users } from "../../../api/index.js";
 import { setupNavbar } from "../../../layout.js";
-import { toggleElement } from "../../helper.js";
+import { app, setTitle, toggleElement } from "../../helper.js";
+import { goToRoute } from "../../index.js";
 
 /**
  * Show the errors on the login form. Hide the display if there are none.
@@ -11,8 +10,8 @@ import { toggleElement } from "../../helper.js";
  * @returns
  */
 const showError = (el, error) => {
-  if (!el)
-    return console.warn("error display element not found"); // Nowhere to display
+  if (!el) return console.warn("error display element not found");
+  // Nowhere to display
   else {
     el.innerText = error;
     toggleElement(el, "is-hidden", !error);

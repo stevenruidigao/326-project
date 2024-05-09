@@ -1,9 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
+import PouchDBFind from "pouchdb-find";
 // PouchDB
 import PouchDB from "pouchdb-node";
-import PouchDBFind from "pouchdb-find";
 
 PouchDB.plugin(PouchDBFind);
 
@@ -29,7 +28,8 @@ const LocalPouchDB = PouchDB.defaults({
 export const createDB = (name) => new LocalPouchDB(`./${name}`);
 
 /**
- * @typedef {{ data: T[], pagination: { prev?: number, current: number, next?: number, total?: number }}} PaginatedArray<T>
+ * @typedef {{ data: T[], pagination: { prev?: number, current: number, next?:
+ * number, total?: number }}} PaginatedArray<T>
  * @template {any} T
  */
 
@@ -43,7 +43,8 @@ export const createDB = (name) => new LocalPouchDB(`./${name}`);
  * button/infinite scrolling on the frontend
  * @template {Record} T
  * @param {number} pageSize
- * @returns {(page: number, cb: (opts: { limit: number, skip: number }) => Promise<any>) =>
+ * @returns {(page: number, cb: (opts: { limit: number, skip: number }) =>
+ *     Promise<any>) =>
  *  Promise<PaginatedArray<T>>}
  */
 export const withPagination = (pageSize) => async (page, cb) => {
@@ -65,7 +66,8 @@ export const withPagination = (pageSize) => async (page, cb) => {
 
   if (page > 1) pagination.prev = Math.min(totalPages || Infinity, page - 1);
 
-  // If we know there are more results OR we have a full page, state there is (likely) a next page
+  // If we know there are more results OR we have a full page, state there is
+  // (likely) a next page
   if (totalPages ? page < totalPages : data.length === pageSize)
     pagination.next = page + 1;
 
@@ -76,11 +78,13 @@ export const withPagination = (pageSize) => async (page, cb) => {
 };
 
 /**
- * Wrap a serializer function that can be used to serialize one or more documents.
+ * Wrap a serializer function that can be used to serialize one or more
+ * documents.
  *
  * @template T, V
  * @param {(doc: T) => V} serializer
- * @returns {(res: T | T[] | PaginatedArray<T>, userId?: string) => V | V[] | PaginatedArray<V>}
+ * @returns {(res: T | T[] | PaginatedArray<T>, userId?: string) => V | V[] |
+ *     PaginatedArray<V>}
  */
 export const withSerializer = (serializer) => (res, userId) => {
   const serialize = (doc) => serializer(doc, userId);

@@ -2,7 +2,8 @@ import * as offline from "./offline.js";
 
 /**
  * Send an API request to the server.
- * Throws an error if the response is not OK with the JSON message from the server.
+ * Throws an error if the response is not OK with the JSON message from the
+ * server.
  *
  * @param {string} method
  * @param {string} path
@@ -111,7 +112,8 @@ const getAppointment = offline.withFallback(
  * Create a new appointment
  * @param {string} targetUserId
  * @param {Appointment} data
- * @returns {Promise<{ appointments: Appointment[], idToUserMap: Record<String, User> }>}
+ * @returns {Promise<{ appointments: Appointment[], idToUserMap: Record<String,
+ *     User> }>}
  */
 const createAppointment = offline.withoutFallback((targetUserId, data) =>
   sendAPIReq("POST", `/api/users/${targetUserId}/appointments`, data),
@@ -161,7 +163,8 @@ export const appointments = {
  */
 
 /**
- * @returns {Promise<Record<string, Message[]>>} maps user IDs to their conversation with the current user
+ * @returns {Promise<Record<string, Message[]>>} maps user IDs to their
+ *     conversation with the current user
  */
 const getAllConvosWithSelf = offline.withFallback(
   () =>
@@ -186,8 +189,11 @@ const getAllConvosWithSelf = offline.withFallback(
 );
 
 /**
- * TODO: should `createMessage` return anything? just the status of the operation?
- * TODO: should this be turned into "send message" instead? where you're only allowed to "create" messages that are "to" someone else "from" the current user?
+ * TODO: should `createMessage` return anything? just the status of the
+ * operation?
+ * TODO: should this be turned into "send message" instead? where you're only
+ * allowed to "create" messages that are "to" someone else "from" the current
+ * user?
  *
  * Create new message.
  * NOTE: Should not include & not return ID!
@@ -221,8 +227,10 @@ const loginUser = offline.withoutFallback(({ username, password }) =>
 );
 
 /**
- * Register user given credentials. Throws error if user already exists with email or username.
- * @param {{ name: string, username: string, email: string, password: string }} param0
+ * Register user given credentials. Throws error if user already exists with
+ * email or username.
+ * @param {{ name: string, username: string, email: string, password: string }}
+ *     param0
  * @returns {Promise<PouchDBResponse>}
  */
 const registerUser = offline.withoutFallback(
@@ -260,8 +268,8 @@ const getUser = offline.withFallback(
 
 /**
  * Get users that have ANY of the skills listed AND any of the skills wanted.
- * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters each time,
- * since this query does not allow for an index to be used.
+ * NOTE: uses pagination, but behind the scenes it fetches ALL users and filters
+ * each time, since this query does not allow for an index to be used.
  * @param {number} page
  * @param {string[]} known
  * @param {string[]} interests

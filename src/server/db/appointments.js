@@ -1,4 +1,5 @@
 import { APIError } from "../api/helpers.js";
+
 import { createDB, withPagination, withSerializer } from "./index.js";
 
 export const db = createDB("appointments");
@@ -17,7 +18,8 @@ export const db = createDB("appointments");
  *   updatedAt: number,
  * }} SerializedAppointment
  *
- * @typedef {SerializedAppointment & Pick<PouchDB.Core.GetMeta, "_rev">} Appointment
+ * @typedef {SerializedAppointment & Pick<PouchDB.Core.GetMeta, "_rev">}
+ * Appointment
  */
 
 /**
@@ -120,7 +122,8 @@ export const updateAppointment = async (apptId, newAppt, userId) => {
 export const deleteAppointment = async (apptId, userId) => {
   const appointment = await db.get(apptId);
 
-  // FIXME: is the error thrown correctly? I don't think I have access to APIError here
+  // FIXME: is the error thrown correctly? I don't think I have access to
+  // APIError here
   if (!(appointment.learnerId === userId || appointment.teacherId === userId)) {
     throw new APIError("You can't delete someone else's appointment", 403);
   }
