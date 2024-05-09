@@ -90,6 +90,8 @@
                 <button class="delete" aria-label="close" type="reset"></button>
             </header>
             <section class="modal-card-body">
+                <div id="status-message">
+                </div>
                 <div class="field">
                     <label class="label">Topic:</label>
                     <div class="control">
@@ -112,7 +114,7 @@
                 <div class="field">
                     <label class="label">Appointment Time:</label>
                     <div class="control">
-                        <input class="input" type="datetime-local" name="time" required>
+                        <input class="input" type="datetime-local" name="time" required max="9999-01-01T00:00">
                     </div>
                 </div>
                 <div class="field">

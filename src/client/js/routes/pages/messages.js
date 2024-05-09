@@ -1,11 +1,12 @@
 import * as api from "../../api/index.js";
 import dayjs, { formatTimeVerbose } from "../../dayjs.js";
+import { showGlobalError } from "../../layout.js";
 import { app, setTitle } from "../helper.js";
 import * as routes from "../index.js";
 
 /**
  * Runs when page is unloaded. Currently does nothing.
- * 
+ *
  * @param {import("../index.js").RoutePage} prev
  * @param {import("../index.js").RoutePage} next
  */
@@ -14,7 +15,7 @@ export const onunload = async (prev, next) => {
   // messages --> messages
 
   if (prev.file === "messages" && next.file === "messages") {
-    console.log(`[messages] not unloading, loading new conversation!`);
+    console.log("[messages] not unloading, loading new conversation!");
   } else {
     console.log(`[messages] unloading ${prev.file} for ${next.file}!`);
   }
@@ -22,18 +23,22 @@ export const onunload = async (prev, next) => {
 
 /**
  * Sends a message from one user to another.
- * 
+ * FIXME: move to API + consider making another method that handles "creating
+ * messages" separately so that we can use "create message" to render new things
+ * but only "send message" sends an API request to make a new message
+ *
  * @param {Message} msg - The message to send.
  * @param {string} fromId - The ID of the user sending the message.
  * @param {string} toId - The ID of the user receiving the message.
  * @returns {Promise<Message>}
  */
 const sendMessage = async (msg, fromId, toId) => {
-  return api.messages.create({
-    text: msg,
-    fromId,
-    toId,
-  });
+  return api.messages.send(toId, msg);
+  // return api.messages.create({
+  //   text: msg,
+  //   fromId,
+  //   toId,
+  // });
 };
 
 /**
@@ -48,33 +53,65 @@ const setupBulmaModals = () => {
 
   const openModal = async (el, e) => {
     console.log("opening modal with event", e);
+
+    if (el.querySelector("#status-message")) {
+      el.querySelector("#status-message").innerHTML = "";
+    }
+
     if (e.target?.dataset?.apptid) {
-      const loggedInUser = await api.session.current();
-      const apptId = e.target.dataset.apptid;
-      const userId = loggedInUser._id;
-      const currentAppt = await api.appointments.get(apptId);
+      try {
+        const loggedInUser = await api.session.current();
+        const apptId = e.target.dataset.apptid;
+        const userId = loggedInUser._id;
+        const currentAppt = await api.appointments.get(apptId);
 
-      console.log("[messages] opening edit appt modal", currentAppt);
+        console.log("[messages] opening edit appt modal", currentAppt);
 
-      el.querySelector("input[name='topic']").value = currentAppt.topic;
-      el.querySelector("input[name='url']").value = currentAppt.url;
+        el.querySelector("input[name='topic']").value = currentAppt.topic;
+        el.querySelector("input[name='url']").value = currentAppt.url;
 
-      // needed due to timezones
-      const date = dayjs(currentAppt.time);
-      el.querySelector("input[name='time']").value =
-        date.format("YYYY-MM-DDTHH:mm");
+        // needed due to timezones
+        const date = dayjs(currentAppt.time);
+        el.querySelector("input[name='time']").value =
+          date.format("YYYY-MM-DDTHH:mm");
 
-      el.querySelector(
-        `input[name='role'][value='${
-          currentAppt.teacherId === userId ? "teaching" : "learning"
-        }']`,
-      ).checked = true;
-      el.querySelector(
-        `input[name='type'][value='${currentAppt.type}']`,
-      ).checked = true;
+        el.querySelector(
+          `input[name='role'][value='${
+            currentAppt.teacherId === userId ? "teaching" : "learning"
+          }']`,
+        ).checked = true;
+        el.querySelector(
+          `input[name='type'][value='${currentAppt.type}']`,
+        ).checked = true;
 
-      const form = el.querySelector("form");
-      form.dataset.apptid = apptId;
+        const form = el.querySelector("form");
+        form.dataset.apptid = apptId;
+      } catch (err) {
+        console.error("[messages] error fetching appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          if (e.target?.parentElement) {
+            e.target.parentElement.removeChild(notification);
+          }
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        if (e.target?.parentElement) {
+          e.target.parentElement.appendChild(notification);
+        }
+
+        notification.scrollIntoView();
+
+        return;
+      }
     }
 
     el.classList.add("is-active");
@@ -157,44 +194,25 @@ export default async (args, doc) => {
     app.innerHTML = "";
   }
 
-  console.log("** messages loaded with args", args);
-
   // get user id if logged in, otherwise redirect to home
-  const user = await api.session.getUser();
+  const user = await api.session.current();
 
   if (!user) {
-    console.log("[messages] user not logged in! returning to home");
-    return routes.goToRoute("home");
+    console.debug("[messages] user not logged in! returning to home");
+    return routes.goToRoute("login", null, null, true);
   }
 
-  const fetchSortedMessages = async () => {
-    const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
+  let conversations = await api.messages.allMyConvos();
+  console.debug("[messages] fetched conversations", conversations);
 
-    // group messages by user
-    const conversations = allUserMessages.reduce((acc, msg) => {
-      const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-      if (!acc[otherUserId]) {
-        acc[otherUserId] = [];
-      }
-      acc[otherUserId].push(msg);
-      return acc;
-    }, {});
-
-    // in-place sort conversations by most recent message
-    for (const convoKey in conversations) {
-      conversations[convoKey].sort((a, b) => b.time - a.time);
-    }
-
-    console.log("[messages] fetched conversations", conversations);
-
-    return conversations;
-  };
-
-  let conversations = await fetchSortedMessages();
+  // const reFetchMessages = async () => {
+  //   console.debug("[messages] refetching messages");
+  //   conversations = await fetchSortedMessages();
+  // };
 
   const reFetchMessages = async () => {
     console.debug("[messages] refetching messages");
-    conversations = await fetchSortedMessages();
+    conversations = await api.messages.allMyConvos();
   };
 
   // render the sidebar with all the user's conversations + msg previews
@@ -216,7 +234,8 @@ export default async (args, doc) => {
   const previewContainer = app.querySelector("#message-list");
 
   /**
-   * Render the sidebar only (list of conversations with users & preview of last message)
+   * Render the sidebar only (list of conversations with users & preview of last
+   * message)
    * @param {boolean} refetch
    */
   const renderSidebar = async (refetch = false) => {
@@ -253,12 +272,7 @@ export default async (args, doc) => {
       ).fromNow();
 
       linkEl.querySelector(".msg-preview").innerText = lastMsg.text;
-
-      const avatar = await api.users.getAvatar(otherUser);
-
-      linkEl.querySelector("img").src = avatar
-        ? URL.createObjectURL(avatar)
-        : "/images/logo.png";
+      linkEl.querySelector("img").src = otherUser.avatarUrl;
 
       previews.push(previewEl);
 
@@ -270,7 +284,7 @@ export default async (args, doc) => {
   };
 
   // only needs to rerender if new message is sent/received
-  if (isFullRender) renderSidebar();
+  if (isFullRender) await renderSidebar();
 
   // only render the convo wrapper on a full render
   if (isFullRender) {
@@ -321,10 +335,7 @@ export default async (args, doc) => {
       );
 
       const parsedApptData = {
-        teacherId:
-          apptData.role === "teaching" ? user._id : conversationOtherUser._id,
-        learnerId:
-          apptData.role === "learning" ? user._id : conversationOtherUser._id,
+        role: apptData.role,
         type: apptData.type,
         url: apptData.url,
         topic: apptData.topic,
@@ -352,13 +363,54 @@ export default async (args, doc) => {
 
         console.log("[messages] creating appointment", parsedApptData);
 
-        await api.appointments.create(parsedApptData);
+        await api.appointments.create(
+          conversationOtherUser._id,
+          parsedApptData,
+        );
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment created successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          createAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        createAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
 
         createAppointmentForm.querySelector("[type=reset]").click(); // close modal!
         routes.refresh();
       } catch (err) {
         // TODO add user-facing error message
         console.error("[messages] error creating appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          createAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        createAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
       }
 
       createBtn.classList.remove("is-loading");
@@ -366,22 +418,71 @@ export default async (args, doc) => {
 
     // add event listener to edit appointment
     const editAppointmentForm = editApptModal.querySelector("#form-edit-appt");
+
+    const editApptBtn = editApptModal.querySelector(".is-success");
+
     editAppointmentForm.addEventListener("submit", async (e) => {
       // we don't want the actual submit event to happen
       e.preventDefault();
 
-      const apptId = e.target.dataset.apptid;
+      editApptBtn.classList.add("is-loading");
 
-      const formData = new FormData(editAppointmentForm);
+      try {
+        const apptId = e.target.dataset.apptid;
 
-      const parsedApptData = parseApptFormData(formData);
+        const formData = new FormData(editAppointmentForm);
 
-      await api.appointments.update(apptId, parsedApptData);
+        const parsedApptData = parseApptFormData(formData);
 
-      console.log(parsedApptData);
+        await api.appointments.update(apptId, parsedApptData);
 
-      // route refresh to update the conversation & close modals
-      routes.refresh();
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment edited successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
+
+        console.log(parsedApptData);
+
+        // route refresh to update the conversation & close modals
+        routes.refresh();
+      } catch (err) {
+        console.error("[messages] error editing appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
+      }
+
+      editApptBtn.classList.remove("is-loading");
     });
 
     editDeleteBtn.addEventListener("click", async (e) => {
@@ -391,16 +492,62 @@ export default async (args, doc) => {
         const apptId = editAppointmentForm.dataset.apptid;
         await api.appointments.delete(apptId);
 
+        const notification = document.createElement("div");
+        notification.className = "notification is-success";
+        notification.innerText = "Appointment deleted successfully!";
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
+
         // route refresh to update the conversation & close modals
         routes.refresh();
       } catch (err) {
         console.error("[messages] error deleting appointment", err);
+
+        const notification = document.createElement("div");
+        notification.className = "notification is-danger";
+        notification.innerText = err.message;
+
+        const closeNotificationButton = document.createElement("button");
+        closeNotificationButton.className = "delete";
+
+        closeNotificationButton.addEventListener("click", () => {
+          editAppointmentForm.querySelector("#status-message").innerHTML = "";
+        });
+
+        notification.appendChild(closeNotificationButton);
+
+        editAppointmentForm
+          .querySelector("#status-message")
+          .appendChild(notification);
+
+        notification.scrollIntoView();
       }
 
       editDeleteBtn.classList.remove("is-loading");
     });
 
     app.append(createApptModal, editApptModal);
+  }
+
+  if (!args.id) {
+    setTitle("My Messages");
+    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
+    convoWrapperEl.appendChild(blankConvoEl);
+
+    return;
   }
 
   conversationOtherUser = null;
@@ -410,6 +557,10 @@ export default async (args, doc) => {
     // check to see if the other user exists, if doesn't error, continue
     // rendering
     const otherUser = await api.users.get(args.id);
+
+    if (otherUser?._id === user._id) {
+      return routes.goToRoute("messages", null, null, true);
+    }
 
     conversationOtherUser = otherUser;
     console.log("set conversationOtherUser", conversationOtherUser);
@@ -436,35 +587,41 @@ export default async (args, doc) => {
     convoWrapperEl.appendChild(convoEl);
 
     // unpaginated get all appointments by calling until no more next
-    const getAllAppts = async () => {
-      const allAppts = [];
-      for (let curPage = 1; ; curPage++) {
-        const response = await api.appointments.all(curPage);
-        allAppts.push(...Array.from(response));
-        if (!response.pagination.next) break;
-      }
-      return allAppts;
-    };
+    // const getAllAppts = async () => {
+    //   const allAppts = [];
+    //   for (let curPage = 1; ; curPage++) {
+    //     const response = await api.appointments.all(curPage);
+    //     allAppts.push(...Array.from(response));
+    //     if (!response.pagination.next) break;
+    //   }
+    //   return allAppts;
+    // };
 
     // get all appointments between user and other user
-    const relevantAppts = (await getAllAppts()).filter((appt) => {
-      return (
-        (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
-        (appt.teacherId === otherUser._id && appt.learnerId === user._id)
-      );
-    });
+    const relevantAppts = await api.appointments.myAppointmentsWithUser(
+      otherUser._id,
+    );
+    // const relevantAppts = (await
+    // api.appointments.allMyAppointments()).filter((appt) => {
+    //   return (
+    //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
+    //     (appt.teacherId === otherUser._id && appt.learnerId === user._id)
+    //   );
+    // });
 
     // sort appointments by time in place
-    relevantAppts.sort((a, b) => b.time - a.time);
+    // relevantAppts.sort((a, b) => b.time - a.time);
 
     console.log("[messages] relevant appts", relevantAppts);
 
     /**
      * Creates and returns a new message element with the given message data
-     * NOTE: do not call this function for recieved new messages that aren't part of this conversation
+     * NOTE: do not call this function for recieved new messages that aren't
+     * part of this conversation
      *
      * @param {Message} msg - The message data to render.
-     * @returns {Promise<Element>} - A promise that resolves to the new message element.
+     * @returns {Promise<Element>} - A promise that resolves to the new message
+     *     element.
      */
     const createNewMessageEl = async (msg) => {
       const messageEl = doc.querySelector(".message").cloneNode(true);
@@ -489,11 +646,13 @@ export default async (args, doc) => {
     };
 
     /**
-   * Creates and returns a new appointment element with the given appointment data
-   *
-   * @param {Appointment} appt - The appointment data to render.
-   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
-   */
+     * Creates and returns a new appointment element with the given appointment
+     * data
+     *
+     * @param {Appointment} appt - The appointment data to render.
+     * @returns {Promise<Element>} - A promise that resolves to the new
+     *     appointment element.
+     */
     const createNewAppointmentEl = async (appt) => {
       const apptEl = doc.querySelector(".appointment").cloneNode(true);
 
@@ -570,12 +729,18 @@ export default async (args, doc) => {
       const msgText = messageInputEl.querySelector("#message-box").value;
       if (!msgText) return;
 
-      // send message and clear the input
-      const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
-      messageInputEl.querySelector("#message-box").value = "";
+      try {
+        // send message and clear the input
+        const sentMsg = await sendMessage(msgText, user._id, otherUser._id);
+        messageInputEl.querySelector("#message-box").value = "";
 
-      // render the new message in the conversation
-      messageContainerEl.prepend(await createNewMessageEl(sentMsg));
+        // render the new message in the conversation
+        messageContainerEl.prepend(await createNewMessageEl(sentMsg));
+      } catch (err) {
+        console.error("[messages] error sending message", err);
+        showGlobalError(err);
+      }
+
       // new message requires a rerender of message previews
       renderSidebar(true);
     });
@@ -586,17 +751,13 @@ export default async (args, doc) => {
   } catch (err) {
     // if there was an arg provided, log error and redirect to blank
     // conversation
-    if (args.id) {
-      console.error(
-        `[messages] error fetching conversation with user ${args.id}:`,
-        err,
-      );
-      return routes.goToRoute("messages");
-    }
+    console.error(
+      `[messages] error fetching conversation with user ${args.id}:`,
+      err,
+    );
 
-    setTitle(`My Messages`);
-    // if no arg provided, render a blank conversation
-    const blankConvoEl = doc.getElementById("unselected-convo").cloneNode(true);
-    convoWrapperEl.appendChild(blankConvoEl);
+    showGlobalError(err.message || err);
+
+    return routes.goToRoute("messages");
   }
 };

@@ -1,53 +1,42 @@
-import { app } from "../helper.js";
 import * as api from "../../api/index.js";
-import * as routes from "../index.js";
 import { formatRelative, formatTimeVerbose } from "../../dayjs.js";
+import { app, setTitle } from "../helper.js";
+import * as routes from "../index.js";
 
 const NUM_MSG_PREVIEWS = 3;
 const APPT_PAGE_SIZE = 8;
 
-
-// TODO: consider using the `onunload` when websockets are implemented to close the connection here
+// TODO: consider using the `onunload` when websockets are implemented to close
+// the connection here
 
 /**
  * Shows the dashboard page for the current logged-in user (at /dashboard)
  * @param {any} args - unused (no args expected)
- * @param {DocumentFragment} doc - the document fragment containing useful elements
+ * @param {DocumentFragment} doc - the document fragment containing useful
+ *     elements
  */
 export default async (args, doc) => {
   app.innerHTML = "";
 
+  setTitle("Dashboard");
+
   console.log("** dashboard loaded with args", args);
 
   // get user id if logged in, otherwise redirect to home
-  const user = await api.session.getUser();
+  const user = await api.session.current();
 
+  // FIXME: redirect to login page instead of home
   if (!user) {
-    console.log(`[dashboard] user not logged in! returning to home`);
-    return routes.goToRoute("home");
+    console.log("[dashboard] user not logged in! returning to home");
+    return routes.goToRoute("login", null, null, true);
   }
 
   // show latest messages
   // NOTE: if unread messages are implemented, show those here instead
 
   // get all conversations
-  const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
-
-  // group messages by user
-  const conversations = allUserMessages.reduce((acc, msg) => {
-    const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = [];
-    }
-    acc[otherUserId].push(msg);
-    return acc;
-  }, {});
-
-  // in-place sort conversations by most recent message, then set it to the most recent message
-  for (const convoKey in conversations) {
-    conversations[convoKey].sort((a, b) => b.time - a.time);
-  }
-
+  const conversations = await api.messages.allMyConvos();
+  // const allUserMessages = (await api.messages.allWithUser(user._id)).docs;
 
   // map conversations to their most recent message
   const mostRecentMessages = Object.keys(conversations)
@@ -68,9 +57,15 @@ export default async (args, doc) => {
   messageListEl.append(
     ...(await Promise.all(
       mostRecentMessages.map(async (msg) => {
-        const otherUser = await api.users.get(
-          msg.fromId === user._id ? msg.toId : msg.fromId,
-        );
+        const otherUserId = msg.fromId === user._id ? msg.toId : msg.fromId;
+        const otherUser = await api.users.get(otherUserId);
+
+        if (!otherUser) {
+          console.error(
+            `[dashboard] could not find user with id ${otherUserId}`,
+          );
+          return;
+        }
 
         const msgPreviewEl = doc
           .querySelector(".message-preview")
@@ -85,29 +80,34 @@ export default async (args, doc) => {
           msg.time,
         );
 
-
         linkEl.querySelector(".msg-text").innerText = msg.text;
 
-        const avatar = await api.users.getAvatar(otherUser);
-
-        linkEl.querySelector("img").src = avatar
-          ? URL.createObjectURL(avatar)
-          : "/images/logo.png";
+        linkEl.querySelector("img").src = otherUser.avatarUrl;
 
         return msgPreviewEl;
       }),
     )),
   );
 
+  // Add default message if user has no conversations
+  if (mostRecentMessages.length === 0) {
+    const defaultMsg = document.createElement("div");
+    defaultMsg.className = "box m-1";
+    defaultMsg.textContent = "You have no recent messages.";
+    messageListEl.append(defaultMsg);
+  }
+
   app.append(messageContainerEl);
 
   // ################# show all upcoming appointments? #################
 
   /**
-   * Creates and returns a new appointment element with the given appointment data
+   * Creates and returns a new appointment element with the given appointment
+   * data
    *
    * @param {Appointment} appt - The appointment data to render.
-   * @returns {Promise<Element>} - A promise that resolves to the new appointment element.
+   * @returns {Promise<Element>} - A promise that resolves to the new
+   *     appointment element.
    */
   const createNewAppointmentEl = async (appt) => {
     const apptEl = doc.querySelector(".appointment").cloneNode(true);
@@ -136,32 +136,16 @@ export default async (args, doc) => {
     return apptEl;
   };
 
-  /**
-   * Fetches all appointments with the current user
-   * Bypasses the pagination in the API since the API doesn't correctly sort appointments yet
-   *
-   * @returns {Promise<Appointment[]>} - A promise that resolves to the new appointment element.
-   */
-  const getAllApptsWithUser = async () => {
-    const allAppts = [];
-    for (let curPage = 1; ; curPage++) {
-      const response = await api.appointments.withUser(user._id, curPage);
-      if (response.length === 0) break;
-
-      allAppts.push(...Array.from(response));
-    }
-    return allAppts;
-  };
-
   // get all future appointments
   const curTime = Date.now();
-  const futureAppts = (await getAllApptsWithUser()).filter((appt) => {
-    return curTime < appt.time;
-  });
+  const futureAppts = (await api.appointments.allMyAppointments()).filter(
+    (appt) => {
+      return curTime < appt.time;
+    },
+  );
 
   // sort appointments by time in place
-  futureAppts.sort((a, b) => a.time - b.time);
-
+  // futureAppts.sort((a, b) => a.time - b.time);
 
   const apptContainerEl = doc
     .querySelector("#appointment-container")
@@ -175,6 +159,12 @@ export default async (args, doc) => {
     )),
   );
 
-
+  // Empty appointment message
+  if (futureAppts.length === 0) {
+    const emptyMsg = document.createElement("div");
+    emptyMsg.className = "box";
+    emptyMsg.textContent = "You have no upcoming appointments.";
+    apptContainerEl.querySelector("#appointment-list").append(emptyMsg);
+  }
   app.append(apptContainerEl);
 };

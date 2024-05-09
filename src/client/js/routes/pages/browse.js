@@ -43,10 +43,10 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
   const users = await api.users.withSkills(page, skillsHad, skillsWant);
 
   return {
-    users: users,
+    users: users.data,
     getNextPage: async () =>
-      await getUsersPaginated(page + 1, skillsHad, skillsWant),
-    hasNextPage: users.length > 0,
+      await getUsersPaginated(users.pagination.next, skillsHad, skillsWant),
+    hasNextPage: Boolean(users.pagination.next),
   };
 }
 
@@ -59,8 +59,8 @@ async function getUsersPaginated(page = 1, skillsHad = [], skillsWant = []) {
  * @param {string} user.name - The name of the user.
  * @param {string} user._id - The ID of the user.
  * @param {string} user.username - The username of the user.
- * @param {Array<string>} user.skills - An array of skills the user has.
- * @param {Array<string>} user.skillsWanted - An array of skills the user wants.
+ * @param {Array<string>} user.known - An array of skills the user has.
+ * @param {Array<string>} user.interests - An array of skills the user wants.
  * @return {HTMLElement} - The custom HTML element representing the user.
  */
 async function createUserCard(user) {
@@ -80,17 +80,13 @@ async function createUserCard(user) {
   figure.className = "image is-48x48 is-square";
 
   // Basic user info (pic, name, username)
-  const avatar = await api.users.getAvatar(user);
-
-  console.debug("[browse]", avatar, user);
+  console.debug("[browse]", user);
 
   const profilePicture = document.createElement("img");
   profilePicture.loading = "lazy";
-  profilePicture.className = "is-rounded";
-  profilePicture.src = avatar
-    ? URL.createObjectURL(avatar)
-    : "/images/logo.png";
-  profilePicture.alt = `${user.name}'s profile picture`;
+  profilePicture.className = "is-rounded is-clipped";
+  profilePicture.src = user.avatarUrl;
+  profilePicture.alt = "user avatar";
 
   figure.appendChild(profilePicture);
 
@@ -124,9 +120,9 @@ async function createUserCard(user) {
   const knows = document.createElement("span");
   knows.className = "skills";
 
-  knows.innerText = "Knows: " + (!user.skills?.length ? "None" : "");
+  knows.innerText = "Knows: " + (!user.known?.length ? "None" : "");
 
-  for (const known of user.skills || []) {
+  for (const known of user.known || []) {
     const skill = new HTMLAppRouteElement();
     skill.setAttribute("route", "browse");
     skill.setAttribute("search", "?knows=" + known);
@@ -141,10 +137,9 @@ async function createUserCard(user) {
   const interests = document.createElement("span");
   interests.className = "skills";
 
-  interests.innerText =
-    "Interests: " + (!user.skillsWanted?.length ? "None" : "");
+  interests.innerText = "Interests: " + (!user.interests?.length ? "None" : "");
 
-  for (const interest of user.skillsWanted || []) {
+  for (const interest of user.interests || []) {
     const skill = new HTMLAppRouteElement();
     skill.setAttribute("route", "browse");
     skill.setAttribute("search", "?interests=" + interest);

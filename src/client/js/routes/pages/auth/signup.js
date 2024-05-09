@@ -5,12 +5,18 @@ import { goToRoute } from "../../index.js";
 
 let errorsEl = null;
 
+/**
+ * Show the errors on the signup form. Hide the display if there are none.
+ * @param {string[]} errors
+ */
 export const showErrors = (errors) => {
   if (!errorsEl) console.warn("`errorsEl` has not been initialized!");
   else {
     errorsEl.innerText = errors.join("\n");
 
     toggleElement(errorsEl, "is-hidden", !errors.length);
+
+    if (errors.length) errorsEl.scrollIntoView(false);
   }
 };
 
@@ -24,34 +30,22 @@ export const showErrors = (errors) => {
 export const register = async (data) => {
   showErrors([]);
 
-  let id = null;
-
   try {
-    const res = await users.register(data);
+    const user = await users.register(data);
 
-    id = res.id;
+    session.setCurrent(user);
+
+    goToRoute("dashboard", null, null, true);
+    setupNavbar();
   } catch (err) {
     console.error("An error occurred during registration --", err);
+
+    if (err === "Error logging in") return goToRoute("login");
 
     showErrors([err]);
 
     return;
   }
-
-  try {
-    await session.create(id);
-  } catch (err) {
-    console.error(
-      "An error occurred logging you in. User was created! --",
-      err,
-    );
-
-    goToRoute("login");
-
-    return;
-  }
-
-  return goToRoute("dashboard");
 };
 
 /**

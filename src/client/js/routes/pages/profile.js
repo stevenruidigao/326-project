@@ -4,7 +4,7 @@ import dayjs, {
   formatTime,
   formatTimeVerbose,
 } from "../../dayjs.js";
-import { setupNavbar } from "../../layout.js";
+import { setupNavbar, showGlobalError } from "../../layout.js";
 import { app, setTitle, toggleElementAll } from "../helper.js";
 import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
 
@@ -13,7 +13,7 @@ import { goToRoute, HTMLAppRouteElement, load } from "../index.js";
  * If there are no appointments, hide the appointments section.
  * @param {DocumentFragment} doc
  * @param {HTMLElement} profileEl
- * @param {User} user
+ * @param {import("../../../../server/db/users.js").User} user
  */
 export const loadAppointments = async (doc, profileEl, user) => {
   const apptsParentEl = profileEl.querySelector("#profile-appointments");
@@ -21,17 +21,15 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
   apptsParentEl.classList.remove("is-hidden");
 
-  const userAppointments = (await appointments.withUser(user._id, 1)).slice(
-    0,
-    3,
-  );
+  const appts = await appointments.withUser(user._id);
+  const userAppointments = appts.appointments.slice(0, 3);
 
   if (!userAppointments.length) {
     apptsParentEl.classList.add("is-hidden");
     return;
   }
 
-  const usersInvolved = await appointments.getUsersInvolved(userAppointments);
+  const usersInvolved = appts.idToUserMap;
 
   // render appointments
   for (const appt of userAppointments) {
@@ -48,10 +46,11 @@ export const loadAppointments = async (doc, profileEl, user) => {
     timeEl.title = formatTime(appt.time);
     timeEl.dateTime = date.toISOString();
 
+    const otherUserId =
+      appt.teacherId === user._id ? appt.learnerId : appt.teacherId;
     const otherUser =
-      usersInvolved[
-        appt.teacherId === user._id ? appt.learnerId : appt.teacherId
-      ];
+      usersInvolved[otherUserId] ?? (await users.get(otherUserId));
+
     const link = new HTMLAppRouteElement();
     link.route = "user";
     link.setArg("id", otherUser._id);
@@ -69,7 +68,8 @@ export const loadAppointments = async (doc, profileEl, user) => {
 
 /**
  * Shows the profile edit page for the current logged-in user (at /profile)
- * or the public page for a user with the given id (at /profile/:id) or username (at /profile/@:username).
+ * or the public page for a user with the given id (at /profile/:id) or username
+ * (at /profile/@:username).
  * @param {{ id?: string }} args
  * @param {DocumentFragment} doc
  */
@@ -78,23 +78,18 @@ export default async (args, doc) => {
   const loggedInUser = await session.current();
 
   if (!args.id && !loggedInUser) {
-    goToRoute("login");
+    goToRoute("login", null, null, true);
     return;
   }
 
   const id = args.id;
-  const isUsername = id?.startsWith("@");
-  const getMethod = isUsername ? "getByUsername" : "get";
-  const username = isUsername ? id.slice(1) : id;
 
   app.innerHTML = "";
 
   let user = null;
 
   try {
-    user = username
-      ? await users[getMethod](username, { attachments: true, binary: true })
-      : loggedInUser;
+    user = id ? await users.get(id) : loggedInUser;
   } catch (err) {
     console.error("An error occurred while loading user profile --", err);
   }
@@ -137,18 +132,14 @@ export default async (args, doc) => {
   nameEl[key] = user.name;
   usernameEl[key] = user.username;
 
-  const avatar = await users.getAvatar(user);
-
-  if (avatar) {
-    imageEl.src = URL.createObjectURL(avatar);
-  }
+  imageEl.src = user.avatarUrl;
 
   if (isEditingUser) {
     idEl.value = "User ID: " + user._id;
     emailEl.value = user.email;
 
-    knowsEl.value = user.skills?.join(", ") ?? "";
-    interestsEl.value = user.skillsWanted?.join(", ") ?? "";
+    knowsEl.value = user.known?.join(", ") ?? "";
+    interestsEl.value = user.interests?.join(", ") ?? "";
 
     const imageButtons = div.querySelector("#profile-img-buttons");
     const uploadBtn = div.querySelector("#profile-img-upload-btn");
@@ -159,24 +150,17 @@ export default async (args, doc) => {
     const saveAvatar = async (file) => {
       toggleElementAll("button", "is-loading", true, imageButtons);
 
-      await users.update(user._id, {
-        ...user,
-        _attachments: file
-          ? {
-              avatar: {
-                content_type: file.type,
-                data: file,
-              },
-            }
-          : {},
-      });
+      try {
+        user = await users.updateAvatar(user._id, file);
 
-      imageEl.src = file ? URL.createObjectURL(file) : "/images/logo.png";
+        imageEl.src = `${user.avatarUrl}?${Date.now()}`;
 
-      await session.setCurrent();
-      await session.current();
+        session.setCurrent(user);
 
-      setupNavbar();
+        setupNavbar();
+      } catch (err) {
+        showGlobalError(err.message);
+      }
 
       toggleElementAll("button", "is-loading", false, imageButtons);
     };
@@ -207,17 +191,24 @@ export default async (args, doc) => {
 
       const data = Object.fromEntries(formData.entries());
 
-      data.skills = data.skills?.split(/,\s+/) || [];
-      data.skillsWanted = data.skillsWanted?.split(/,\s+/) || [];
+      data.known = data.known?.split(/,\s+/) || [];
+      data.interests = data.interests?.split(/,\s+/) || [];
 
       users
         .update(user._id, {
           ...user,
           ...data,
         })
+        .then((res) => {
+          // update session user & navbar -- solves input values keeping old
+          // value on route reload
+          if (isSameUser) {
+            session.setCurrent(res);
+            setupNavbar();
+          }
+        })
+        .catch((err) => showGlobalError(err.message))
         .finally(() => submitEl.classList.remove("is-loading"));
-
-      // TODO backend validation of duplicate email & username
     });
 
     // add link to public view
@@ -234,13 +225,13 @@ export default async (args, doc) => {
     messageBtn.classList.remove("is-hidden");
   }
 
-  // initialize skills links
+  // initialize known links
   if (!isEditingUser) {
-    const known = user.skills || [];
-    const interests = user.skillsWanted || [];
+    const known = user.known || [];
+    const interests = user.interests || [];
 
-    const addSkills = (parentEl, searchKey, skills) =>
-      skills.forEach((skill) => {
+    const addSkills = (parentEl, searchKey, known) =>
+      known.forEach((skill) => {
         const link = new HTMLAppRouteElement();
 
         link.route = "browse";
@@ -254,7 +245,7 @@ export default async (args, doc) => {
     addSkills(interestsEl, "interests", interests);
 
     // obtain sample set of appointments
-    loadAppointments(doc, div, user);
+    await loadAppointments(doc, div, user);
   }
 
   app.appendChild(div);

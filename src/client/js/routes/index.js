@@ -1,4 +1,4 @@
-import mock from "../api/mock/index.js";
+import { isNetworkError, shouldLogOut } from "../api/offline.js";
 import * as layout from "../layout.js";
 
 import { app } from "./helper.js";
@@ -8,7 +8,7 @@ import * as pages from "./pages.js";
  * Prefix for all paths in the app
  * @type {string}
  */
-export const PATH_PREFIX = "/#";
+export const PATH_PREFIX = "";
 
 /**
  * Regular expression to match the path prefix
@@ -175,12 +175,28 @@ export const load = async (routeName, args = {}, search) => {
 
   const route = routes[routeName];
 
-  const [routeJS, document, css] = await Promise.all([
-    import(`./pages/${route.file}.js`),
-    route.hasHTML && pages.fetchDOM(route.file),
-    route.hasCSS && pages.fetchCSS(route.file),
-    layout.onAppLoad(), // the logic inside only runs once!
-  ]);
+  let [routeJS, document, css] = [];
+
+  layout.showGlobalError();
+
+  try {
+    [routeJS, document, css] = await Promise.all([
+      import(`./pages/${route.file}.js`),
+      route.hasHTML && pages.fetchDOM(route.file),
+      route.hasCSS && pages.fetchCSS(route.file),
+      layout.onAppLoad(), // the logic inside only runs once!
+    ]);
+  } catch (err) {
+    layout.showGlobalError("Error loading page. Please refresh and try again.");
+    console.error(`[routes] Error loading route '${routeName}' --`, err);
+
+    if (isNetworkError(err)) {
+      layout.showOfflineStatus();
+    }
+
+    loadingEl.classList.remove("is-active");
+    return;
+  }
 
   const init = routeJS.default;
 
@@ -214,7 +230,19 @@ export const load = async (routeName, args = {}, search) => {
   // of it.
   routeStyles.textContent = css || "";
 
-  await init(args, document);
+  try {
+    await init(args, document);
+  } catch (err) {
+    console.error(
+      `An error occurred initializing the route "${routeName}" --`,
+      err,
+    );
+    layout.showGlobalError(
+      err.message || "Error initializing page. Please refresh and try again.",
+    );
+    loadingEl.classList.remove("is-active");
+    return;
+  }
 
   // After loading the page, finalize the route change.
   // Sometimes `init` may go to another route - somehow this has not caused
@@ -301,7 +329,7 @@ export const convertPathToRoute = (origPath) => {
       return {
         route: routeName,
         data: args,
-        search: search && new URLSearchParams(search),
+        search: search ? new URLSearchParams(search) : null,
       };
     }
   }
@@ -316,9 +344,10 @@ export const convertPathToRoute = (origPath) => {
  * @param {Object} args arguments to pass to route  -- pass force=true to force
  *     pushState
  * @param {URLSearchParams} search
+ * @param {boolean} replace whether to replace the current history state
  * @example goToRoute(user, { id: 5 });
  */
-export const goToRoute = (name, args, search) => {
+export const goToRoute = (name, args, search, replace = false) => {
   args ||= {};
 
   if (!(name in routes)) throw new Error(`Route '${name}' does not exist.`);
@@ -334,11 +363,15 @@ export const goToRoute = (name, args, search) => {
   // sort params to ensure consistency
   search?.sort?.();
 
-  const data = { route: name, data: args, search: search?.toString() };
+  const data = { route: name, data: args, search: search?.toString() || null };
 
   // only push state is path is not equal AND push state is not being forced
   if (path !== getPath() && !args.force)
-    history.pushState(data, "", PATH_PREFIX + path);
+    history[replace ? "replaceState" : "pushState"](
+      data,
+      "",
+      PATH_PREFIX + path,
+    );
 
   return load(name, args, search);
 };
@@ -370,7 +403,14 @@ export const loadPath = (def) => {
   const path = getPath(true);
   const info = def || convertPathToRoute(path);
 
-  console.debug("[routes] loadPath() path =", path, "=>", info);
+  console.debug(
+    "[routes] loadPath() path =",
+    path,
+    "=>",
+    info,
+    " --- def =",
+    def,
+  );
 
   // coming from popstate, cannot serialize URLSearchParams
   if (typeof info?.search === "string")
@@ -407,6 +447,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   static observedAttributes = [
     "route",
     "when-active",
+    "when-active-ignore-args",
     "search",
     ":id",
     ":search",
@@ -469,7 +510,7 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
     const search = this.search;
     this.#search = search ? new URLSearchParams(search) : null;
 
-    const path = convertRouteToPath(this.route, args, search);
+    const path = convertRouteToPath(this.route, args, this.#search);
 
     this.#args = args;
     this.href = path ? PATH_PREFIX + path : "";
@@ -481,16 +522,19 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
    * Update the active state of the app route link.
    */
   _updateActiveState() {
+    const cur = getCurrent();
     // calculate whether the route name & arguments match
-    const isSameRoute = getCurrent()?.name === this.route;
+    const isSameRoute = cur?.name === this.route || cur?.file === this.file;
     const currentArgsEntries = Object.entries(getCurrent()?.args || {});
     const isSameArgs =
-      currentArgsEntries.length === Object.keys(this.#args).length &&
-      currentArgsEntries.every(([key, val]) => this.#args[key] === val);
+      this.ignoreArgs ||
+      (currentArgsEntries.length === Object.keys(this.#args).length &&
+        currentArgsEntries.every(([key, val]) => this.#args[key] === val));
 
     // we only care if the search params are the same or not if any were
     // specified in the <a> itself!
     const currentSearch = getCurrent()?.search;
+
     currentSearch?.sort();
     this.#search?.sort();
     const isSameSearch =
@@ -524,6 +568,14 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
   set route(route) {
     this.setAttribute("route", route);
     this._updateAttrs();
+  }
+
+  get file() {
+    return this.getAttribute("file") ?? routes[this.route]?.file;
+  }
+
+  get ignoreArgs() {
+    return this.hasAttribute("when-active-ignore-args");
   }
 
   /**
@@ -566,8 +618,6 @@ export class HTMLAppRouteElement extends HTMLAnchorElement {
 /**
  * Registers `<a is="app-route">` custom element for linking
  * and handler for changing state (backwards/forwards in history).
- *
- * MOCK ONLY: Waits for mock data before loading first page!
  */
 export default () => {
   document.head.appendChild(routeStyles);
@@ -577,9 +627,16 @@ export default () => {
     loadPath(ev?.state);
   });
 
-  // Initialize page
-  // --> wait for mock data
-  mock.then(() => loadPath());
+  const path = getPath();
+
+  // Check if the user logged out while offline
+  if (shouldLogOut()) {
+    // Log the user out, then load the correct page
+    load("logout").then(() => loadPath(convertPathToRoute(path)));
+  } else {
+    // Initialize page
+    loadPath();
+  }
 
   /**
    * Define custom element <app-route> for local SPA links

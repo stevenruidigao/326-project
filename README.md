@@ -5,7 +5,7 @@
 > Include a README.md file in the root of the project repository detailing the **project structure**, **setup instructions**, and **documentation** necessary to _understand and navigate your application_.
 > --- -->
 
-This repository contains code for both Milestone 1 and Milestone 2 in `src/`. The code for Milestone 1 is in `src/docs/milestone-01` and the code for Milestone 2 is in `src/client`.
+This repository contains code for both Milestone 1 and Milestone 2 in `src/`. The code for Milestone 1 is in `src/docs/milestone-01` and the code for Milestone 2 is in `src/client`. The code for Milestone 3 is in `src/server` and `src/db` (alongside the client code in `src/client`).
 
 To set up this project to run locally, run `npm install` in the project root.
 
@@ -56,3 +56,29 @@ The directory structure is divided primarily into the API and routes. _All furth
 - `styles` - the app's CSS
   - contains bulma framework (`libs/`) & general css (`app.css`)
   - `pages/*.css` contains page-specific CSS loaded only when those routes request it
+
+## Milestone 03: Back-End
+
+### Usage
+
+- Run `npm install`
+- OPTIONAL: Edit `.env` and fill in `SESSION_SECRET` (the others may be left blank)
+- OPTIONAL: Run `npm run db:migrate` to create PouchDB indexes in the backend
+- Run `npm milestone-03`/`npm start` to start up the NodeJS server serving the client-side & backend API code.
+
+To test "offline"/local PouchDB storage, set `TEST_OFFLINE = true` in the developer console. Switching the network throttling to offline also works, but you must've loaded all the routes already, otherwise loading them will fail (since those are file endpoints & not API data).
+
+### API Routes
+
+- `GET /api/me` - returns the current logged in user
+- `GET /api/users` - paginated search for users with specific known skills & interests
+- `GET /api/users/:id` - ID may be username (`@<USERNAME>`) or UID; returns user
+- `GET /api/users/:id/avatar` - returns image avatar for user (if it exists)
+- `GET /api/users/:id/appointments` - returns ALL appointments involving this user; includes user data for all involved users
+- `POST /api/users/:id/appointments` - create appointment between specified user and logged in user (must be different)
+- `GET /api/appointments` - return appointments involving logged-in user
+- `GET /api/appointments/:id` - fetch a single appointment
+- `POST /api/appointments/:id` - update appointment data
+- `DELETE /api/appointments/:id` - delete appointment
+- `GET /api/messages` - get all messages involving logged-in user (sent or received)
+- `POST /users/:id/message` - send message to specified user

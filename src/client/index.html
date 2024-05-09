@@ -31,6 +31,8 @@
                     <img src="/images/logo.png" alt="logo">
                 </a>
 
+                <span id="offline-status" class="has-text-weight-bold is-underlined has-text-warning navbar-item is-hidden">YOU ARE OFFLINE</span>
+
             <button type="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navigation-bar-menu">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
@@ -43,7 +45,7 @@
                 <div class="navbar-start">
                     <a is="app-route" class="navbar-item" when-active="is-active" route="dashboard">Dashboard</a>
                     <a is="app-route" class="navbar-item" when-active="is-active" route="browse">Browse</a>
-                    <a is="app-route" class="navbar-item" when-active="is-active" route="messages">Messages</a>
+                    <a is="app-route" class="navbar-item" when-active="is-active" route="messages" when-active-ignore-args>Messages</a>
                     <a is="app-route" class="navbar-item" when-active="is-active" route="profile">Profile</a>
                 </div>
 
@@ -69,6 +71,11 @@
                 </div>
             </div>
         </nav>
+
+        <div class="notification is-danger is-hidden" id="global-error">
+            <button class="delete" type="button" aria-label="Close"></button>
+            <span></span>
+        </div>
 
         <div id="app" class="container is-fluid pt-5 pb-6">
             <!-- SPA dynamic content -->
