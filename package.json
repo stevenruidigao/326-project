@@ -49,7 +49,8 @@
     "prettier": "prettier src --write --html-whitespace-sensitivity ignore",
     "start": "node src/server",
     "db:setup": "node src/db",
-    "submit": "git archive HEAD -o submission.zip"
+    "submit": "git archive HEAD -o submission.zip",
+    "postinstall": "npm run db:setup"
   },
   "devDependencies": {
     "html-validate": "^8.18.0",

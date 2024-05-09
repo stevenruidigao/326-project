@@ -1,6 +1,9 @@
 import { createDB } from "../server/db/index.js";
 
 (async () => {
+  console.log("=== DB ===");
+  console.log("* Creating indexes...");
+
   // USERS
   const users = createDB("users");
 
@@ -33,4 +36,7 @@ import { createDB } from "../server/db/index.js";
   await appointments.createIndex({
     index: { fields: ["teacherId"] },
   });
+
+  console.log("* Done!");
+  console.log("==========");
 })();
