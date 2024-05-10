@@ -558,6 +558,7 @@ export default async (args, doc) => {
     // rendering
     const otherUser = await api.users.get(args.id);
 
+    // don't load anything if trying to converse with self
     if (otherUser?._id === user._id) {
       return routes.goToRoute("messages", null, null, true);
     }
@@ -586,31 +587,10 @@ export default async (args, doc) => {
 
     convoWrapperEl.appendChild(convoEl);
 
-    // unpaginated get all appointments by calling until no more next
-    // const getAllAppts = async () => {
-    //   const allAppts = [];
-    //   for (let curPage = 1; ; curPage++) {
-    //     const response = await api.appointments.all(curPage);
-    //     allAppts.push(...Array.from(response));
-    //     if (!response.pagination.next) break;
-    //   }
-    //   return allAppts;
-    // };
-
     // get all appointments between user and other user
     const relevantAppts = await api.appointments.myAppointmentsWithUser(
       otherUser._id,
     );
-    // const relevantAppts = (await
-    // api.appointments.allMyAppointments()).filter((appt) => {
-    //   return (
-    //     (appt.teacherId === user._id && appt.learnerId === otherUser._id) ||
-    //     (appt.teacherId === otherUser._id && appt.learnerId === user._id)
-    //   );
-    // });
-
-    // sort appointments by time in place
-    // relevantAppts.sort((a, b) => b.time - a.time);
 
     console.log("[messages] relevant appts", relevantAppts);
 
@@ -697,8 +677,6 @@ export default async (args, doc) => {
 
     const relevantConvos = conversations[otherUser._id];
 
-    // TODO: add an || check for appointments so that no msgs but yes appts
-    // still render
     if (relevantConvos || relevantAppts.length) {
       console.debug(
         "conversation convos & appts",
@@ -712,12 +690,6 @@ export default async (args, doc) => {
       console.log(
         `[messages] no messages found between user ${user._id} and ${otherUser._id}`,
       );
-      // NOTE: I don't think any additional code is necessary for a blank
-      // conversation
-      // TODO: consider adding a ui bit to prompt "start the conversation!"
-
-      // TODO: also consider creating a blank conversation in the sidebar
-      // isn't strictly necessary, honestly works as is
     }
 
     // add event listener to send messages

@@ -27,11 +27,6 @@
 
 <!-- loaded into conversation-wrapper when a convo is selected -->
 <div id="conversation">
-    <!-- <div id="convo-header">
-        <a is="app-route" route="user" when-active="is-active">
-            <h2 id="convo-name">Chat with ???</h2>
-        </a>
-    </div> -->
     <section class="hero is-small" id="convo-header">
         <div class="hero-body">
             <a is="app-route" route="user" when-active="is-active" class="has-text-link-bold">
@@ -57,7 +52,6 @@
 
 <!-- loaded into conversation-wrapper when no convo is selected -->
 <div id="unselected-convo" class="column">
-    <!-- TODO: add image/text saying no convo selected -->
     <div class="container">
         <h2 class="subtitle">No conversation selected</h2>
     </div>
@@ -66,7 +60,7 @@
 <!-- template for each individual message rendered in a conversation -->
 <div class="message message-block has-background-primary-soft has-text-primary-bold">
     <p class="msg-from has-text-weight-bold has-text-warning"></p>
-    <time class="msg-time is-pulled-right">asdsd</time>
+    <time class="msg-time is-pulled-right">loading time...</time>
     <p class="msg-content"></p>
 </div>
 <!-- template for each individual appointment to render in a conversation -->
