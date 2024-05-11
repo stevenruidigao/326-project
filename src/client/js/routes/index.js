@@ -160,8 +160,8 @@ export const callbacks = {
 
 /**
  * Load a page's JS file & its HTML file (if it exists).
- * Handles calling that page's init function & registering `<template>` in the
- * HTML file. Defaults route to 404 if the name does not exist in `ROUTES`.
+ * Handles calling that page's init function.
+ * Defaults route to 404 if the name does not exist in `ROUTES`.
  * @param {string} routeName route name
  * @param {object?} args route args
  * @param {URLSearchParams?} search search params (?key=val&key2=val2)
@@ -199,8 +199,6 @@ export const load = async (routeName, args = {}, search) => {
   }
 
   const init = routeJS.default;
-
-  if (document) pages.registerCustomComponents(route.file, document);
 
   /**
    * @type {RoutePage}

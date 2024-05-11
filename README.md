@@ -48,7 +48,6 @@ The directory structure is divided primarily into the API and routes. _All furth
     - routes may have HTML in `pages` and CSS in `styles/pages`
     - the necessary files are loaded all at the same time, and once done, the JS script runs to set up the page before getting rid of the loading spinner
     - the HTML is loaded as a `DocumentFragment` for the JS to take advantage of, so that we can work with regular HTML (mostly) while adding dynamic elements
-    - the HTML may also contain `<template>`s, but we found that they don't meet our needs as originally thought
   - registers a custom component `<a is="app-route">` to route links internally
   - see [CONTRIBUTING.md](./CONTRIBUTING.md) for more info
 - `index.html` - contains the boilerplate that every page uses

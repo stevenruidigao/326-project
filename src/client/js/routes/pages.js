@@ -50,39 +50,3 @@ export const fetchDOM = async (name) => {
  * @returns {Promise<string>}
  */
 export const fetchCSS = async (name) => fetch(`/styles/pages/${name}.css`);
-
-/**
- * Register any custom components found in the given XML Document.
- * Any `<template>` elements found will be registered as a custom element
- * with the prefix `[name]-` (e.g., `[name]-[template-id]`).
- *
- * Due to the shadow DOM (required), CSS is not inherited.
- * This clashes with our use of Bulma CSS, so it's preferably avoided.
- * @param {string} name route file name
- * @param {DocumentFragment} xml
- */
-export const registerCustomComponents = (name, xml) => {
-  console.debug("[pages] registerCustomComponents", name, xml);
-  const templates = [...xml.querySelectorAll("template")];
-
-  for (const template of templates) {
-    const key = `${name}-${template.id}`;
-
-    if (customElements.get(key)) continue;
-
-    console.debug(`[pages] registering custom element <${key}>`);
-
-    customElements.define(
-      key,
-      class extends HTMLElement {
-        constructor() {
-          super();
-
-          const shadowRoot = this.attachShadow({ mode: "open" });
-
-          shadowRoot.appendChild(template.content.cloneNode(true));
-        }
-      },
-    );
-  }
-};

@@ -61,12 +61,3 @@ Use `goToRoute(name, args, search)` and `getPath()` from `js/routes/index.js` as
   const loginEl = doc.getElementById("login").cloneNode(true);
   app.appendChild(loginEl);
   ```
-
-  - All templates in this file will automatically be registered as custom HTML components, using the `PAGEFILE` as the prefix
-  - Eg. `<template id="message">` in `home.html` will be useable through `<home-message>`
-  - Note that templates through custom components use the `ShadowDOM`, which means they do NOT inherit CSS AND you cannot query their children from `document`, only through that element's `.shadowRoot`
-
-    ```js
-    document.querySelector('pre') //null
-    document.querySelector('home-message').shadowRoot.querySelector('pre')  // <pre class="content">
-    ```
