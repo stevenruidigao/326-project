@@ -56,9 +56,9 @@ export const loadAppointments = async (doc, profileEl, user) => {
     link.setArg("id", otherUser._id);
     link.innerText = `@${otherUser.username}`;
 
-    newApptEl
-      .querySelector(".profile-appointments-card-user")
-      .appendChild(link);
+    const userEl = newApptEl.querySelector(".profile-appointments-card-user");
+    userEl.innerHTML = "";
+    userEl.appendChild(link);
 
     apptsGridEl.appendChild(newApptEl);
   }
